@@ -1,0 +1,6 @@
+{
+  "name": "workspace-os",
+  "version": "0.1.0",
+  "description": "Portable, command-driven project tracking across repos (project-log / project-plan / project-init).",
+  "author": { "name": "MDesai31" }
+}

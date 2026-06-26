@@ -1,0 +1,11 @@
+{
+  "name": "workspace-os",
+  "owner": { "name": "MDesai31" },
+  "plugins": [
+    {
+      "name": "workspace-os",
+      "source": "./",
+      "description": "Project-OS: tracking skills + per-repo journal schema."
+    }
+  ]
+}
