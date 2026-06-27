@@ -80,13 +80,13 @@ type: domain | convention | reference
 `/project-init` adds **one** line to the repo's `CLAUDE.md`:
 
 ```
-@import docs/memory/MEMORY.md
+@docs/memory/MEMORY.md
 ```
 
-- We `@import` the **index only** — one line per fact. The model always *knows what knowledge exists*, then reads the full fact file on demand.
-- **Never `@import` fact files.** Only the index is always-loaded.
-- **Deliberate deviation from the colleague**, who uses a pure prose pointer ("see memory/MEMORY.md") because at 100+ files even the index is heavy. For small/medium repos, @import-ing the index buys *reliability* (the model cannot consult knowledge it doesn't know exists) at a per-session cost that grows with the index.
-- **Scale ceiling (documented, not enforced):** when a repo's index grows large, switch the `@import` to a prose pointer. This keeps the "general plugin" claim honest for a Zach-sized repo.
+- We import the **index only** — one line per fact. The model always *knows what knowledge exists*, then reads the full fact file on demand.
+- **Never import fact files.** Only the index is always-loaded.
+- **Deliberate deviation from the colleague**, who uses a pure prose pointer ("see memory/MEMORY.md") because at 100+ files even the index is heavy. For small/medium repos, importing the index buys *reliability* (the model cannot consult knowledge it doesn't know exists) at a per-session cost that grows with the index.
+- **Scale ceiling (documented, not enforced):** when a repo's index grows large, switch the import to a prose pointer. This keeps the "general plugin" claim honest for a Zach-sized repo.
 
 ## 6. Skills — division of labor
 
@@ -100,13 +100,13 @@ The division is what keeps memory upkeep from becoming a chore.
 
 **Warn-only secret-scan hook** on writes to `docs/memory/`: scans for obvious secret patterns (keys, `.env`-style values) and warns. **Honest caveat:** it only fires for whoever runs Claude Code — a collaborator's manual commit bypasses it — so it is a *nicety*, not the protection. The real guard for public klapp is review + the no-secrets convention.
 
-`/project-init` is extended to scaffold `docs/memory/` (MEMORY.md + a README/seed) and add the `@import` line to CLAUDE.md.
+`/project-init` is extended to scaffold `docs/memory/` (MEMORY.md + a README/seed) and add the import line to CLAUDE.md.
 
 ## 7. Sequencing
 
 B′ is the largest slice so far (3 skills + hook + init change + schema). Ship a working core, dogfood, then finish.
 
-- **SP2a (core):** store schema + `/project-init` extension + `/ingest` + retrieval (`@import` index). → **dogfood on klapp** before building more.
+- **SP2a (core):** store schema + `/project-init` extension + `/ingest` + retrieval (import index). → **dogfood on klapp** before building more.
 - **SP2b (round-out):** `/memory-lint` + `/sync-memory` + warn-only secret hook.
 
 ## 8. Non-goals (YAGNI / deliberately not the colleague's machinery)
@@ -128,9 +128,9 @@ B′ is the largest slice so far (3 skills + hook + init change + schema). Ship 
 
 ## 10. Success criteria
 
-- `/project-init` on a fresh repo scaffolds `docs/memory/` and wires the `@import`.
+- `/project-init` on a fresh repo scaffolds `docs/memory/` and wires the import.
 - `/ingest "<fact>"` writes a schema-valid fact file and a matching `MEMORY.md` index line.
-- The `@import`-ed index appears in a new session's context; a full fact is readable on demand.
+- The imported index appears in a new session's context; a full fact is readable on demand.
 - `/memory-lint` flags an index/file mismatch and a broken wikilink.
 - `/sync-memory` moves a named `~/.claude` fact into a repo's `docs/memory/` with confirmation, refusing on detected secrets (warn).
 - The boundary rule + klapp worked example are documented in the plugin so the convention is reusable.

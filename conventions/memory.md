@@ -66,11 +66,13 @@ Grouped by type; one line per fact:
 
 ## Retrieval
 
-`/project-init` adds ONE line to the repo's CLAUDE.md: `@import docs/memory/MEMORY.md`.
-- Only the **index** is `@import`-ed (always-loaded, so the model knows what exists). Full fact
-  files are read **on demand**. NEVER `@import` fact files.
+`/project-init` adds ONE line to the repo's CLAUDE.md: `@docs/memory/MEMORY.md`. This is Claude
+Code's import syntax — a **bare `@` followed by a repo-relative path** (like CLAUDE.md's other
+`@file` imports), **not** an `@import` keyword. `@import …` imports nothing.
+- Only the **index** is imported (always-loaded, so the model knows what exists). Full fact
+  files are read **on demand**. NEVER import fact files.
 - **Scale ceiling:** when the index grows large (well past a few dozen facts), switch the
-  CLAUDE.md line from `@import` to a prose pointer ("see `docs/memory/MEMORY.md`") to bound
+  CLAUDE.md line from import to a prose pointer ("see `docs/memory/MEMORY.md`") to bound
   per-session cost. Documented, not enforced.
 
 ## Concurrency

@@ -35,9 +35,10 @@ relative to this skill's base directory (the plugin root is two levels up from
     `docs/memory/MEMORY.md`. (The `docs/memory/MEMORY.md merge=union` line is already in
     `templates/gitattributes`, applied by the gitattributes step below.)
 
-3b. **Wire retrieval.** Add the line `@import docs/memory/MEMORY.md` to the repo's `CLAUDE.md`:
-    if `CLAUDE.md` exists, append the line only if not already present; if it does not exist,
-    create it containing that single line plus a one-line comment. Never duplicate the line.
+3b. **Wire retrieval.** Add the line `@docs/memory/MEMORY.md` to the repo's `CLAUDE.md` — this is
+    Claude Code's `@`-path import syntax (a bare `@path`, **not** an `@import` keyword). If
+    `CLAUDE.md` exists, append the line only if not already present; if it does not exist, create it
+    containing that single line plus a one-line comment. Never duplicate the line.
 
 4. **Add the union-merge attributes.** Append the lines from `templates/gitattributes` to the
    repo's `.gitattributes` (create it if absent; if it exists, append only lines not already
