@@ -29,3 +29,12 @@ Built subagent-driven, all tasks reviewed clean: `conventions/memory.md` (schema
 - Commit: 6db96ab..8a5d47a (branch sp2b-memory)
 
 Built subagent-driven (all tasks reviewed clean): `/memory-lint` (index/frontmatter/wikilink integrity), `/memory-sync` (one-way `~/.claude`→repo bridge), and a warn-only secret-guard hook (`hooks/memory-secret-guard.sh` + `hooks/hooks.json`). Naming: D-20260626-memory-skill-family. Batched review minors fixed in 8a5d47a.
+
+### A-20260626-memory-adopt — memory-adopt slice: adopt existing docs into docs/memory/ (v0.3.0)
+- Workstream: memory
+- Status: done
+- Created: 2026-06-26
+- Completed: 2026-06-26
+- Commit: c9860ac..HEAD (022b0a5 conventions, 6b17db9 skill; branch memory-adopt)
+
+Built subagent-driven, all tasks reviewed clean: `conventions/memory.md` gained an "Adopting existing docs" subsection; `/memory-adopt` skill (opt-in, propose→confirm→apply) that scans free-form docs, classifies facts, deduplicates, secret-scans, proposes, and applies only on confirm. Dogfooded on this repo: README → multiple facts, boundary test, idempotent re-run, secret refusal. Decision: D-20260626-memory-adopt-design.

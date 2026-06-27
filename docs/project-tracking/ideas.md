@@ -4,12 +4,14 @@ Future intents — captured by `/project-plan`, not started. Scope before acting
 `action-items.md` when an idea goes active. These are the slices that take `workspace-os` from
 SP1 (tracking) to the full workspace plugin discussed in the design.
 
-### adoption-import — reshape existing repo docs into workspace-os style
+### adoption-import — reshape existing repo docs into workspace-os style  (memory-adoption case SHIPPED 2026-06-26)
 - Workstream: skills
 - Priority: high
 - Intended start: next slice, after SP2a is dogfooded
 - Why/context: everything built so far is greenfield-only — `/project-init` refuses if the dirs exist, `/ingest` authors one new fact at a time. Repos adopting workspace-os usually already have docs. Need an explicit, **opt-in** adoption command. This reconciles with SP2's boundary rule (§3) by splitting two behaviors: the **passive default stays "never auto-touch existing docs"**; adoption is a **deliberate, confirmed** reshaping. Must handle four source types: (1) free-form docs (README/NOTES/design docs) → `docs/memory/` facts; (2) a different memory format (top-level `memory/`, a wiki) → workspace-os schema + index; (3) CLAUDE.md reference content → pulled into memory, **boundary test applied per item** (imperatives stay in CLAUDE.md); (4) prior tracking/roadmap docs → action-items/ideas/decisions.
-- To start, future-us needs: its own brainstorm→spec→plan; decide one `/project-adopt` skill vs per-layer skills; the classify→propose-mapping→confirm UX; idempotency + no-clobber of existing files; per-item boundary-test routing. Relates to [[SP2-memory]].
+- **Shipped (v0.3.0):** source type (1) + (3) — free-form docs + CLAUDE.md reference content → `docs/memory/`. See `resolved.md` A-20260626-memory-adopt. Decision: D-20260626-memory-adopt-design.
+- **Remaining sub-slices:** (a) foreign memory-format conversion (top-level `memory/`, wiki → workspace-os schema); (b) roadmap/TODO → tracking (prior tracking docs → action-items/ideas/decisions).
+- To start remaining sub-slices, future-us needs: foreign-format detection heuristics + schema mapping; a `/project-adopt-tracking` skill or a new mode on `/memory-adopt` for tracking-doc import. Relates to [[SP2-memory]].
 
 ### SP2-memory — in-repo structured memory + reconciliation  (SHIPPED 2026-06-26 — SP2a + SP2b)
 - Workstream: memory
