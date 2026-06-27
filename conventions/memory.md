@@ -1,7 +1,7 @@
 # Memory Conventions
 
 Single source of truth for the workspace-os memory skills (`/ingest`, `/memory-lint`,
-`/sync-memory`) and the memory scaffolding in `/project-init`. Those skills follow these rules;
+`/memory-sync`) and the memory scaffolding in `/project-init`. Those skills follow these rules;
 they do not restate them.
 
 ## What memory is
@@ -34,12 +34,12 @@ Created by `/project-init` under `<repo>/docs/memory/`:
 
 | File | Holds | Written by |
 |---|---|---|
-| `MEMORY.md` | one-line-per-fact index, grouped by type | `/ingest`, `/sync-memory`, manual |
-| `<slug>.md` | one fact per file | `/ingest`, `/sync-memory` |
+| `MEMORY.md` | one-line-per-fact index, grouped by type | `/ingest`, `/memory-sync`, manual |
+| `<slug>.md` | one fact per file | `/ingest`, `/memory-sync` |
 
 ## Fact schema
 
-Same shape as `~/.claude` auto-memory, so `/sync-memory` can translate 1:1.
+Same shape as `~/.claude` auto-memory, so `/memory-sync` can translate 1:1.
 
 ```
 ---
@@ -74,6 +74,32 @@ Code's import syntax — a **bare `@` followed by a repo-relative path** (like C
 - **Scale ceiling:** when the index grows large (well past a few dozen facts), switch the
   CLAUDE.md line from import to a prose pointer ("see `docs/memory/MEMORY.md`") to bound
   per-session cost. Documented, not enforced.
+
+## Importing from auto-memory (`/memory-sync`)
+
+`~/.claude` auto-memory uses a different taxonomy (`user | feedback | project | reference`) than
+repo memory (`domain | convention | reference`), and its types are heterogeneous — so the
+auto-memory type is a **hint, not a rule**. Decide by the fact's **content**, running these gates
+in order:
+
+1. **Codebase-knowledge gate.** Is this durable knowledge *about this codebase*? If it's about the
+   person (preferences, role) → **stop, leave it in `~/.claude`**.
+2. **Knowledge-vs-state gate.** Is it stable *knowledge*, or *work state* (a goal, status, intent,
+   TODO)? Work state → it belongs in tracking (`ideas.md` / `action-items.md`), not memory → **stop**.
+3. **CLAUDE.md gate** (the boundary test above): costly-if-unseen → **CLAUDE.md, stop**; otherwise
+   it's genuine reference knowledge → migrate, then pick the type.
+
+Type hints (the gates decide; this only nudges the target type):
+
+| auto-memory `type` | hint | when |
+|---|---|---|
+| `reference` | `reference` | almost always migrates as-is |
+| `project` | `domain` | only if it's codebase/domain knowledge; a goal/status/intent → tracking, stop |
+| `feedback` | `convention` | only if it's a repo-specific shared "how we work here" rule; personal/global → stop; always-apply → CLAUDE.md |
+| `user` | — | never migrate |
+
+**Slug rule:** re-slug to clean kebab — strip the `project_`/`feedback_` prefix, convert `_`→`-`,
+and set `name:` to match the new filename stem (e.g. `project-klapp-mvp` → `klapp-overview`).
 
 ## Concurrency
 

@@ -7,18 +7,24 @@
 1. **Engine (this plugin, portable).** Skills, the conventions doc, and the templates. Installed
    once into `~/.claude`, available in every repo, updated centrally. This is the only thing you
    carry job-to-job.
-2. **Data (per-repo, version-controlled).** `<repo>/docs/project-tracking/*.md` — the typed
-   records the skills write, living with each project's code and readable by Claude in that
-   project's sessions.
+2. **Data (per-repo, version-controlled).** `<repo>/docs/project-tracking/*.md` (tracking records)
+   and `<repo>/docs/memory/*.md` (a shared knowledge base, indexed by `MEMORY.md` and surfaced via
+   a `@docs/memory/MEMORY.md` import in the repo's CLAUDE.md) — living with each project's code and
+   readable by Claude in that project's sessions.
 3. **Portfolio (deferred).** A future cross-repo registry. Not built in this version.
 
 ## How the pieces relate
 
 ```
-/project-init ──stamps──▶ <repo>/docs/project-tracking/   (from templates/)
+/project-init ──stamps──▶ <repo>/docs/project-tracking/ + docs/memory/   (from templates/)
+              └─ adds @docs/memory/MEMORY.md to the repo's CLAUDE.md
 /project-log  ──writes──▶ action-items.md · decisions-log.md · resolved.md
 /project-plan ──writes──▶ ideas.md
-        every skill ──reads──▶ conventions/project-tracking.md   (schema + lifecycle, SoT)
+/ingest       ──writes──▶ docs/memory/<slug>.md + MEMORY.md index
+/memory-lint  ──checks──▶ docs/memory/ index + wikilink integrity
+/memory-sync  ──migrates▶ a ~/.claude fact ──▶ docs/memory/
+  tracking skills ──read──▶ conventions/project-tracking.md   (schema + lifecycle, SoT)
+  memory skills   ──read──▶ conventions/memory.md             (schema + boundary test, SoT)
 ```
 
 - **Skills** are model-interpreted instructions (`SKILL.md`). They contain no rules of their own

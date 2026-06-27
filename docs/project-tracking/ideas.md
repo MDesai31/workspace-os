@@ -11,12 +11,12 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Why/context: everything built so far is greenfield-only — `/project-init` refuses if the dirs exist, `/ingest` authors one new fact at a time. Repos adopting workspace-os usually already have docs. Need an explicit, **opt-in** adoption command. This reconciles with SP2's boundary rule (§3) by splitting two behaviors: the **passive default stays "never auto-touch existing docs"**; adoption is a **deliberate, confirmed** reshaping. Must handle four source types: (1) free-form docs (README/NOTES/design docs) → `docs/memory/` facts; (2) a different memory format (top-level `memory/`, a wiki) → workspace-os schema + index; (3) CLAUDE.md reference content → pulled into memory, **boundary test applied per item** (imperatives stay in CLAUDE.md); (4) prior tracking/roadmap docs → action-items/ideas/decisions.
 - To start, future-us needs: its own brainstorm→spec→plan; decide one `/project-adopt` skill vs per-layer skills; the classify→propose-mapping→confirm UX; idempotency + no-clobber of existing files; per-item boundary-test routing. Relates to [[SP2-memory]].
 
-### SP2-memory — in-repo structured memory + reconciliation  (ACTIVE — SP2a shipped)
+### SP2-memory — in-repo structured memory + reconciliation  (SHIPPED 2026-06-26 — SP2a + SP2b)
 - Workstream: memory
 - Priority: high
-- Intended start: STARTED 2026-06-26 — see `D-20260626-repo-canonical-memory`; SP2a in `resolved.md`, SP2b open in `action-items.md`
+- Intended start: DONE — SP2a + SP2b both in `resolved.md`; decisions D-20260626-repo-canonical-memory / -claude-import-syntax / -memory-skill-family
 - Why/context: the highest-leverage gap. An in-repo, version-controlled, AI-readable memory layer (read every session) — Zach's `keystone-engine` pairs this with tracking. Must reconcile with the existing `~/.claude` auto-memory (MEMORY.md), not duplicate it.
-- To start, future-us needs: a design spec (SP2) deciding the memory home (in-repo `memory/` vs the auto-memory) and the relationship/sync between them; then skills `/ingest` (durable fact → memory), `/memory-lint` (index + wikilink integrity), `/sync-memory`; and guard hooks (memory-write-guard, memory-ingest-guard).
+- To start, future-us needs: a design spec (SP2) deciding the memory home (in-repo `memory/` vs the auto-memory) and the relationship/sync between them; then skills `/ingest` (durable fact → memory), `/memory-lint` (index + wikilink integrity), `/memory-sync`; and a warn-only secret-guard hook.
 
 ### SP3-finish-task — closing-ritual orchestration
 - Workstream: workflow

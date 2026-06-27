@@ -93,10 +93,10 @@ type: domain | convention | reference
 The division is what keeps memory upkeep from becoming a chore.
 
 - **`/ingest`** — author a *new* project fact **straight into `docs/memory/`** + update `MEMORY.md`. The primary capture path. Project/domain facts are captured here directly, so they never need promoting later.
-- **`/sync-memory`** — the **bridge**: migrate an *existing* fact from `~/.claude` auto-memory into a repo's `docs/memory/` (manual, one fact at a time, with confirmation). Narrow by design: git already handles travel, so this is occasional cleanup for facts that landed in the wrong store — including ones Claude auto-saves to `~/.claude` mid-session.
+- **`/memory-sync`** — the **bridge**: migrate an *existing* fact from `~/.claude` auto-memory into a repo's `docs/memory/` (manual, one fact at a time, with confirmation). Narrow by design: git already handles travel, so this is occasional cleanup for facts that landed in the wrong store — including ones Claude auto-saves to `~/.claude` mid-session.
 - **`/memory-lint`** — verify `MEMORY.md` index ↔ files consistency and `[[wikilink]]` integrity, so on-demand retrieval doesn't rot.
 
-**The promotion-treadmill decision:** the harness auto-saves project facts to `~/.claude`, which would otherwise create a constant promote chore. We do not (cannot) change the harness. Instead the convention is explicit: **project/domain facts → `/ingest` straight into repo memory; `~/.claude` stays for user/feedback/cross-project facts.** `/sync-memory` is the safety valve for the wrong-store cases, expected to be occasional.
+**The promotion-treadmill decision:** the harness auto-saves project facts to `~/.claude`, which would otherwise create a constant promote chore. We do not (cannot) change the harness. Instead the convention is explicit: **project/domain facts → `/ingest` straight into repo memory; `~/.claude` stays for user/feedback/cross-project facts.** `/memory-sync` is the safety valve for the wrong-store cases, expected to be occasional.
 
 **Warn-only secret-scan hook** on writes to `docs/memory/`: scans for obvious secret patterns (keys, `.env`-style values) and warns. **Honest caveat:** it only fires for whoever runs Claude Code — a collaborator's manual commit bypasses it — so it is a *nicety*, not the protection. The real guard for public klapp is review + the no-secrets convention.
 
@@ -107,7 +107,7 @@ The division is what keeps memory upkeep from becoming a chore.
 B′ is the largest slice so far (3 skills + hook + init change + schema). Ship a working core, dogfood, then finish.
 
 - **SP2a (core):** store schema + `/project-init` extension + `/ingest` + retrieval (import index). → **dogfood on klapp** before building more.
-- **SP2b (round-out):** `/memory-lint` + `/sync-memory` + warn-only secret hook.
+- **SP2b (round-out):** `/memory-lint` + `/memory-sync` + warn-only secret hook.
 
 ## 8. Non-goals (YAGNI / deliberately not the colleague's machinery)
 
@@ -122,7 +122,7 @@ B′ is the largest slice so far (3 skills + hook + init change + schema). Ship 
 | Original sketch | This design |
 |---|---|
 | Auto-memory is the source; repo gets a curated mirror | **Repo `docs/memory/` is canonical**; auto-memory is an optional bridge |
-| `/ingest`, `/memory-lint`, `/sync-memory` + guard hooks | `/ingest`, `/memory-lint`, `/sync-memory` + **warn-only** hook |
+| `/ingest`, `/memory-lint`, `/memory-sync` + guard hooks | `/ingest`, `/memory-lint`, `/memory-sync` + **warn-only** hook |
 | Memory home undecided (in-repo vs auto-memory) | **`docs/memory/`**, decided |
 | "Reconcile" left abstract | Operational **decision test** + worked klapp example |
 
@@ -132,5 +132,5 @@ B′ is the largest slice so far (3 skills + hook + init change + schema). Ship 
 - `/ingest "<fact>"` writes a schema-valid fact file and a matching `MEMORY.md` index line.
 - The imported index appears in a new session's context; a full fact is readable on demand.
 - `/memory-lint` flags an index/file mismatch and a broken wikilink.
-- `/sync-memory` moves a named `~/.claude` fact into a repo's `docs/memory/` with confirmation, refusing on detected secrets (warn).
+- `/memory-sync` moves a named `~/.claude` fact into a repo's `docs/memory/` with confirmation, refusing on detected secrets (warn).
 - The boundary rule + klapp worked example are documented in the plugin so the convention is reusable.
