@@ -43,6 +43,6 @@ Built subagent-driven, all tasks reviewed clean: `conventions/memory.md` gained 
 - Workstream: skills
 - Created: 2026-06-27
 - Completed: 2026-06-27
-- Commit: f3a5763..6184223 (tracking-adopt branch)
+- Commit: f3a5763..ceb1420 (tracking-adopt branch)
 
 Spec docs/specs/2026-06-27-tracking-adopt-design.md; plan docs/plans/2026-06-27-tracking-adopt.md. Decision D-20260627-tracking-adopt-design.
