@@ -1,0 +1,38 @@
+---
+name: memory-sync
+description: Migrate an existing fact from your personal ~/.claude auto-memory into a repo's shared docs/memory/. Use when a fact that landed in personal auto-memory is really project knowledge that belongs with the repo and its collaborators.
+user-invocable: true
+disable-model-invocation: true
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep
+argument-hint: "<auto-memory fact name or description to migrate>"
+---
+
+# Sync Memory
+
+Bridge: move ONE fact from the user's personal `~/.claude` auto-memory into THIS repo's shared
+`docs/memory/`, with confirmation. Schema, types, and the boundary test live in this plugin's
+`conventions/memory.md`.
+
+Direction is **one-way (personal → repo) by design**: git already carries repo memory across
+machines, so this skill exists only to relocate facts that landed in the wrong store (including
+ones auto-saved to `~/.claude` mid-session).
+
+**Prerequisite:** the repo must have `docs/memory/` (run `/project-init` if not).
+
+## Steps
+
+1. **Locate the source fact.** Auto-memory lives in the session's memory directory (the
+   `~/.claude/.../memory/` dir referenced in this session's context). Find the file matching the
+   user's argument by `name`/`description`. If ambiguous, list candidates and ask.
+2. **Apply the boundary test + pick a type** (conventions/memory.md). Confirm it's genuinely
+   repo *reference* knowledge — not an always-load instruction (→ CLAUDE.md), not a decision
+   (→ decisions-log). If it fails, say so and stop.
+3. **Secret scan.** Refuse if the fact contains secrets.
+4. **Translate the schema.** Auto-memory frontmatter (`name` / `description` / `metadata.type`)
+   → repo fact schema (`name` / `description` / `type`), mapping the type to
+   `domain | convention | reference`.
+5. **Confirm with the user** the exact target file path and translated content before writing.
+6. **Write** `docs/memory/<slug>.md` and append the index line to `MEMORY.md` (per conventions).
+7. **Offer cleanup** — ask whether to remove the original auto-memory file (and its `MEMORY.md`
+   index line) or leave it. **Default: leave it;** only remove on explicit confirmation.
+8. **Report** what moved and where. Do **not** commit.
