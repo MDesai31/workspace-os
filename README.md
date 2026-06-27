@@ -29,6 +29,7 @@ machine gets the upgrade.
 - **`/ingest`** — capture a durable project fact into `docs/memory/` + update the index.
 - **`/memory-lint`** — check `docs/memory/` index / frontmatter / wikilink integrity.
 - **`/memory-sync`** — migrate a fact from your `~/.claude` auto-memory into a repo's `docs/memory/`.
+- **`/memory-adopt`** — adopt a repo's existing docs (README, design notes, CLAUDE.md reference content) into `docs/memory/` (opt-in, propose→confirm→apply).
 
 ## How it works
 

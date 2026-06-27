@@ -8,8 +8,8 @@
 ```
 
 Reload the session if the skills don't appear immediately (plugins load at session start). After
-that, `/project-init`, `/project-log`, `/project-plan`, `/ingest`, `/memory-lint`, and
-`/memory-sync` are available in every repo on that machine.
+that, `/project-init`, `/project-log`, `/project-plan`, `/ingest`, `/memory-lint`,
+`/memory-sync`, and `/memory-adopt` are available in every repo on that machine.
 
 ## Updating the engine
 
@@ -30,8 +30,13 @@ Run `/project-init` once in the repo. It stamps the tracking files, adds the `me
 `.gitattributes`, and seeds that repo's workstream tags. From then on, use `/project-log` and
 `/project-plan`.
 
+If the repo already has existing docs (README, design notes, CLAUDE.md reference content), run
+`/memory-adopt` instead of starting empty — it scans, proposes a mapping, and applies only on
+confirmation (opt-in, propose→confirm→apply).
+
 ## Not included (future slices)
 
-A `finish-task`-style closing ritual; a meta/management panel; an `adoption-import` path for
-reshaping existing repo docs into workspace-os style; and the cross-repo portfolio registry. Each
-is its own future slice — see `docs/specs/` and `docs/project-tracking/ideas.md`.
+A `finish-task`-style closing ritual; a meta/management panel; remaining adoption sub-slices
+(foreign memory-format conversion; roadmap/TODO → tracking); and the cross-repo portfolio
+registry. Each is its own future slice — see `docs/specs/` and
+`docs/project-tracking/ideas.md`.

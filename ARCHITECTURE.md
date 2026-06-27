@@ -23,6 +23,7 @@
 /ingest       ──writes──▶ docs/memory/<slug>.md + MEMORY.md index
 /memory-lint  ──checks──▶ docs/memory/ index + wikilink integrity
 /memory-sync  ──migrates▶ a ~/.claude fact ──▶ docs/memory/
+/memory-adopt ──reshapes▶ existing docs ──▶ docs/memory/  (+ proposed CLAUDE.md trim)
   tracking skills ──read──▶ conventions/project-tracking.md   (schema + lifecycle, SoT)
   memory skills   ──read──▶ conventions/memory.md             (schema + boundary test, SoT)
 ```

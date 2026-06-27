@@ -21,8 +21,10 @@ Each durable fact has exactly ONE home. Decide with this test:
 
 - A **decision** (a choice + when + why) → `docs/project-tracking/decisions-log.md` (a `D-`
   record). A memory fact may `[[wikilink]]` a `D-` record but never restates it.
-- **Never migrate existing CLAUDE.md content** into memory when adopting this. Memory grows from
-  new facts going forward.
+- **Passive default — never bulk-migrate CLAUDE.md content** into memory via `/project-init` or
+  day-to-day work; memory grows from new facts going forward. The one exception is the explicit,
+  opt-in `/memory-adopt` skill, which may extract non-costly *reference* lines out of CLAUDE.md
+  (and trim them) **only with confirmation** — see "Adopting existing docs" below.
 
 Generic worked example: a framework's non-obvious import path — where the wrong guess silently
 compiles to a broken state — is *costly-first* → **CLAUDE.md**. The *rationale* for choosing that
@@ -100,6 +102,23 @@ Type hints (the gates decide; this only nudges the target type):
 
 **Slug rule:** re-slug to clean kebab — strip the `project_`/`feedback_` prefix, convert `_`→`-`,
 and set `name:` to match the new filename stem (e.g. `project-klapp-mvp` → `klapp-overview`).
+
+## Adopting existing docs (`/memory-adopt`)
+
+`/memory-adopt` bulk-applies the gates above to a repo's pre-existing docs (opt-in; the passive
+default never auto-touches them). Candidate sources: `README*`, `docs/**/*.md`, `NOTES*`, and
+`CLAUDE.md` — excluding `docs/memory/` and `docs/project-tracking/`. Route each chunk:
+
+- durable codebase knowledge → a `docs/memory/` fact (`domain|convention|reference`);
+- costly-if-unseen imperative → **stays in CLAUDE.md** (if found in a read-only free-form doc,
+  left in place — adoption only trims CLAUDE.md, never adds to it);
+- work-state (goal/status/TODO) → **skip** (belongs in tracking: `ideas.md`/`action-items.md`);
+- about the person → **skip**.
+
+**CLAUDE.md trim:** only lines that pass *as memory* (NOT costly-if-unseen) may be removed, only on
+explicit confirmation, structure-preserving; imperatives are never trimmed. **Free-form source docs
+are read-only** — never modified. **Idempotent:** before proposing, skip any fact whose slug or
+content is already in `docs/memory/`. **Never write secrets.**
 
 ## Concurrency
 
