@@ -28,11 +28,13 @@ ones auto-saved to `~/.claude` mid-session).
    directory).
 2. **Apply the boundary test + pick a type** (conventions/memory.md). Confirm it's genuinely
    repo-scoped knowledge — not an always-load instruction (→ CLAUDE.md), not a decision
-   (→ decisions-log). If it fails, say so and stop.
+   (→ decisions-log), not work-state like a goal/status/intent (→ tracking: `ideas.md`/`action-items.md`).
+   If it fails, say so and stop.
 3. **Secret scan.** Refuse if the fact contains secrets — look for patterns such as `api_key=`, tokens, bearer values, `.env`-style `KEY=value` credentials, or anything that looks like a credential value.
 4. **Translate the schema.** Auto-memory frontmatter (`name` / `description` / `metadata.type`)
-   → repo fact schema (`name` / `description` / `type`), mapping the type to
-   `domain | convention | reference`.
+   → repo fact schema (`name` / `description` / `type`), using the **gates + type hints + slug
+   rule** in `conventions/memory.md` (the two taxonomies differ; re-slug to clean kebab, and note
+   some types — e.g. `user` — should not migrate).
 5. **Confirm with the user** the exact target file path and translated content before writing.
 6. **Write** `docs/memory/<slug>.md` and append the index line to `MEMORY.md` (per conventions).
 7. **Offer cleanup** — ask whether to remove the original auto-memory file (and its `MEMORY.md`
