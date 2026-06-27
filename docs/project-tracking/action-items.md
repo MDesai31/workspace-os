@@ -3,14 +3,15 @@
 Open, actionable work. Added by `/project-log action`; on completion, `/project-log done`
 moves the record to `resolved.md`. Records use the action template from the conventions doc.
 
-### A-20260625-install-and-dogfood — install workspace-os and use it natively
-- Workstream: skills
+### A-20260626-sp2b-memory-roundout — SP2b: /memory-lint, /sync-memory, secret guard
+- Workstream: memory
 - Status: open
-- Created: 2026-06-25
+- Created: 2026-06-26
 
-`/plugin marketplace add MDesai31/workspace-os` + `/plugin install workspace-os`, reload, then
-confirm `/project-init`, `/project-log`, `/project-plan` work as native skills (these tracking
-records were stamped by hand pre-install). First live use: `/project-init` on klapp.
+Round out the memory layer after the SP2a dogfood: `/memory-lint` (index/frontmatter/wikilink
+integrity), `/sync-memory` (one-way `~/.claude`→repo bridge), and a warn-only secret-guard hook on
+`docs/memory/` writes (confirm the plugin hook-registration schema first). Plan:
+`docs/plans/2026-06-26-sp2-memory.md` (Tasks 4–6).
 
 ### A-20260625-default-branch-main — rename default branch master→main
 - Workstream: packaging
