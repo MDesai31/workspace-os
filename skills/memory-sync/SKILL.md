@@ -7,7 +7,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 argument-hint: "<auto-memory fact name or description to migrate>"
 ---
 
-# Sync Memory
+# Memory Sync
 
 Bridge: move ONE fact from the user's personal `~/.claude` auto-memory into THIS repo's shared
 `docs/memory/`, with confirmation. Schema, types, and the boundary test live in this plugin's

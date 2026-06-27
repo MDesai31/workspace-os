@@ -16,7 +16,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Priority: high
 - Intended start: DONE — SP2a + SP2b both in `resolved.md`; decisions D-20260626-repo-canonical-memory / -claude-import-syntax / -memory-skill-family
 - Why/context: the highest-leverage gap. An in-repo, version-controlled, AI-readable memory layer (read every session) — Zach's `keystone-engine` pairs this with tracking. Must reconcile with the existing `~/.claude` auto-memory (MEMORY.md), not duplicate it.
-- To start, future-us needs: a design spec (SP2) deciding the memory home (in-repo `memory/` vs the auto-memory) and the relationship/sync between them; then skills `/ingest` (durable fact → memory), `/memory-lint` (index + wikilink integrity), `/sync-memory`; and guard hooks (memory-write-guard, memory-ingest-guard).
+- To start, future-us needs: a design spec (SP2) deciding the memory home (in-repo `memory/` vs the auto-memory) and the relationship/sync between them; then skills `/ingest` (durable fact → memory), `/memory-lint` (index + wikilink integrity), `/memory-sync`; and a warn-only secret-guard hook.
 
 ### SP3-finish-task — closing-ritual orchestration
 - Workstream: workflow
