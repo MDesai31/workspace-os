@@ -101,6 +101,22 @@ Type hints (the gates decide; this only nudges the target type):
 **Slug rule:** re-slug to clean kebab — strip the `project_`/`feedback_` prefix, convert `_`→`-`,
 and set `name:` to match the new filename stem (e.g. `project-klapp-mvp` → `klapp-overview`).
 
+## Adopting existing docs (`/memory-adopt`)
+
+`/memory-adopt` bulk-applies the gates above to a repo's pre-existing docs (opt-in; the passive
+default never auto-touches them). Candidate sources: `README*`, `docs/**/*.md`, `NOTES*`, and
+`CLAUDE.md` — excluding `docs/memory/` and `docs/project-tracking/`. Route each chunk:
+
+- durable codebase knowledge → a `docs/memory/` fact (`domain|convention|reference`);
+- costly-if-unseen imperative → **stays in CLAUDE.md**;
+- work-state (goal/status/TODO) → **skip** (belongs in tracking: `ideas.md`/`action-items.md`);
+- about the person → **skip**.
+
+**CLAUDE.md trim:** only lines that pass *as memory* (NOT costly-if-unseen) may be removed, only on
+explicit confirmation, structure-preserving; imperatives are never trimmed. **Free-form source docs
+are read-only** — never modified. **Idempotent:** before proposing, skip any fact whose slug or
+content is already in `docs/memory/`. **Never write secrets.**
+
 ## Concurrency
 
 `MEMORY.md` is append-heavy; `/project-init` declares `docs/memory/MEMORY.md merge=union` in the
