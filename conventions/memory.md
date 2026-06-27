@@ -1,7 +1,7 @@
 # Memory Conventions
 
 Single source of truth for the workspace-os memory skills (`/ingest`, `/memory-lint`,
-`/sync-memory`) and the memory scaffolding in `/project-init`. Those skills follow these rules;
+`/memory-sync`) and the memory scaffolding in `/project-init`. Those skills follow these rules;
 they do not restate them.
 
 ## What memory is
@@ -34,12 +34,12 @@ Created by `/project-init` under `<repo>/docs/memory/`:
 
 | File | Holds | Written by |
 |---|---|---|
-| `MEMORY.md` | one-line-per-fact index, grouped by type | `/ingest`, `/sync-memory`, manual |
-| `<slug>.md` | one fact per file | `/ingest`, `/sync-memory` |
+| `MEMORY.md` | one-line-per-fact index, grouped by type | `/ingest`, `/memory-sync`, manual |
+| `<slug>.md` | one fact per file | `/ingest`, `/memory-sync` |
 
 ## Fact schema
 
-Same shape as `~/.claude` auto-memory, so `/sync-memory` can translate 1:1.
+Same shape as `~/.claude` auto-memory, so `/memory-sync` can translate 1:1.
 
 ```
 ---

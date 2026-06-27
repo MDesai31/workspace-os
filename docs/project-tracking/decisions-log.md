@@ -22,3 +22,9 @@ Full design: `docs/specs/2026-06-26-sp2-memory-design.md`. Plan: `docs/plans/202
 - Created: 2026-06-26
 - Rationale: SP2a wired retrieval as `@import docs/memory/MEMORY.md`, but Claude Code's CLAUDE.md import syntax is a bare `@path` (cf. klapp's existing `@AGENTS.md`); `@import …` loads nothing. Corrected to `@docs/memory/MEMORY.md` across the plugin. Caught by the live klapp dogfood — the per-task reviews had flagged live import behavior as unverifiable from a diff.
 - Spawns: none
+
+### D-20260626-memory-skill-family — memory upkeep skills use a `memory-*` prefix
+- Workstream: skills
+- Created: 2026-06-26
+- Rationale: rename `/sync-memory` → `/memory-sync` so the two upkeep skills (`/memory-lint`, `/memory-sync`) share a discoverable prefix; `/ingest` stays as the capture verb. User decision at SP2b kickoff.
+- Spawns: none
