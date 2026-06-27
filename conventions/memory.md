@@ -21,8 +21,10 @@ Each durable fact has exactly ONE home. Decide with this test:
 
 - A **decision** (a choice + when + why) → `docs/project-tracking/decisions-log.md` (a `D-`
   record). A memory fact may `[[wikilink]]` a `D-` record but never restates it.
-- **Never migrate existing CLAUDE.md content** into memory when adopting this. Memory grows from
-  new facts going forward.
+- **Passive default — never bulk-migrate CLAUDE.md content** into memory via `/project-init` or
+  day-to-day work; memory grows from new facts going forward. The one exception is the explicit,
+  opt-in `/memory-adopt` skill, which may extract non-costly *reference* lines out of CLAUDE.md
+  (and trim them) **only with confirmation** — see "Adopting existing docs" below.
 
 Generic worked example: a framework's non-obvious import path — where the wrong guess silently
 compiles to a broken state — is *costly-first* → **CLAUDE.md**. The *rationale* for choosing that

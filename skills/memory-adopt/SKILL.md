@@ -45,3 +45,12 @@ confirmation.
    those lines, preserving the rest of the file. **Never modify free-form source docs.**
 9. **Report** what was created, the CLAUDE.md trim applied (if any), and what was skipped + why.
    Do **not** commit — leave everything staged-ready.
+
+## Known limitations
+
+- **`@import`ed files are not resolved.** CLAUDE.md is scanned as a single file; any `@path`
+  imports it pulls in (e.g. `@AGENTS.md`) are not followed, so their always-loaded content is
+  invisible to classification. Pass such a file as the path argument to scan it directly.
+- **Candidate set is fixed** to `README*`, `docs/**/*.md`, `NOTES*`, `CLAUDE.md` (minus
+  `docs/memory/` and `docs/project-tracking/`). Other docs (e.g. `AGENTS.md`, `RUNNING.md`) are
+  scanned only if named in the path/glob argument.
