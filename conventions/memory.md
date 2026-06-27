@@ -1,6 +1,6 @@
 # Memory Conventions
 
-Single source of truth for the workspace-os memory skills (`/remember`, `/memory-lint`,
+Single source of truth for the workspace-os memory skills (`/ingest`, `/memory-lint`,
 `/sync-memory`) and the memory scaffolding in `/project-init`. Those skills follow these rules;
 they do not restate them.
 
@@ -34,8 +34,8 @@ Created by `/project-init` under `<repo>/docs/memory/`:
 
 | File | Holds | Written by |
 |---|---|---|
-| `MEMORY.md` | one-line-per-fact index, grouped by type | `/remember`, `/sync-memory`, manual |
-| `<slug>.md` | one fact per file | `/remember`, `/sync-memory` |
+| `MEMORY.md` | one-line-per-fact index, grouped by type | `/ingest`, `/sync-memory`, manual |
+| `<slug>.md` | one fact per file | `/ingest`, `/sync-memory` |
 
 ## Fact schema
 

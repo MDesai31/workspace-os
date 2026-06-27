@@ -10,3 +10,9 @@ ID. Never rewrite history — only add. Records use the decision template from t
 - Spawns: A-20260626-sp2b-memory-roundout
 
 Full design: `docs/specs/2026-06-26-sp2-memory-design.md`. Plan: `docs/plans/2026-06-26-sp2-memory.md`.
+
+### D-20260626-ingest-skill-name — capture skill is `/ingest`, not `/remember` (collision)
+- Workstream: skills
+- Created: 2026-06-26
+- Rationale: `remember@claude-plugins-official` is an existing official-marketplace plugin (a `.remember/` session-handoff memory system) globally enabled on the user's Windows machine. workspace-os is portable, so a `remember` skill would collide there and confuse two memory systems. Renamed to `/ingest` (also the colleague's proven name). Surfaced by the SP2a klapp dogfood.
+- Spawns: none

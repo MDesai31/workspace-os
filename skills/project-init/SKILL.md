@@ -49,7 +49,7 @@ relative to this skill's base directory (the plugin root is two levels up from
    `<!-- workstream list, seeded by /project-init -->` placeholder.
 
 6. **Report.** Print the created trees (`ls docs/project-tracking/` and `ls docs/memory/`) and
-   remind the user they can now use `/project-log`, `/project-plan`, `/remember`, and
+   remind the user they can now use `/project-log`, `/project-plan`, `/ingest`, and
    `/memory-lint`. Do **not** commit unless the user asks — leave the new files staged-ready for
    them to commit as they see fit.
 

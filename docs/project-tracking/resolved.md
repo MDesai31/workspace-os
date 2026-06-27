@@ -12,11 +12,11 @@ ref). Append-only.
 
 Installed via marketplace + `/plugin install`; native skills confirmed by running `/project-init` on klapp (first live dogfood).
 
-### A-20260626-sp2a-memory-core — SP2a: memory conventions + /project-init scaffold + /remember
+### A-20260626-sp2a-memory-core — SP2a: memory conventions + /project-init scaffold + /ingest
 - Workstream: memory
 - Status: done
 - Created: 2026-06-26
 - Completed: 2026-06-26
 - Commit: 4a758e3..4613206 (branch sp2-memory)
 
-Built subagent-driven, all tasks reviewed clean: `conventions/memory.md` (schema + boundary test + retrieval SoT), `/project-init` scaffolds `docs/memory/` + `@import`, `/remember` captures a fact. Live klapp dogfood pending before PR merge. Decision: D-20260626-repo-canonical-memory.
+Built subagent-driven, all tasks reviewed clean: `conventions/memory.md` (schema + boundary test + retrieval SoT), `/project-init` scaffolds `docs/memory/` + `@import`, `/ingest` captures a fact. Live klapp dogfood pending before PR merge. Decision: D-20260626-repo-canonical-memory.

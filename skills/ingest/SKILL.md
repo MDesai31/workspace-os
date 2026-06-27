@@ -1,5 +1,5 @@
 ---
-name: remember
+name: ingest
 description: Capture a durable project fact into this repo's shared memory. Use when the user states a non-obvious fact about THIS codebase worth keeping — architecture rationale, a domain rule, a gotcha to look up later (not an always-needed instruction), or a reference pointer. Writes a fact file under docs/memory/ and updates the index.
 user-invocable: true
 disable-model-invocation: true
@@ -7,7 +7,7 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 argument-hint: "<the fact to remember>  (e.g. \"we use Auth.js v5 beta because X\")"
 ---
 
-# Remember
+# Ingest
 
 Author a durable fact into this repo's canonical shared memory at `docs/memory/`. The schema,
 types, the CLAUDE.md-vs-memory boundary test, the index format, and the retrieval model all live

@@ -2,7 +2,7 @@
 
 Canonical, shared, version-controlled reference knowledge for this repo. One fact per file,
 indexed below. Schema and the CLAUDE.md-vs-memory boundary rule live in the workspace-os
-plugin's `conventions/memory.md`. Add facts with `/remember`; check integrity with
+plugin's `conventions/memory.md`. Add facts with `/ingest`; check integrity with
 `/memory-lint`.
 
 ## domain
