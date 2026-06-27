@@ -108,7 +108,8 @@ default never auto-touches them). Candidate sources: `README*`, `docs/**/*.md`, 
 `CLAUDE.md` — excluding `docs/memory/` and `docs/project-tracking/`. Route each chunk:
 
 - durable codebase knowledge → a `docs/memory/` fact (`domain|convention|reference`);
-- costly-if-unseen imperative → **stays in CLAUDE.md**;
+- costly-if-unseen imperative → **stays in CLAUDE.md** (if found in a read-only free-form doc,
+  left in place — adoption only trims CLAUDE.md, never adds to it);
 - work-state (goal/status/TODO) → **skip** (belongs in tracking: `ideas.md`/`action-items.md`);
 - about the person → **skip**.
 

@@ -14,8 +14,9 @@ fact schema, the boundary test, and the **adoption routing + CLAUDE.md trim + id
 live in this plugin's `conventions/memory.md` (see "Adopting existing docs") — read it and follow
 it exactly; do not restate the rules here.
 
-This is **opt-in and non-destructive to source docs**: free-form docs are read only. The only file
-ever edited is `CLAUDE.md` (an approved trim), and only with your confirmation.
+This is **opt-in and non-destructive to source docs**: free-form docs are read only. The only
+pre-existing source doc ever edited is `CLAUDE.md`, and only an approved trim, and only with your
+confirmation.
 
 ## Steps
 
@@ -39,8 +40,8 @@ ever edited is `CLAUDE.md` (an approved trim), and only with your confirmation.
    what **stays** and what's **skipped**, each with a one-line rationale naming the deciding gate.
 7. **Confirm.** Wait for the user to approve / edit / drop. Write nothing before this.
 8. **Apply.** For each approved fact: write `docs/memory/<slug>.md` (fact schema from conventions)
-   and append its index line to `MEMORY.md` under the matching type section. For the approved
-   CLAUDE.md trim: remove exactly those lines, preserving the rest of the file. **Never modify
-   free-form source docs.**
+   and append its index line to `MEMORY.md` under the matching type section (replacing the
+   `_No facts yet._` placeholder if present). For the approved CLAUDE.md trim: remove exactly
+   those lines, preserving the rest of the file. **Never modify free-form source docs.**
 9. **Report** what was created, the CLAUDE.md trim applied (if any), and what was skipped + why.
    Do **not** commit — leave everything staged-ready.
