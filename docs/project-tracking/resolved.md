@@ -41,6 +41,7 @@ Built subagent-driven, all tasks reviewed clean: `conventions/memory.md` gained 
 
 ### A-20260627-tracking-adopt — build /tracking-adopt slice 1 (docs-only)
 - Workstream: skills
+- Status: done
 - Created: 2026-06-27
 - Completed: 2026-06-27
 - Commit: f3a5763..ceb1420 (tracking-adopt branch)
