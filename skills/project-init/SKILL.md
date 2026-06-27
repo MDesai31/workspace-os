@@ -31,6 +31,15 @@ relative to this skill's base directory (the plugin root is two levels up from
    - `templates/decisions-log.md` → `docs/project-tracking/decisions-log.md`
    - `templates/resolved.md` → `docs/project-tracking/resolved.md`
 
+3a. **Scaffold memory.** Create `docs/memory/` and copy `templates/memory/MEMORY.md` →
+    `docs/memory/MEMORY.md`. (The `docs/memory/MEMORY.md merge=union` line is already in
+    `templates/gitattributes`, applied by the gitattributes step below.)
+
+3b. **Wire retrieval.** Add the line `@docs/memory/MEMORY.md` to the repo's `CLAUDE.md` — this is
+    Claude Code's `@`-path import syntax (a bare `@path`, **not** an `@import` keyword). If
+    `CLAUDE.md` exists, append the line only if not already present; if it does not exist, create it
+    containing that single line plus a one-line comment. Never duplicate the line.
+
 4. **Add the union-merge attributes.** Append the lines from `templates/gitattributes` to the
    repo's `.gitattributes` (create it if absent; if it exists, append only lines not already
    present — do not duplicate).
@@ -40,11 +49,13 @@ relative to this skill's base directory (the plugin root is two levels up from
    `## Workstreams` section of `docs/project-tracking/README.md`, replacing the
    `<!-- workstream list, seeded by /project-init -->` placeholder.
 
-6. **Report.** Print the created tree (`ls docs/project-tracking/`) and remind the user they can
-   now use `/project-log` and `/project-plan`. Do **not** commit unless the user asks — leave the
-   new files staged-ready for them to commit as they see fit.
+6. **Report.** Print the created trees (`ls docs/project-tracking/` and `ls docs/memory/`) and
+   remind the user they can now use `/project-log`, `/project-plan`, `/ingest`, and
+   `/memory-lint`. Do **not** commit unless the user asks — leave the new files staged-ready for
+   them to commit as they see fit.
 
 ## Notes
 
 - All record/schema rules live in this plugin's `conventions/project-tracking.md`; the stamped
   files reference it. Do not restate them here.
+- Memory schema/rules live in `conventions/memory.md`; do not restate them.
