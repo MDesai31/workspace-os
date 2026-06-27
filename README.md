@@ -30,6 +30,7 @@ machine gets the upgrade.
 - **`/memory-lint`** — check `docs/memory/` index / frontmatter / wikilink integrity.
 - **`/memory-sync`** — migrate a fact from your `~/.claude` auto-memory into a repo's `docs/memory/`.
 - **`/memory-adopt`** — adopt a repo's existing docs (README, design notes, CLAUDE.md reference content) into `docs/memory/` (opt-in, propose→confirm→apply).
+- **`/tracking-adopt`** — adopt a repo's existing roadmaps and TODO docs into `docs/project-tracking/` (routes roadmap entries → ideas, recorded decisions → decisions-log, open TODOs → action-items).
 
 ## How it works
 

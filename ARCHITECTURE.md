@@ -24,6 +24,7 @@
 /memory-lint  ──checks──▶ docs/memory/ index + wikilink integrity
 /memory-sync  ──migrates▶ a ~/.claude fact ──▶ docs/memory/
 /memory-adopt ──reshapes▶ existing docs ──▶ docs/memory/  (+ proposed CLAUDE.md trim)
+/tracking-adopt ──routes──▶ existing roadmap/TODO docs ──▶ docs/project-tracking/  (slice 1: docs-only)
   tracking skills ──read──▶ conventions/project-tracking.md   (schema + lifecycle, SoT)
   memory skills   ──read──▶ conventions/memory.md             (schema + boundary test, SoT)
 ```

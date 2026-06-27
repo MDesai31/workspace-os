@@ -38,3 +38,11 @@ Built subagent-driven (all tasks reviewed clean): `/memory-lint` (index/frontmat
 - Commit: c9860ac..090bc38 (022b0a5 conventions, 6b17db9 skill; branch memory-adopt)
 
 Built subagent-driven, all tasks reviewed clean: `conventions/memory.md` gained an "Adopting existing docs" subsection; `/memory-adopt` skill (opt-in, propose→confirm→apply) that scans free-form docs, classifies facts, deduplicates, secret-scans, proposes, and applies only on confirm. Dogfooded on this repo: README → multiple facts, boundary test, idempotent re-run, secret refusal. Decision: D-20260626-memory-adopt-design.
+
+### A-20260627-tracking-adopt — build /tracking-adopt slice 1 (docs-only)
+- Workstream: skills
+- Created: 2026-06-27
+- Completed: 2026-06-27
+- Commit: f3a5763..6184223 (tracking-adopt branch)
+
+Spec docs/specs/2026-06-27-tracking-adopt-design.md; plan docs/plans/2026-06-27-tracking-adopt.md. Decision D-20260627-tracking-adopt-design.

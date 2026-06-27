@@ -9,7 +9,7 @@
 
 Reload the session if the skills don't appear immediately (plugins load at session start). After
 that, `/project-init`, `/project-log`, `/project-plan`, `/ingest`, `/memory-lint`,
-`/memory-sync`, and `/memory-adopt` are available in every repo on that machine.
+`/memory-sync`, `/memory-adopt`, and `/tracking-adopt` are available in every repo on that machine.
 
 ## Updating the engine
 
@@ -33,6 +33,8 @@ Run `/project-init` once in the repo. It stamps the tracking files, adds the `me
 If the repo already has existing docs (README, design notes, CLAUDE.md reference content), run
 `/memory-adopt` instead of starting empty — it scans, proposes a mapping, and applies only on
 confirmation (opt-in, propose→confirm→apply).
+
+If the repo has existing roadmaps, TODO lists, or prior planning docs, run `/tracking-adopt` — it routes roadmap entries → ideas, recorded decisions → decisions-log, and open TODOs → action-items.
 
 ## Not included (future slices)
 
