@@ -23,11 +23,13 @@ ones auto-saved to `~/.claude` mid-session).
 
 1. **Locate the source fact.** Auto-memory lives in the session's memory directory (the
    `~/.claude/.../memory/` dir referenced in this session's context). Find the file matching the
-   user's argument by `name`/`description`. If ambiguous, list candidates and ask.
+   user's argument by `name`/`description`. If ambiguous, list candidates and ask. If the exact
+   path is unclear, use Bash to locate the file (e.g. `ls`/`grep` under the session's memory
+   directory).
 2. **Apply the boundary test + pick a type** (conventions/memory.md). Confirm it's genuinely
-   repo *reference* knowledge — not an always-load instruction (→ CLAUDE.md), not a decision
+   repo-scoped knowledge — not an always-load instruction (→ CLAUDE.md), not a decision
    (→ decisions-log). If it fails, say so and stop.
-3. **Secret scan.** Refuse if the fact contains secrets.
+3. **Secret scan.** Refuse if the fact contains secrets — look for patterns such as `api_key=`, tokens, bearer values, `.env`-style `KEY=value` credentials, or anything that looks like a credential value.
 4. **Translate the schema.** Auto-memory frontmatter (`name` / `description` / `metadata.type`)
    → repo fact schema (`name` / `description` / `type`), mapping the type to
    `domain | convention | reference`.
