@@ -1,6 +1,6 @@
 {
   "name": "workspace-os",
-  "version": "0.1.0",
-  "description": "Portable, command-driven project tracking across repos (project-log / project-plan / project-init).",
+  "version": "0.2.0",
+  "description": "Portable project OS: command-driven tracking (project-init/log/plan) + per-repo shared memory (ingest/memory-lint/memory-sync) across your repos.",
   "author": { "name": "MDesai31" }
 }

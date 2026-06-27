@@ -8,8 +8,8 @@
 ```
 
 Reload the session if the skills don't appear immediately (plugins load at session start). After
-that, `/project-init`, `/project-log`, and `/project-plan` are available in every repo on that
-machine.
+that, `/project-init`, `/project-log`, `/project-plan`, `/ingest`, `/memory-lint`, and
+`/memory-sync` are available in every repo on that machine.
 
 ## Updating the engine
 
@@ -20,8 +20,9 @@ up the change — nothing to copy per-repo.
 ## What travels vs. what stays
 
 - **Travels (this plugin):** skills, conventions, templates. Generic, project-agnostic.
-- **Stays (per repo):** the actual tracking data in `<repo>/docs/project-tracking/`. It's
-  version-controlled with that project and never leaves it.
+- **Stays (per repo):** the actual tracking data in `<repo>/docs/project-tracking/` and the
+  knowledge base in `<repo>/docs/memory/`. Both are version-controlled with that project and never
+  leave it.
 
 ## Adopting it in a repo
 
@@ -31,6 +32,6 @@ Run `/project-init` once in the repo. It stamps the tracking files, adds the `me
 
 ## Not included (future slices)
 
-In-repo structured memory + reconciliation with `~/.claude` auto-memory; a `finish-task`-style
-closing ritual; a meta/management panel; and the cross-repo portfolio registry. Each is its own
-future spec — see `docs/specs/`.
+A `finish-task`-style closing ritual; a meta/management panel; an `adoption-import` path for
+reshaping existing repo docs into workspace-os style; and the cross-repo portfolio registry. Each
+is its own future slice — see `docs/specs/` and `docs/project-tracking/ideas.md`.
