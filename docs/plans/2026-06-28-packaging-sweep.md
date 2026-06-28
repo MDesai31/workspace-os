@@ -282,6 +282,8 @@ git push origin --delete packaging-sweep
 
 **Files:** none in-repo (admin op + auto-memory, which lives outside the repo).
 
+> **Outcome (2026-06-28): Steps 1–2 BLOCKED and skipped.** Branch protection and rulesets both return `403: Upgrade to GitHub Pro or make this repository public` on a free private repo. Per `D-20260628-ci-advisory`, CI stays **advisory**. Steps 3–4 (memory + task close-out) still apply.
+
 - [ ] **Step 1: Require the CI check on `main`**
 
 The `validate` check has now run on `main` (the push after merge), so its context name exists. Run:

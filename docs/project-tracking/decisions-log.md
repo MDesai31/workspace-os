@@ -57,4 +57,10 @@ Full design: `docs/specs/2026-06-26-sp2-memory-design.md`. Plan: `docs/plans/202
 - Workstream: packaging
 - Created: 2026-06-28
 - Rationale: Public would give frictionless install (no auth/SSH dance), but the user prefers to keep the repo private and reassess later. Public is read+install-for-anyone / write-for-owner-only and exposes all git history permanently; the user wants to weigh that deliberately, not as a side effect of the packaging sweep. The branch rename and CI are independent of visibility and proceed regardless. Reversal is one `gh repo edit --visibility public` away.
+- Spawns: D-20260628-ci-advisory
+
+### D-20260628-ci-advisory — meta-CI is advisory, not an enforced merge gate
+- Workstream: packaging
+- Created: 2026-06-28
+- Rationale: The plan called for branch protection requiring the `validate` check on `main`, but both the classic branch-protection API and the newer rulesets API return `403: Upgrade to GitHub Pro or make this repository public` — GitHub's free plan does not offer branch protection for *private* repos. Given the stay-private decision (D-20260628-stay-private), the user chose advisory CI: the workflow runs on every PR/push to `main` and reports red on failure, but does not block merge. As a solo maintainer the signal is still seen before merging. Revisit enforcement if the repo later goes public or upgrades to Pro.
 - Spawns: none

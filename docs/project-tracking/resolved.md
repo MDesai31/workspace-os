@@ -73,4 +73,4 @@ Decided: keep the repo **private** for now, reassess later. No repo change.
 - Completed: 2026-06-28
 - Commit: PR #5
 
-Dependency-free `scripts/validate-plugin.py` (manifests parse + required keys; every `skills/*/SKILL.md` has `name`/`description` frontmatter) run by `.github/workflows/ci.yml` on PRs/pushes to `main` (`contents: read`, SHA-pinned checkout), gated by branch protection requiring the `validate` check.
+Dependency-free `scripts/validate-plugin.py` (manifests parse + required keys; every `skills/*/SKILL.md` has `name`/`description` frontmatter) run by `.github/workflows/ci.yml` on PRs/pushes to `main` (`contents: read`, SHA-pinned checkout). CI is **advisory** — branch protection to make it a required merge gate is unavailable on a free private repo (see D-20260628-ci-advisory).

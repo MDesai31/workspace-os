@@ -52,6 +52,10 @@ CI gate:
 
 - After the CI workflow has merged and run once (so the check context name exists), require the CI
   status check to pass before merge. Set via `gh api` / branch-protection endpoint.
+- **Outcome (2026-06-28):** NOT applied — branch protection and rulesets both return `403: Upgrade
+  to GitHub Pro or make this repository public` on a free private repo. CI is therefore **advisory**
+  (runs + reports, does not block merge). See `D-20260628-ci-advisory`. Revisit if the repo goes
+  public or upgrades to Pro.
 
 ## 5. Delivery sequence + tracking close-out
 
