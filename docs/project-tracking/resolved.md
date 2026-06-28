@@ -74,3 +74,18 @@ Decided: keep the repo **private** for now, reassess later. No repo change.
 - Commit: PR #5
 
 Dependency-free `scripts/validate-plugin.py` (manifests parse + required keys; every `skills/*/SKILL.md` has `name`/`description` frontmatter) run by `.github/workflows/ci.yml` on PRs/pushes to `main` (`contents: read`, SHA-pinned checkout). CI is **advisory** — branch protection to make it a required merge gate is unavailable on a free private repo (see D-20260628-ci-advisory).
+
+### A-20260628-memory-adopt-hardening — /memory-adopt: resolve @imports + widen candidate set
+- Workstream: skills
+- Status: done
+- Created: 2026-06-28
+- Completed: 2026-06-28
+- Commit: PR for branch memory-adopt-hardening
+
+Introduced the always-loaded **instruction-file class** (`CLAUDE.md` + `AGENTS.md` + resolved
+`@import` targets, all trimmable), recursive guarded `@import` resolution (cap 5, repo-relative
+only), and a wider default candidate set. Closes `adoption-import` (c)+(d). Edited
+`conventions/memory.md` (SoT) + `skills/memory-adopt/SKILL.md` (deleted its Known limitations
+block). Spec `docs/specs/2026-06-28-memory-adopt-hardening-design.md`; plan
+`docs/plans/2026-06-28-memory-adopt-hardening.md`. Decision
+D-20260628-memory-adopt-instruction-file-class.
