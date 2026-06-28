@@ -53,7 +53,7 @@ Spec docs/specs/2026-06-27-tracking-adopt-design.md; plan docs/plans/2026-06-27-
 - Status: done
 - Created: 2026-06-25
 - Completed: 2026-06-28
-- Commit: n/a (repo-admin op; see PR #<N>)
+- Commit: n/a (repo-admin op; see PR #5)
 
 Renamed `master`→`main`, set the remote default to `main`, deleted the old remote `master`. Part of the packaging sweep (spec docs/specs/2026-06-28-packaging-sweep-design.md; plan docs/plans/2026-06-28-packaging-sweep.md).
 
@@ -71,6 +71,6 @@ Decided: keep the repo **private** for now, reassess later. No repo change.
 - Status: done
 - Created: 2026-06-25
 - Completed: 2026-06-28
-- Commit: PR #<N>
+- Commit: PR #5
 
 Dependency-free `scripts/validate-plugin.py` (manifests parse + required keys; every `skills/*/SKILL.md` has `name`/`description` frontmatter) run by `.github/workflows/ci.yml` on PRs/pushes to `main` (`contents: read`, SHA-pinned checkout), gated by branch protection requiring the `validate` check.
