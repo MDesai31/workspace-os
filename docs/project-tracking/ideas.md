@@ -42,6 +42,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Intended start: incremental, alongside real use
 - Why/context: SP1 ships action/decision/done + plan; the full set adds visibility and capture modes.
 - To start, future-us needs: `/project-status` (summarize open items by workstream), `/work-journal` (what I did this session), and extra `/project-log` modes — `discovery` (→ a `work-log.md`), `meeting-notes`, `release-notes` (→ `RELEASES.md`/CHANGELOG).
+- Borrow (comparison 2026-06-28): give `/project-status` Notion-style **database views** — filter/sort open items by workstream / status / priority.
 
 ### portfolio-registry — cross-repo Layer 3
 - Workstream: portfolio
@@ -49,6 +50,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Intended start: when a single cross-project view is actually wanted
 - Why/context: a registry spanning OA + klapp + future repos (lifecycle, priority, last-touched). Deferred deliberately (YAGNI). Complicated by separate repos — needs a home above them (a command-center repo or the workspace root).
 - To start, future-us needs: a decision on where the registry lives given separate repos; then a `projects.md` schema + a `/project-status` portfolio mode that aggregates across repos.
+- Borrow (comparison 2026-06-28): reuse Backstage's catalog **entity model** (owner / lifecycle / system / `dependsOn`) for the `projects.md` schema + a per-repo `catalog-info`-style header — don't invent fields; the header also feeds [[continuity-runbook]] (owner) and [[provenance-guard]] (ip-class).
 
 ### engine-hooks — automated upkeep
 - Workstream: workflow
@@ -70,6 +72,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Intended start: incremental, alongside [[tracking-skills-roundout]]
 - Why/context: the user's DS work already treats model decisions as first-class artifacts (an "Architecture Decisions" table in `Model_Summary.md`; an `opportunities.md` ranking ML use cases by value vs readiness). Make that a typed tracking record / `/model-decision` mode: dataset/vintage, architecture choice, validation protocol, metric, champion/challenger outcome. Immediate use at the new job (SageMaker forecasting + model registry) and on the Options Analyzer. DS-specific sibling of the generic `D-` decision record.
 - To start, future-us needs: a record template added to `conventions/project-tracking.md` + either a `/project-log model-decision` mode or a standalone `/model-decision` skill. Relates to [[tracking-skills-roundout]].
+- Borrow (comparison 2026-06-28): link to MLflow/W&B **run IDs** and adopt their champion/challenger + model-version vocab — never re-log metrics (that's the platform's job); optionally commit a tiny metrics snapshot beside the narrative (DVC metrics-in-git). The record is the portable *reasoning* layer those tools lack.
 
 ### github-native-tracking — tracking surface in GitHub Issues/Projects (a decision to deliberate)  (brainstorm 2026-06-28)
 - Workstream: schema
@@ -107,6 +110,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Intended start: standalone; motivated now by OA's real setup
 - Why/context: the bus-factor doc Zach ships (`CONTINUITY.md`) — "if the maintainer is out for a month, what silently stops and how does someone recover it?" — is now concretely needed by the user's own work, not just a borrowed pattern. OA has **12 systemd service/timer pairs** + a `data-pipeline-guardian` + `agent_docs/cron_schedule.md`: recurring jobs that, if they stop, silently staleness dashboards with no error. That's exactly the risk a continuity runbook captures: a *pointer-map* (never secrets) of each recurring obligation — cadence, host, what breaks if it stops, and **how failure is detected** — plus access/secrets pointers and `TODO(owner)` markers for facts only the owner knows. Doubly relevant to the user's new lead role ("it runs without me babysitting it"). Note the operational/health-guardian generalization (OA's pipeline-guardian) is adjacent: a future `/doctor`-style health check could verify the obligations this doc lists (see [[project-doctor]]).
 - To start, future-us needs: a `CONTINUITY.md` template (obligations table + access/secrets pointers + TODO(owner) convention) + a `/continuity` skill to scaffold/update it; decision on where it lives (repo root vs `docs/`). Relates to [[SP4-meta-onboarding]], [[integrity-auditor]], [[project-doctor]].
+- Borrow (comparison 2026-06-28): frame the obligations table with DVC-style **deps→outs** (per job: inputs it needs, outputs that go stale if it stops); reuse Backstage's `owner` field for the owner column.
 
 ### project-doctor — verify a repo's setup/runtime preconditions  (brainstorm 2026-06-28)
 - Workstream: workflow
@@ -114,6 +118,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Intended start: after continuity/onboarding pieces land (overlaps existing ideas — flag, don't rush)
 - Why/context: klapp's `RUNNING.md` is a manual setup checklist (Docker up, `.env` set, `prisma migrate dev`, seed run); OA's guardian checks data freshness. Generalize to a `/doctor` skill: each repo declares its preconditions (env vars present, services up, deps installed, data fresh) and the skill reports PASS/FAIL — turning a prose runbook into an executable check, and giving [[continuity-runbook]] an automated counterpart. Overlaps [[integrity-auditor]] (data/tracking checks) and [[SP4-meta-onboarding]] (onboarding) — keep scoped to *environment/runtime preconditions* to stay distinct.
 - To start, future-us needs: a per-repo checks declaration (where + schema) + a `/doctor` skill that runs them; decide the boundary vs integrity-auditor (preconditions vs data/tracking integrity). Relates to [[continuity-runbook]], [[integrity-auditor]].
+- Borrow (comparison 2026-06-28): adopt DVC's declarative **deps→outs** mindset for the checks declaration (each precondition = an input the repo asserts).
 
 ### stale-priors-memory — memory flavor for "training prior is wrong here"  (brainstorm 2026-06-28)
 - Workstream: memory
@@ -121,3 +126,17 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Intended start: a `conventions/memory.md` tweak whenever memory schema is next touched
 - Why/context: klapp's `CLAUDE.md`/`AGENTS.md` are dominated by "*Prisma 6 / Next 16 breaking changes from your training data*" entries — capturing where the model's priors are actively *wrong* for this repo's stack (e.g. import client from `@/generated/prisma/client`, `searchParams` is now a `Promise`). This is a recurring, high-value knowledge flavor for any fast-moving framework. Formalize a `stale-prior`/`gotcha` memory type (or a CLAUDE.md section convention): "your training prior says X; here it's actually Y." Light — a memory-convention improvement, not a feature.
 - To start, future-us needs: add the `stale-prior` flavor to `conventions/memory.md` (type hint + boundary test: does it stay in CLAUDE.md as always-loaded, or move to on-demand `docs/memory/`?). Relates to [[SP2-memory]], [[adoption-import]].
+
+### decision-status — Status + supersession on decision records (from ADRs)  (comparison 2026-06-28)
+- Workstream: schema
+- Priority: mid
+- Intended start: next time the tracking schema is touched (small, additive)
+- Why/context: `decisions-log.md` is effectively ADRs (append-only `D-` records with rationale + Spawns) but lacks two things mature ADRs have — a **`Status`** (accepted / superseded) and explicit **`supersedes`/`superseded-by`** links — plus an optional **`Consequences`** section. Without them the log can't show which decisions are still live without re-reading everything, and never marks a reversal. Add a lightweight `Status:` line + supersession wikilinks to the decision template (append-only: the superseding decision links back; the old record gets a one-line `Superseded-by` appended). Low-risk, high-clarity.
+- To start, future-us needs: add `Status` + `Supersedes`/`Superseded-by` (+ optional `Consequences`) to the decision template in `conventions/project-tracking.md`; teach `/project-log decision` to set them. Relates to [[tracking-skills-roundout]].
+
+### memory-backlinks-search — backlinks + search + note templates for the memory layer (from Notion/wikis)  (comparison 2026-06-28)
+- Workstream: memory
+- Priority: mid
+- Intended start: extend `/memory-lint` incrementally
+- Why/context: the memory layer already has `[[wikilinks]]` + an index but no **backlink view** and no **search** beyond grep — the two things wikis/Notion do well. Add (1) backlink awareness to `/memory-lint` (or a `/memory-search`) that, for a given fact, lists what links *to* it; (2) lightweight **note templates** for recurring memory flavors (the [[stale-priors-memory]] gotcha type is the first); (3) optionally Notion-style **property views** over facts (by type/tag). Closes the wiki gap while keeping memory git-native + agent-loaded (the thing Notion can't do).
+- To start, future-us needs: a backlink builder in `/memory-lint`, a `/memory-search` entrypoint, a templates set; decide whether templates live in the plugin or `docs/memory/`. Relates to [[SP2-memory]], [[stale-priors-memory]], [[tracking-skills-roundout]].
