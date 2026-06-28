@@ -47,6 +47,6 @@ only. The only files ever edited are **instruction files** (`CLAUDE.md`, `AGENTS
    `_No facts yet._` placeholder if present). For each approved trim: remove exactly those lines
    from the instruction file they live in (`CLAUDE.md` or the `@import` target), preserving the
    rest of the file. **Never modify free-form source docs.**
-9. **Report** what was created, the CLAUDE.md trim applied (if any), and what was skipped + why.
+9. **Report** what was created, the instruction-file trim(s) applied (if any), and what was skipped + why.
    Do **not** commit — leave everything staged-ready.
 
