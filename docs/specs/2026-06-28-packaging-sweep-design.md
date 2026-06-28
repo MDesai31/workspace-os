@@ -5,26 +5,27 @@
 Close the three open packaging action items, reducing install friction and adding a structural
 CI gate:
 
-- `A-20260625-visibility-decision` → **make the repo public**
+- `A-20260625-visibility-decision` → **stay private for now** (reassess public later)
 - `A-20260625-default-branch-main` → **rename default branch `master` → `main`**
 - `A-20260625-meta-ci` → **add a minimal validation CI** gated by branch protection on `main`
 
 ## Decisions (from brainstorm)
 
-- **Public** — workspace-os is a generic, portable plugin with no proprietary content or secrets;
-  public gives frictionless install (`/plugin marketplace add MDesai31/workspace-os`, no auth/SSH
-  dance — the friction hit on 2026-06-28). klapp is already public.
+- **Stay private (for now)** — public would give frictionless install (no auth/SSH dance), but the
+  user prefers to keep the repo private and reassess later. Installs continue to require the
+  `MDesai31` active gh account. Logged as `D-20260628-stay-private`. (Reversal is easy later; the
+  rename + CI below are independent of visibility.)
 - **meta-CI scope = minimal** — manifests + skill frontmatter only. Tracking-*record* schema
   linting (the `- Status: done` drift) is explicitly OUT — that's a separate future validator
   (`tracking-lint`, parallel to `/memory-lint`).
 - **Branch protection on `main` requires the CI check** — mirrors the OA repo ("CI gates PRs into
   main"). CI is a real gate, not advisory. Accepts minor solo-repo friction (own PRs wait for green).
 
-## 1. Visibility → public
+## 1. Visibility → stay private
 
-- **Pre-flight secret scan** of the tracked tree before flipping (public exposes all history).
-  Expect none; verify anyway. If anything is found, STOP and surface it.
-- `gh repo edit MDesai31/workspace-os --visibility public --accept-visibility-change-consequences`.
+- No repo change. Record the decision (`D-20260628-stay-private`) and resolve the action item with
+  a note to reassess. The secret-scan gate is dropped — it only mattered as a pre-flip safeguard
+  before exposing history; the repo stays private.
 
 ## 2. `master` → `main`
 
@@ -56,15 +57,14 @@ CI gate:
 
 Admin ops are not file changes and do not go through a PR; file changes do.
 
-1. Pre-flight secret scan.
-2. Flip visibility → public (admin).
-3. Rename `master` → `main` (admin).
-4. Feature branch `packaging-sweep` off `main`: add `ci.yml` + `validate-plugin.py`, the
-   `master`→`main` doc reference updates, and the tracking close-out. Open PR → `main`; the CI
-   runs on its own PR (self-validating). Merge when green.
-5. Add branch protection requiring the CI check.
-6. Close `A-20260625-visibility-decision`, `A-20260625-default-branch-main`, `A-20260625-meta-ci`
-   → `resolved.md`; log a decision if warranted; update memory (visibility + default branch).
+1. Rename `master` → `main` (admin).
+2. Feature branch `packaging-sweep` off `main`: add `ci.yml` + `validate-plugin.py`, log
+   `D-20260628-stay-private`, and the tracking close-out. Open PR → `main`; the CI runs on its own
+   PR (self-validating). Merge when green.
+3. Add branch protection requiring the CI check.
+4. Close `A-20260625-visibility-decision` (decided: private), `A-20260625-default-branch-main`,
+   `A-20260625-meta-ci` → `resolved.md`; update memory (default branch + CI gate; visibility stays
+   private).
 
 ## Out of scope
 
@@ -73,7 +73,7 @@ Admin ops are not file changes and do not go through a PR; file changes do.
 
 ## Verification
 
-- `gh repo view --json visibility,defaultBranchRef` shows `public` + `main`.
+- `gh repo view --json visibility,defaultBranchRef` shows `private` + `main`.
 - The `packaging-sweep` PR shows the CI check **passing**.
 - `git ls-remote --heads origin` shows `main`, not `master`.
 - Branch-protection API shows the CI check required on `main`.
