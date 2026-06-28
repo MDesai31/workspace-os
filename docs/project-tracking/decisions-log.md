@@ -52,3 +52,9 @@ Full design: `docs/specs/2026-06-26-sp2-memory-design.md`. Plan: `docs/plans/202
 - Created: 2026-06-27
 - Rationale: tracking adoption is its own skill (not a /memory-adopt mode) — one skill, one target. Slice 1 is docs-only, routing roadmaps→ideas, recorded decisions→decisions-log (D-), open TODOs→action-items (A-). resolved.md + git-history archaeology deferred to slice 2 (a merged-PR commit ref makes a resolved record legitimate; prose changelog does not). Reuses conventions/project-tracking.md gates — no new schema. Source docs read-only.
 - Spawns: A-20260627-tracking-adopt
+
+### D-20260628-stay-private — keep workspace-os private for now
+- Workstream: packaging
+- Created: 2026-06-28
+- Rationale: Public would give frictionless install (no auth/SSH dance), but the user prefers to keep the repo private and reassess later. Public is read+install-for-anyone / write-for-owner-only and exposes all git history permanently; the user wants to weigh that deliberately, not as a side effect of the packaging sweep. The branch rename and CI are independent of visibility and proceed regardless. Reversal is one `gh repo edit --visibility public` away.
+- Spawns: none
