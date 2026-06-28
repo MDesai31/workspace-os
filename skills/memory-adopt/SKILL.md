@@ -32,7 +32,7 @@ only. The only files ever edited are **instruction files** (`CLAUDE.md`, `AGENTS
    repo-relative only) and add the targets as instruction files. **Exclude** `docs/memory/` and
    `docs/project-tracking/`. List what you'll consider, marking which are instruction files.
 3. **Classify** each chunk through the gates in `conventions/memory.md`: → a memory fact (pick
-   `domain|convention|reference`), → stays in CLAUDE.md (imperative), or → skip (work-state /
+   `domain|convention|reference`), → stays in its instruction file (imperative), or → skip (work-state /
    not-knowledge / about-the-person).
 4. **Dedup.** Read existing `docs/memory/`; if a proposed fact's slug already exists or its content
    is clearly already present, mark it "already adopted — skip." Do not propose duplicates.

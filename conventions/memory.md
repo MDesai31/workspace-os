@@ -23,8 +23,9 @@ Each durable fact has exactly ONE home. Decide with this test:
   record). A memory fact may `[[wikilink]]` a `D-` record but never restates it.
 - **Passive default — never bulk-migrate CLAUDE.md content** into memory via `/project-init` or
   day-to-day work; memory grows from new facts going forward. The one exception is the explicit,
-  opt-in `/memory-adopt` skill, which may extract non-costly *reference* lines out of CLAUDE.md
-  (and trim them) **only with confirmation** — see "Adopting existing docs" below.
+  opt-in `/memory-adopt` skill, which may extract non-costly *reference* lines out of an instruction
+  file (`CLAUDE.md`, `AGENTS.md`, or a resolved `@import` target) and trim them **only with
+  confirmation** — see "Adopting existing docs" below.
 
 Generic worked example: a framework's non-obvious import path — where the wrong guess silently
 compiles to a broken state — is *costly-first* → **CLAUDE.md**. The *rationale* for choosing that
