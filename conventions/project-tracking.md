@@ -76,6 +76,34 @@ record is tagged with exactly one. (Example for a data project: `data/pipeline �
 - `/project-plan` → idea appended to `ideas.md`. When an idea goes active, it graduates to an
   action in `action-items.md` (and can be removed from `ideas.md`).
 
+## Adopting existing docs (`/tracking-adopt`)
+
+`/tracking-adopt` bulk-applies these record rules to a repo's pre-existing **work-state** docs
+(opt-in; the passive default never auto-touches them). It is the tracking-side sibling of
+`/memory-adopt`: where `/memory-adopt` extracts durable knowledge and skips work-state,
+`/tracking-adopt` claims that work-state. Candidate sources: `README*`, `docs/**/*.md`, `NOTES*`,
+`CLAUDE.md`, `TODO*`/`TODOS*`, `CHANGELOG*`/`RELEASES*` — excluding `docs/project-tracking/` (never
+re-adopt itself) and `docs/memory/`. Detect tracking-content by section headers (Roadmap, Future,
+Post-MVP, Out-of-scope, Backlog, TODO, Key decisions) and checkbox lists (`- [ ]`/`- [x]`). Route
+each chunk:
+
+- roadmap / future / post-MVP / someday / out-of-scope → an **idea** in `ideas.md` (Intended-start
+  copied verbatim; map obvious priority language, else `mid`);
+- explicit decision (a "Key decisions" item, "Supersedes…", "chose X because Y") → a **`D-` record**
+  in `decisions-log.md` (the body `[[wikilink]]`s the source doc);
+- open TODO / unchecked `- [ ]` / "next up" → an **`A-` record** in `action-items.md`, status `open`;
+- completed / checked `- [x]` / changelog "done" → **skip for now** (belongs in `resolved.md`, which
+  needs a real commit ref — adopted via git history in a later slice, not from prose);
+- durable knowledge / imperative / about-the-person → **out of lane, skip** (knowledge is
+  `/memory-adopt`'s job).
+
+**IDs:** new records use date-slug IDs; pre-existing `#`/letter IDs in source docs are legacy —
+grandfathered, never rewritten (see IDs above). **Workstreams:** tag against the repo's
+`## Workstreams` list; when bootstrapping a repo that has none, propose an inferred set from the
+scanned docs for confirmation. **Source docs are read-only** — never modified (not even `CLAUDE.md`).
+**Idempotent:** before proposing, skip any record whose slug or content is already in tracking.
+**Never write secrets.** Apply only on explicit confirmation.
+
 ## Concurrency
 
 `action-items.md`, `decisions-log.md`, `resolved.md`, and `ideas.md` are append-heavy and

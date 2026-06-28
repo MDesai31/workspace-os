@@ -1,6 +1,6 @@
 {
   "name": "workspace-os",
-  "version": "0.3.0",
-  "description": "Portable project OS: command-driven tracking (project-init/log/plan) + per-repo shared memory (ingest/memory-lint/memory-sync/memory-adopt) across your repos.",
+  "version": "0.4.0",
+  "description": "Portable project OS: command-driven tracking (project-init/log/plan) + per-repo shared memory (ingest/memory-lint/memory-sync/memory-adopt/tracking-adopt) across your repos.",
   "author": { "name": "MDesai31" }
 }
