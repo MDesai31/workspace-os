@@ -47,3 +47,30 @@ Built subagent-driven, all tasks reviewed clean: `conventions/memory.md` gained 
 - Commit: f3a5763..ceb1420 (tracking-adopt branch)
 
 Spec docs/specs/2026-06-27-tracking-adopt-design.md; plan docs/plans/2026-06-27-tracking-adopt.md. Decision D-20260627-tracking-adopt-design.
+
+### A-20260625-default-branch-main — rename default branch master→main
+- Workstream: packaging
+- Status: done
+- Created: 2026-06-25
+- Completed: 2026-06-28
+- Commit: n/a (repo-admin op; see PR #5)
+
+Renamed `master`→`main`, set the remote default to `main`, deleted the old remote `master`. Part of the packaging sweep (spec docs/specs/2026-06-28-packaging-sweep-design.md; plan docs/plans/2026-06-28-packaging-sweep.md).
+
+### A-20260625-visibility-decision — decide repo visibility
+- Workstream: packaging
+- Status: done
+- Created: 2026-06-25
+- Completed: 2026-06-28
+- Commit: decided private — see D-20260628-stay-private
+
+Decided: keep the repo **private** for now, reassess later. No repo change.
+
+### A-20260625-meta-ci — add validation CI to workspace-os itself
+- Workstream: packaging
+- Status: done
+- Created: 2026-06-25
+- Completed: 2026-06-28
+- Commit: PR #5
+
+Dependency-free `scripts/validate-plugin.py` (manifests parse + required keys; every `skills/*/SKILL.md` has `name`/`description` frontmatter) run by `.github/workflows/ci.yml` on PRs/pushes to `main` (`contents: read`, SHA-pinned checkout), gated by branch protection requiring the `validate` check.
