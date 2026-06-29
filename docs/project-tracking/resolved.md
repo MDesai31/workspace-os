@@ -80,7 +80,7 @@ Dependency-free `scripts/validate-plugin.py` (manifests parse + required keys; e
 - Status: done
 - Created: 2026-06-28
 - Completed: 2026-06-28
-- Commit: PR for branch memory-adopt-hardening
+- Commit: 3cc0f52 (PR #7, branch memory-adopt-hardening)
 
 Introduced the always-loaded **instruction-file class** (`CLAUDE.md` + `AGENTS.md` + resolved
 `@import` targets, all trimmable), recursive guarded `@import` resolution (cap 5, repo-relative
