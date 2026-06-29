@@ -23,8 +23,9 @@ Each durable fact has exactly ONE home. Decide with this test:
   record). A memory fact may `[[wikilink]]` a `D-` record but never restates it.
 - **Passive default — never bulk-migrate CLAUDE.md content** into memory via `/project-init` or
   day-to-day work; memory grows from new facts going forward. The one exception is the explicit,
-  opt-in `/memory-adopt` skill, which may extract non-costly *reference* lines out of CLAUDE.md
-  (and trim them) **only with confirmation** — see "Adopting existing docs" below.
+  opt-in `/memory-adopt` skill, which may extract non-costly *reference* lines out of an instruction
+  file (`CLAUDE.md`, `AGENTS.md`, or a resolved `@import` target) and trim them **only with
+  confirmation** — see "Adopting existing docs" below.
 
 Generic worked example: a framework's non-obvious import path — where the wrong guess silently
 compiles to a broken state — is *costly-first* → **CLAUDE.md**. The *rationale* for choosing that
@@ -106,19 +107,36 @@ and set `name:` to match the new filename stem (e.g. `project-klapp-mvp` → `kl
 ## Adopting existing docs (`/memory-adopt`)
 
 `/memory-adopt` bulk-applies the gates above to a repo's pre-existing docs (opt-in; the passive
-default never auto-touches them). Candidate sources: `README*`, `docs/**/*.md`, `NOTES*`, and
-`CLAUDE.md` — excluding `docs/memory/` and `docs/project-tracking/`. Route each chunk:
+default never auto-touches them). Route each chunk:
 
 - durable codebase knowledge → a `docs/memory/` fact (`domain|convention|reference`);
-- costly-if-unseen imperative → **stays in CLAUDE.md** (if found in a read-only free-form doc,
-  left in place — adoption only trims CLAUDE.md, never adds to it);
+- costly-if-unseen imperative → **stays put** (in the instruction file it lives in — see below);
 - work-state (goal/status/TODO) → **skip** (belongs in tracking: `ideas.md`/`action-items.md`);
 - about the person → **skip**.
 
-**CLAUDE.md trim:** only lines that pass *as memory* (NOT costly-if-unseen) may be removed, only on
-explicit confirmation, structure-preserving; imperatives are never trimmed. **Free-form source docs
-are read-only** — never modified. **Idempotent:** before proposing, skip any fact whose slug or
-content is already in `docs/memory/`. **Never write secrets.**
+**Candidate sources — two classes:**
+- **Instruction files (always-loaded, trimmable):** `CLAUDE.md`, `AGENTS.md`, and any file reached
+  by resolving `@import`s (below).
+- **Free-form docs (read-only, extract-only):** `README*`, `docs/**/*.md`, `NOTES*`, `RUNNING.md`,
+  `CONTRIBUTING.md`, `ARCHITECTURE.md`, `DEVELOPMENT.md`.
+
+Always **exclude** `docs/memory/` and `docs/project-tracking/`. An optional path/glob argument
+limits the scan to the given paths.
+
+**Resolving `@import`s.** When scanning an instruction file, follow its bare `@path` import lines
+(Claude Code import syntax) and scan the targets as further instruction files — **recursively**,
+with a cycle guard (each path scanned once) and a **depth cap of 5**. **Repo-relative paths only:**
+skip `@~/...`, absolute paths, and any path resolving outside the repo (note them in the report;
+don't pull them in). Never follow `@docs/memory/MEMORY.md` or anything under `docs/memory/` /
+`docs/project-tracking/`. Instruction-file membership is **sticky**: a file reached via `@import`
+is trimmable even if it would otherwise be free-form.
+
+**Trim rule.** Only lines that pass *as memory* (NOT costly-if-unseen) may be removed, only on
+explicit confirmation, structure-preserving; imperatives are never trimmed. The trim acts on the
+**instruction file the line lives in** — an `@import` target is trimmed in that target, not in
+`CLAUDE.md`. **Free-form source docs are read-only** — never modified; adoption never *adds* lines
+to an instruction file. **Idempotent:** before proposing, skip any fact whose slug or content is
+already in `docs/memory/`. **Never write secrets.**
 
 ## Concurrency
 
