@@ -1,0 +1,14 @@
+{
+  "_comment": "workspace-os guardrail rules for THIS repo. Copy to .claude/guardrails.json and edit. The engine reads only `bash` and `write`; `ip_class` and any `_`-prefixed key are informational. deny -> blocks the tool call; warn -> advisory message. Built-in warn-only defaults (secrets, force-push, rm -rf) always run regardless of this file.",
+  "ip_class": "personal",
+  "bash": [],
+  "write": [],
+  "_examples": {
+    "bash": [
+      { "name": "no-raw-duckdb", "match": "duckdb\\.connect\\(", "action": "deny", "reason": "Use mcp__duckdb__query, not a raw DuckDB connection." }
+    ],
+    "write": [
+      { "name": "employer-tripwire", "match": "AcmeCorpInternal|acme\\.internal", "field": "content", "action": "warn", "reason": "clean-room repo: this write matches an employer tripwire string." }
+    ]
+  }
+}
