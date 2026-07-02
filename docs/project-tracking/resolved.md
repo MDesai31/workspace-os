@@ -100,7 +100,7 @@ D-20260628-memory-adopt-instruction-file-class.
 One portable PreToolUse engine (`hooks/guardrail.sh`, bash+jq) applying warn-only built-in defaults
 (secret-content, force-push, `rm -rf`) + high-confidence secret denies + declarative per-repo rules
 (`.claude/guardrails.json`, `bash`/`write` with `field`/`action`/`match`/`reason`) to Bash + Edit/Write.
-deny=exit 2, warn=stderr+exit 0, fail-open throughout. Registered on `Bash|Edit|Write` in
+deny=exit 2 (stderr to Claude), warn=`{"systemMessage": …}` JSON on stdout + exit 0, fail-open throughout. Registered on `Bash|Edit|Write` in
 `hooks/hooks.json`; retired `hooks/memory-secret-guard.sh` into the engine; shipped
 `templates/guardrails.json` (provenance `ip_class` + example rules). 14-case bash test harness wired
 into CI. Spec `docs/specs/2026-07-01-guardrail-engine-design.md`; plan

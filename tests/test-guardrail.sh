@@ -6,11 +6,12 @@ HOOK="$HERE/../hooks/guardrail.sh"
 FIX="$HERE/fixtures"
 pass=0; fail=0
 
-# run_hook <json> [config_path] -> prints "<exit_code>\t<stderr>"
+# run_hook <json> [config_path] -> prints "<exit_code>\t<combined stdout+stderr>"
+# (warn -> systemMessage JSON on stdout; deny -> reason on stderr, exit 2)
 run_hook() {
-  local json="$1" cfg="${2:-}" err ec
-  err="$(GUARDRAIL_CONFIG="$cfg" bash "$HOOK" <<<"$json" 2>&1 1>/dev/null)"; ec=$?
-  printf '%s\t%s' "$ec" "$err"
+  local json="$1" cfg="${2:-}" out ec
+  out="$(GUARDRAIL_CONFIG="$cfg" bash "$HOOK" <<<"$json" 2>&1)"; ec=$?
+  printf '%s\t%s' "$ec" "$out"
 }
 
 # check <name> <got_ec> <want_ec> <got_err> <want_substr>
@@ -68,6 +69,22 @@ check "malformed config fails open" "$ec" "0" "$err" ""
 
 IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"duckdb.connect("}}' "$FIX/nonexistent.json")
 check "missing config fails open" "$ec" "0" "$err" ""
+
+# --- warn channel: warns must be systemMessage JSON on stdout, not a bare stderr line ---
+warn_out="$(echo '{"tool_name":"Bash","tool_input":{"command":"git push --force origin main"}}' | bash "$HOOK" 2>/dev/null)"
+if printf '%s' "$warn_out" | jq -e '.systemMessage | test("force-push")' >/dev/null 2>&1; then
+  echo "PASS: warn emits systemMessage JSON on stdout"; pass=$((pass+1))
+else
+  echo "FAIL: warn systemMessage channel (stdout=[$warn_out])"; fail=$((fail+1))
+fi
+
+# deny must NOT print JSON to stdout (reason goes to stderr, exit 2)
+deny_out="$(echo '{"tool_name":"Write","tool_input":{"file_path":"a","content":"AKIA1234567890ABCDEF"}}' | bash "$HOOK" 2>/dev/null)"
+if [ -z "$deny_out" ]; then
+  echo "PASS: deny writes nothing to stdout"; pass=$((pass+1))
+else
+  echo "FAIL: deny leaked to stdout (stdout=[$deny_out])"; fail=$((fail+1))
+fi
 
 echo "----"
 echo "$pass passed, $fail failed"

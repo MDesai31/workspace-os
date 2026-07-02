@@ -65,6 +65,13 @@ if [ -n "$config" ] && [ -f "$config" ] && jq -e . "$config" >/dev/null 2>&1; th
   esac
 fi
 
+# Deny: exit 2 with the reason(s) on stderr — the PreToolUse blocking contract feeds stderr to Claude.
 if [ "${#denies[@]}" -gt 0 ]; then printf '%s\n' "${denies[@]}" >&2; exit 2; fi
-if [ "${#warns[@]}" -gt 0 ]; then printf '%s\n' "${warns[@]}" >&2; fi
+# Warn: emit a top-level `systemMessage` JSON object on stdout — the documented user-facing warning
+# channel (exit 0 = non-blocking). Deliberately NOT `additionalContext`: warns must not pollute
+# Claude's context on routine edits.
+if [ "${#warns[@]}" -gt 0 ]; then
+  msg="$(printf '%s\n' "${warns[@]}")"
+  jq -cn --arg m "$msg" '{systemMessage: $m}'
+fi
 exit 0
