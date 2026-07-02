@@ -32,6 +32,13 @@ check "benign write passes" "$ec" "0" "$err" ""
 IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"ls -la"}}')
 check "benign bash passes" "$ec" "0" "$err" ""
 
+# --- Task 2: generic secret-content warn ---
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Write","tool_input":{"file_path":"c.py","content":"api_key = \"foo\""}}')
+check "api_key warns not denies" "$ec" "0" "$err" "possible secret"
+
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Edit","tool_input":{"file_path":"c.py","new_string":"PASSWORD=hunter2"}}')
+check "password in new_string warns" "$ec" "0" "$err" "possible secret"
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

@@ -16,6 +16,10 @@ case "$tool" in
     if printf '%s' "$content" | grep -qE '(-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9]{20,})'; then
       denies+=("guardrail: high-confidence secret detected in write content. Remove it before writing.")
     fi
+    path="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null || true)"
+    if printf '%s' "$content" | grep -qEi '(api[_-]?key|secret|token|password)'; then
+      warns+=("guardrail: possible secret in write content ('$path'). Files are version-controlled — do not commit secrets.")
+    fi
     ;;
 esac
 
