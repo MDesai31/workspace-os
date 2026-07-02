@@ -11,6 +11,20 @@ tool="$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null || true)"
 denies=(); warns=()
 
 case "$tool" in
+  Bash)
+    cmd="$(printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null || true)"
+    if printf '%s' "$cmd" | grep -qE 'git[[:space:]]+push' \
+       && printf '%s' "$cmd" | grep -qE -- '(--force|-f)([[:space:]]|$)' \
+       && printf '%s' "$cmd" | grep -qE '(^|[[:space:]])(main|master)([[:space:]]|$)'; then
+      warns+=("guardrail: force-push to a protected branch (main/master).")
+    fi
+    if printf '%s' "$cmd" | grep -qE '(^|[[:space:]])rm([[:space:]]|$)' \
+       && printf '%s' "$cmd" | grep -qE '\-[a-zA-Z]*r' \
+       && printf '%s' "$cmd" | grep -qE '\-[a-zA-Z]*f' \
+       && printf '%s' "$cmd" | grep -qE '[[:space:]](/|~|\.|\*)([[:space:]/]|$)'; then
+      warns+=("guardrail: 'rm' with -r and -f targeting a root-like path.")
+    fi
+    ;;
   Edit|Write)
     content="$(printf '%s' "$input" | jq -r '.tool_input.content // .tool_input.new_string // empty' 2>/dev/null || true)"
     if printf '%s' "$content" | grep -qE '(-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9]{20,})'; then

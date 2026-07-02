@@ -39,6 +39,16 @@ check "api_key warns not denies" "$ec" "0" "$err" "possible secret"
 IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Edit","tool_input":{"file_path":"c.py","new_string":"PASSWORD=hunter2"}}')
 check "password in new_string warns" "$ec" "0" "$err" "possible secret"
 
+# --- Task 3: bash built-in defaults ---
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"git push --force origin main"}}')
+check "force-push to main warns" "$ec" "0" "$err" "force-push"
+
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"}}')
+check "rm -rf root warns" "$ec" "0" "$err" "rm"
+
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"git push origin feature"}}')
+check "normal push passes" "$ec" "0" "$err" ""
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
