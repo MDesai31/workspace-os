@@ -49,6 +49,26 @@ check "rm -rf root warns" "$ec" "0" "$err" "rm"
 IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"git push origin feature"}}')
 check "normal push passes" "$ec" "0" "$err" ""
 
+# --- Task 4: per-repo rules + fail-open ---
+CFG="$FIX/guardrails.json"
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"python -c \"import duckdb; duckdb.connect(1)\""}}' "$CFG")
+check "per-repo bash deny" "$ec" "2" "$err" "mcp__duckdb__query"
+
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Write","tool_input":{"file_path":"x.py","content":"see AcmeCorpInternal notes"}}' "$CFG")
+check "per-repo write content warn" "$ec" "0" "$err" "tripwire"
+
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Write","tool_input":{"file_path":"config/.env","content":"X=1"}}' "$CFG")
+check "per-repo write path deny" "$ec" "2" "$err" "forbids writing .env"
+
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"ls"}}' "$CFG")
+check "per-repo no-match passes" "$ec" "0" "$err" ""
+
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"duckdb.connect("}}' "$FIX/malformed.json")
+check "malformed config fails open" "$ec" "0" "$err" ""
+
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"duckdb.connect("}}' "$FIX/nonexistent.json")
+check "missing config fails open" "$ec" "0" "$err" ""
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

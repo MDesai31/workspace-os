@@ -37,6 +37,34 @@ case "$tool" in
     ;;
 esac
 
+config="${GUARDRAIL_CONFIG:-}"
+if [ -z "$config" ]; then
+  root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+  [ -z "$root" ] && root="${CLAUDE_PROJECT_DIR:-$PWD}"
+  config="$root/.claude/guardrails.json"
+fi
+
+if [ -n "$config" ] && [ -f "$config" ] && jq -e . "$config" >/dev/null 2>&1; then
+  case "$tool" in
+    Bash)
+      while IFS=$'\t' read -r action reason; do
+        [ -z "$action" ] && continue
+        if [ "$action" = "deny" ]; then denies+=("$reason"); else warns+=("$reason"); fi
+      done < <(jq -r --arg s "${cmd:-}" \
+        '(.bash // [])[] | .match as $m | select($m != null and ($s | test($m))) | "\(.action)\t\(.reason)"' \
+        "$config" 2>/dev/null)
+      ;;
+    Edit|Write)
+      while IFS=$'\t' read -r action reason; do
+        [ -z "$action" ] && continue
+        if [ "$action" = "deny" ]; then denies+=("$reason"); else warns+=("$reason"); fi
+      done < <(jq -r --arg path "${path:-}" --arg content "${content:-}" \
+        '(.write // [])[] | .match as $m | select($m != null and ((if (.field // "content") == "path" then $path else $content end) | test($m))) | "\(.action)\t\(.reason)"' \
+        "$config" 2>/dev/null)
+      ;;
+  esac
+fi
+
 if [ "${#denies[@]}" -gt 0 ]; then printf '%s\n' "${denies[@]}" >&2; exit 2; fi
 if [ "${#warns[@]}" -gt 0 ]; then printf '%s\n' "${warns[@]}" >&2; fi
 exit 0

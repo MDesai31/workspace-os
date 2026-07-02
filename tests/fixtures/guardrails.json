@@ -1,0 +1,10 @@
+{
+  "ip_class": "clean-room",
+  "bash": [
+    { "name": "no-raw-duckdb", "match": "duckdb\\.connect\\(", "action": "deny", "reason": "Use mcp__duckdb__query, not a raw DuckDB connection." }
+  ],
+  "write": [
+    { "name": "employer-tripwire", "match": "AcmeCorpInternal", "field": "content", "action": "warn", "reason": "clean-room repo: write matches an employer tripwire." },
+    { "name": "no-env-path", "match": "\\.env$", "field": "path", "action": "deny", "reason": "This repo forbids writing .env files." }
+  ]
+}
