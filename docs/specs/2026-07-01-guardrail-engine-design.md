@@ -53,7 +53,7 @@ net for fresh machines where `guard.sh` does not exist, that can never conflict 
 hooks/guardrail.sh   (engine — plugin, portable, updated centrally)
   ├─ reads  <repo>/.claude/guardrails.json   (data — per-repo, version-controlled)
   ├─ applies built-in warn-only defaults      (baked into the engine)
-  └─ emits  permissionDecision: "deny"  |  additionalContext (warn)
+  └─ deny → exit 2 + reason on stderr  |  warn → reason on stderr, exit 0
 hooks/hooks.json     ── registers guardrail.sh on Bash|Edit|Write
 templates/guardrails.json ── provenance/starter template (ip_class + example rules)
 ```
@@ -81,8 +81,9 @@ engine) or per-repo entries (in `guardrails.json`). Adding a rule never touches 
   (`"path"` | `"content"`, default `"content"`). Applies to `Edit` (`new_string`) and `Write`
   (`content`); path from `tool_input.file_path`.
 - Each rule: `{ name, match (regex), action: "deny"|"warn", reason }` (+ `field` for `write`).
-- `action: "deny"` → emit `permissionDecision: "deny"` with `reason`. `action: "warn"` → emit the
-  reason as `additionalContext` (advisory, non-blocking).
+- `action: "deny"` → **exit code 2** with `reason` on stderr (PreToolUse blocking contract — the
+  reason is surfaced to Claude). `action: "warn"` → `reason` on stderr, **exit 0** (advisory,
+  non-blocking; same mechanism the current `memory-secret-guard.sh` uses).
 
 **Fail open, always:** no per-repo file → skip per-repo rules (built-in defaults from §5 still run).
 No match anywhere → exit 0. Malformed JSON or missing `jq` → emit a one-line stderr warning and skip
@@ -107,8 +108,9 @@ Rationale for warn on generic `.env`/secrets rather than deny: a hard deny bites
 copies, editing a local `.env`, and test fixtures with fake keys. Per-repo rules may escalate any of
 these to `deny` in their own `guardrails.json`.
 
-Precedence: if any matching rule (built-in or per-repo) is a `deny`, the call is denied. Otherwise all
-matching `warn` reasons are concatenated into `additionalContext`.
+Precedence: if any matching rule (built-in or per-repo) is a `deny`, the call is denied (exit 2 with
+all matched deny reasons on stderr). Otherwise all matching `warn` reasons are printed to stderr and
+the engine exits 0.
 
 ## 6. Retiring `memory-secret-guard.sh`
 
