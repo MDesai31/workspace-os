@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# workspace-os guardrail engine — PreToolUse hook (Bash|Edit|Write).
+# Reads tool-call JSON on stdin. Deny -> exit 2 + reason on stderr; warn -> reason on stderr, exit 0.
+# Fail open: any error / no jq / no match -> exit 0 (never block a tool call).
+set -uo pipefail
+
+input="$(cat)"
+command -v jq >/dev/null 2>&1 || exit 0   # can't parse -> fail open
+
+tool="$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null || true)"
+denies=(); warns=()
+
+case "$tool" in
+  Edit|Write)
+    content="$(printf '%s' "$input" | jq -r '.tool_input.content // .tool_input.new_string // empty' 2>/dev/null || true)"
+    if printf '%s' "$content" | grep -qE '(-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9]{20,})'; then
+      denies+=("guardrail: high-confidence secret detected in write content. Remove it before writing.")
+    fi
+    ;;
+esac
+
+if [ "${#denies[@]}" -gt 0 ]; then printf '%s\n' "${denies[@]}" >&2; exit 2; fi
+if [ "${#warns[@]}" -gt 0 ]; then printf '%s\n' "${warns[@]}" >&2; fi
+exit 0
