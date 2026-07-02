@@ -89,3 +89,19 @@ only), and a wider default candidate set. Closes `adoption-import` (c)+(d). Edit
 block). Spec `docs/specs/2026-06-28-memory-adopt-hardening-design.md`; plan
 `docs/plans/2026-06-28-memory-adopt-hardening.md`. Decision
 D-20260628-memory-adopt-instruction-file-class.
+
+### A-20260701-guardrail-engine — guardrail engine + provenance rules (hook-starter-library + provenance-guard)
+- Workstream: workflow
+- Status: done
+- Created: 2026-07-01
+- Completed: 2026-07-02
+- Commit: <PR # — fill at merge>
+
+One portable PreToolUse engine (`hooks/guardrail.sh`, bash+jq) applying warn-only built-in defaults
+(secret-content, force-push, `rm -rf`) + high-confidence secret denies + declarative per-repo rules
+(`.claude/guardrails.json`, `bash`/`write` with `field`/`action`/`match`/`reason`) to Bash + Edit/Write.
+deny=exit 2, warn=stderr+exit 0, fail-open throughout. Registered on `Bash|Edit|Write` in
+`hooks/hooks.json`; retired `hooks/memory-secret-guard.sh` into the engine; shipped
+`templates/guardrails.json` (provenance `ip_class` + example rules). 14-case bash test harness wired
+into CI. Spec `docs/specs/2026-07-01-guardrail-engine-design.md`; plan
+`docs/plans/2026-07-01-guardrail-engine.md`. Decision D-20260701-guardrail-engine.
