@@ -146,7 +146,7 @@ Decision D-20260705-decision-status-append-only.
 - Status: done
 - Created: 2026-07-05
 - Completed: 2026-07-05
-- Commit: <PR # — fill at merge>
+- Commit: f99188b (PR #12, branch continuity-runbook)
 
 Shipped `templates/CONTINUITY.md` — the bus-factor runbook template: (1) recurring-obligations
 table framed deps→outs (Needs / Goes-stale) with load-bearing Detection column + Owner; (2)
