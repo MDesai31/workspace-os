@@ -96,3 +96,11 @@ Ideas reconciled the same day: SP3-finish-task + SP4-meta-onboarding + tracking-
 - Consequences: pre-schema D- records are grandfathered (no Status line = accepted); tracking-file wikilinks stay human-contract (memory_graph lints docs/memory only)
 - Spawns: A-20260705-decision-status
 - Rationale: the decisions log's core invariant is append-only ("never rewrite history"), so superseded state cannot be a Status-line edit. Instead: `Status: accepted` is written once at creation and never touched; supersession = a NEW decision carrying `Supersedes: [[supersedes::D-old]]` plus exactly one line appended to the old record (`- Superseded-by: [[superseded_by::D-new]]`), and the read rule "Superseded-by wins over Status" makes live-vs-dead readable per record without edits. Predicates reuse memory's typed-wikilink vocabulary (D-20260705-keystone-reposition's typed-edge ship) — one vocabulary across tracking and memory, not two.
+
+### D-20260705-continuity-home-root — CONTINUITY.md lives at the repo root, as a human doc, pointer-only from CLAUDE.md
+- Workstream: workflow
+- Created: 2026-07-05
+- Status: accepted
+- Consequences: /continuity scaffolds at root; the CLAUDE.md line is a pointer, not an @import (the doc must not load every session — it's for a human stranger, not the model)
+- Spawns: A-20260705-continuity-runbook
+- Rationale: a bus-factor runbook's single job is to be found by someone who doesn't know the repo — that argues for README-sibling visibility over docs/ tidiness (the idea had flagged root-vs-docs as the open decision). Kept out of the always-loaded context: unlike memory, its audience is a human during an incident, and its content (hosts, cadences, owner names) is dead weight in every model session. Template generalizes the westgate CONTINUITY.md *shape* only (five sections + TODO(owner) convention — patterns, no proprietary content, per the standing reference-repo rule), plus the 2026-06-28 borrow notes: DVC deps→outs framing and a Backstage-style Owner column on the obligations table.

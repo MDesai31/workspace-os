@@ -140,3 +140,22 @@ records with neither (pre-schema) are grandfathered as accepted. `/project-log d
 set the new lines and perform the one permitted append to an old record. Same typed-link predicate
 vocabulary as `conventions/memory.md`. Closes the `decision-status` idea. Plugin v0.8.0.
 Decision D-20260705-decision-status-append-only.
+
+### A-20260705-continuity-runbook — CONTINUITY.md template + /continuity skill
+- Workstream: workflow
+- Status: done
+- Created: 2026-07-05
+- Completed: 2026-07-05
+- Commit: <PR # — fill at merge>
+
+Shipped `templates/CONTINUITY.md` — the bus-factor runbook template: (1) recurring-obligations
+table framed deps→outs (Needs / Goes-stale) with load-bearing Detection column + Owner; (2)
+access & secrets as POINTERS ONLY (never values) + escalation; (3) trusted-for-now source budget
+with re-verify cadences; (4) meta-layer maintenance budget (doc caps, /memory-lint, union-file
+dup scan, skills audit); (5) the bus-factor test (a non-owner proves the doc works). `TODO(owner)`
+marks named gaps. And `skills/continuity/SKILL.md`: scaffold mode auto-inventories systemd timers,
+cron, CI `on: schedule`, app schedulers + maintenance docs and proposes pre-filled rows
+(propose→confirm→apply, never inventing a Detection that doesn't exist); review mode diffs the
+inventory against the doc, lists TODOs by owner, nudges stale re-verify dates. Home = repo root
+(D-20260705-continuity-home-root). Plugin v0.9.0. First real consumer: OA's 12 systemd
+service/timer pairs.
