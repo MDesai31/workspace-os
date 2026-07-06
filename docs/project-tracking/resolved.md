@@ -95,7 +95,7 @@ D-20260628-memory-adopt-instruction-file-class.
 - Status: done
 - Created: 2026-07-01
 - Completed: 2026-07-02
-- Commit: <PR # — fill at merge>
+- Commit: 87a71dd (PR #8, branch guardrail-engine)
 
 One portable PreToolUse engine (`hooks/guardrail.sh`, bash+jq) applying warn-only built-in defaults
 (secret-content, force-push, `rm -rf`) + high-confidence secret denies + declarative per-repo rules
@@ -111,7 +111,7 @@ into CI. Spec `docs/specs/2026-07-01-guardrail-engine-design.md`; plan
 - Status: done
 - Created: 2026-07-05
 - Completed: 2026-07-05
-- Commit: <PR # — fill at merge>
+- Commit: 87a71dd (PR #8, branch guardrail-engine)
 
 Vendored `scripts/memory_graph.py` from `zachburke9/keystone-engine`
 (`starter/scripts/memory_graph.py` @ cecb4b9, MIT, Zach Burke — courtesy attribution in the
