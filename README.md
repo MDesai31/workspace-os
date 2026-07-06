@@ -27,7 +27,9 @@ machine gets the upgrade.
 - **`/project-log`** — `action` / `decision` / `done`: append typed, ID'd records; completing an action moves it to the resolved record.
 - **`/project-plan`** — capture a *future* intent (the why + rough timing) without starting it.
 - **`/ingest`** — capture a durable project fact into `docs/memory/` + update the index.
-- **`/memory-lint`** — check `docs/memory/` index / frontmatter / wikilink integrity.
+- **`/memory-lint`** — check `docs/memory/` integrity: a deterministic graph pass
+  (`scripts/memory_graph.py` — broken wikilinks, index parity, orphans, typed-edge coverage;
+  `--check` for CI/pre-commit) plus model checks (frontmatter, slug match).
 - **`/memory-sync`** — migrate a fact from your `~/.claude` auto-memory into a repo's `docs/memory/`.
 - **`/memory-adopt`** — adopt a repo's existing docs (README, design notes, CLAUDE.md reference content) into `docs/memory/` (opt-in, propose→confirm→apply).
 - **`/tracking-adopt`** — adopt a repo's existing roadmaps and TODO docs into `docs/project-tracking/` (routes roadmap entries → ideas, recorded decisions → decisions-log, open TODOs → action-items).
