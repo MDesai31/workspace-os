@@ -80,3 +80,11 @@ Closes `adoption-import` sub-slices (c) + (d). Spec: `docs/specs/2026-06-28-memo
 - Spawns: A-20260701-guardrail-engine
 
 Full design: `docs/specs/2026-07-01-guardrail-engine-design.md`. Plan: `docs/plans/2026-07-01-guardrail-engine.md`.
+
+### D-20260705-keystone-reposition — reposition workspace-os as the enforcement/adoption layer; borrow-first on keystone overlap
+- Workstream: meta
+- Created: 2026-07-05
+- Rationale: Zach shared his `zachburke9/keystone-*` ecosystem (engine v0.0.1 + catalog + instance-template + hospitality/team/companion modules; private, MIT) on 2026-07-02. A full deep-dive comparison (2026-07-05) found keystone already ships workspace-os's SP3/SP4/tracking-roundout roadmap, extracted from his production workspace — rebuilding those is now negative-value work against a moving target. But the seam is clean and complementary: keystone owns knowledge-side machinery (two-tier memory + graph, module/catalog distribution, written operating models) and has NO policy-enforcement layer; workspace-os owns enforcement (declarative guardrail engine + `ip_class` provenance wall), rigorous opt-in adoption, and the better engine-update model (marketplace plugin vs his fork-on-day-one starter / cp-r drop-in). Decision: (1) overlap ideas (SP3-finish-task, SP4-meta-onboarding, tracking-skills-roundout) demoted to borrow-first — adapt his MIT artifacts, never author from scratch; (2) workspace-os's build effort concentrates on its differentiated core (guardrails/provenance, adoption, cross-repo portfolio); (3) vendor keystone's `memory_graph.py` as `/memory-lint`'s deterministic backbone (first borrow, A-20260705-memory-graph-vendor); (4) new idea `keystone-module-guardrails` — publish our guardrail engine into his catalog as a `kind: utility` module rather than competing.
+- Spawns: A-20260705-memory-graph-vendor
+
+Ideas reconciled the same day: SP3-finish-task + SP4-meta-onboarding + tracking-skills-roundout (borrow-first notes), engine-hooks + decision-status + memory-backlinks-search (partial ships via the vendor), continuity-runbook + portfolio-registry (keystone notes), new keystone-module-guardrails + two-tier-memory.

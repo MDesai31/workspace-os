@@ -105,3 +105,22 @@ deny=exit 2 (stderr to Claude), warn=`{"systemMessage": …}` JSON on stdout + e
 `templates/guardrails.json` (provenance `ip_class` + example rules). 14-case bash test harness wired
 into CI. Spec `docs/specs/2026-07-01-guardrail-engine-design.md`; plan
 `docs/plans/2026-07-01-guardrail-engine.md`. Decision D-20260701-guardrail-engine.
+
+### A-20260705-memory-graph-vendor — vendor keystone's memory_graph.py as /memory-lint's deterministic pass
+- Workstream: memory
+- Status: done
+- Created: 2026-07-05
+- Completed: 2026-07-05
+- Commit: <PR # — fill at merge>
+
+Vendored `scripts/memory_graph.py` from `zachburke9/keystone-engine`
+(`starter/scripts/memory_graph.py` @ cecb4b9, MIT, Zach Burke — courtesy attribution in the
+docstring). Adaptations: `docs/memory` default root; `[[wikilink]]` targets resolve against fact
+files AND `A-`/`D-` records harvested from `docs/project-tracking/` headings; index-parity checks
+(unindexed files + dangling MEMORY.md entries) added to the `--check` fail gate; MEMORY.md excluded
+from orphan noise; trimmed upstream modes we don't use (--html/--relink/--suggest-hublinks/
+--recency — re-vendor if wanted). Typed wikilink edges (`[[supersedes::target]]`) documented in
+`conventions/memory.md` (SoT). `/memory-lint` SKILL.md restructured: script = deterministic pass,
+model = frontmatter/slug judgment. 9-case bash test harness (`tests/test-memory-graph.sh` +
+clean/broken fixtures) wired into CI; verified clean against klapp's live `docs/memory/`.
+Plugin v0.7.0. Decision D-20260705-keystone-reposition.

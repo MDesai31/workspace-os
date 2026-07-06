@@ -25,17 +25,19 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 
 ### SP3-finish-task — closing-ritual orchestration
 - Workstream: workflow
-- Priority: mid
-- Intended start: after SP2 (or in parallel — mostly wiring)
+- Priority: low (demoted by D-20260705-keystone-reposition — borrow-first, don't build)
+- Intended start: only if adapting keystone's version proves insufficient
 - Why/context: a single `/finish-task` that sequences the gates that already exist instead of restating them — review (`/code-review`, `/security-review`) → verify → commit → PR → and the tracking close-out (log `done`, move to resolved, log any decisions) in the same pass.
-- To start, future-us needs: most pieces already exist (CI/PR flow + review skills). A `/finish-task` SKILL.md that orchestrates them + a `/branch-cleanup` skill.
+- Borrow (keystone 2026-07-05): `zachburke9/keystone-engine` ships `/finish-task` + `/branch-cleanup` (MIT, shared with us). Adapt those SKILL.md files to workspace-os conventions rather than authoring from scratch. See D-20260705-keystone-reposition.
+- To start, future-us needs: adapt keystone's `/finish-task` + `/branch-cleanup` SKILL.md files (CI/PR flow + review skills already exist here).
 
 ### SP4-meta-onboarding — management + extension layer
 - Workstream: meta
-- Priority: low
+- Priority: low (borrow-first per D-20260705-keystone-reposition — do NOT build from scratch)
 - Intended start: only once the engine has enough hooks/skills to be worth managing
 - Why/context: makes the plugin self-managing and adoptable. Zach's `/workspace` config panel toggles hooks/skills without hand-editing JSON.
-- To start, future-us needs: a `hooks-registry.json` + `manage_hooks.py` engine; a `/workspace` (or `/project-guide`) panel skill; a `workspace-guide` agent + guide/project-detect hooks; and an `examples/blank-module` template showing how to add a per-project module.
+- Borrow (keystone 2026-07-05): keystone ships this whole layer, polished — `hooks-registry.json` (each hook's FULL definition, so a disabled hook is always restorable), `manage_hooks.py` (matches by script basename across project/user scopes, `--dry-run` everywhere), `manage_skills.py`/`manage_projects.py`, the `/workspace` panel skill, a `workspace-guide` agent, `examples/blank-module/`. All MIT. Vendor/adapt; our `hooks/guardrail.sh` becomes the first registry entry. See D-20260705-keystone-reposition.
+- To start, future-us needs: vendor keystone's registry + manage scripts, adapt paths/idioms to the plugin layout, register the guardrail engine as the first entry.
 
 ### tracking-skills-roundout — fuller tracking surface
 - Workstream: skills
@@ -44,6 +46,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Why/context: SP1 ships action/decision/done + plan; the full set adds visibility and capture modes.
 - To start, future-us needs: `/project-status` (summarize open items by workstream), `/work-journal` (what I did this session), and extra `/project-log` modes — `discovery` (→ a `work-log.md`), `meeting-notes`, `release-notes` (→ `RELEASES.md`/CHANGELOG).
 - Borrow (comparison 2026-06-28): give `/project-status` Notion-style **database views** — filter/sort open items by workstream / status / priority.
+- Borrow (keystone 2026-07-05): keystone ships `/project-status`, `/work-journal`, `/meeting-notes`, `/release-notes` + a `release_draft.py` (MIT). Adapt that prose instead of writing it; per D-20260705-keystone-reposition this idea is borrow-first (priority stays mid only because the *adaptation* to our schema is still real work).
 
 ### portfolio-registry — cross-repo Layer 3
 - Workstream: portfolio
@@ -52,13 +55,15 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Why/context: a registry spanning OA + klapp + future repos (lifecycle, priority, last-touched). Deferred deliberately (YAGNI). Complicated by separate repos — needs a home above them (a command-center repo or the workspace root).
 - To start, future-us needs: a decision on where the registry lives given separate repos; then a `projects.md` schema + a `/project-status` portfolio mode that aggregates across repos.
 - Borrow (comparison 2026-06-28): reuse Backstage's catalog **entity model** (owner / lifecycle / system / `dependsOn`) for the `projects.md` schema + a per-repo `catalog-info`-style header — don't invent fields; the header also feeds [[continuity-runbook]] (owner) and [[provenance-guard]] (ip-class).
+- Note (keystone 2026-07-05): keystone's `projects.md` registry solves the *single-workspace* case only; our cross-**separate-repo** portfolio problem remains unsolved there — this idea stays differentiated, not overlap. See D-20260705-keystone-reposition.
 
 ### engine-hooks — automated upkeep
 - Workstream: workflow
 - Priority: low
 - Intended start: after the core skills see real use
 - Why/context: keep the journal honest without manual discipline.
-- To start, future-us needs: a `Stop` hook nudging "log what you decided this session," and a CI link-guard that fails a PR breaking an index/wikilink (Zach has one in his `ci.yml`).
+- **Shipped (2026-07-05, partial):** the CI/pre-commit link-guard mechanism exists — `scripts/memory_graph.py --check` fails on broken wikilinks / index-parity drift (vendored from keystone; see `resolved.md` A-20260705-memory-graph-vendor). Remaining: wiring `--check` into *target repos'* CI/pre-commit (a `/project-init` or `/guardrails` concern), and the `Stop` hook nudge.
+- To start, future-us needs: a `Stop` hook nudging "log what you decided this session," and target-repo wiring for the `--check` gate.
 
 ### provenance-guard — IP-boundary / cross-repo leakage guard  (brainstorm 2026-06-28)
 - Workstream: workflow
@@ -114,6 +119,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Why/context: the bus-factor doc Zach ships (`CONTINUITY.md`) — "if the maintainer is out for a month, what silently stops and how does someone recover it?" — is now concretely needed by the user's own work, not just a borrowed pattern. OA has **12 systemd service/timer pairs** + a `data-pipeline-guardian` + `agent_docs/cron_schedule.md`: recurring jobs that, if they stop, silently staleness dashboards with no error. That's exactly the risk a continuity runbook captures: a *pointer-map* (never secrets) of each recurring obligation — cadence, host, what breaks if it stops, and **how failure is detected** — plus access/secrets pointers and `TODO(owner)` markers for facts only the owner knows. Doubly relevant to the user's new lead role ("it runs without me babysitting it"). Note the operational/health-guardian generalization (OA's pipeline-guardian) is adjacent: a future `/doctor`-style health check could verify the obligations this doc lists (see [[project-doctor]]).
 - To start, future-us needs: a `CONTINUITY.md` template (obligations table + access/secrets pointers + TODO(owner) convention) + a `/continuity` skill to scaffold/update it; decision on where it lives (repo root vs `docs/`). Relates to [[SP4-meta-onboarding]], [[integrity-auditor]], [[project-doctor]].
 - Borrow (comparison 2026-06-28): frame the obligations table with DVC-style **deps→outs** (per job: inputs it needs, outputs that go stale if it stops); reuse Backstage's `owner` field for the owner column.
+- Borrow (keystone 2026-07-05): keystone's engine repos are now shared with us (MIT) — adapt Zach's actual `CONTINUITY.md` shape as the template starting point instead of drafting from a blank page.
 
 ### project-doctor — verify a repo's setup/runtime preconditions  (brainstorm 2026-06-28)
 - Workstream: workflow
@@ -135,11 +141,26 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Priority: mid
 - Intended start: next time the tracking schema is touched (small, additive)
 - Why/context: `decisions-log.md` is effectively ADRs (append-only `D-` records with rationale + Spawns) but lacks two things mature ADRs have — a **`Status`** (accepted / superseded) and explicit **`supersedes`/`superseded-by`** links — plus an optional **`Consequences`** section. Without them the log can't show which decisions are still live without re-reading everything, and never marks a reversal. Add a lightweight `Status:` line + supersession wikilinks to the decision template (append-only: the superseding decision links back; the old record gets a one-line `Superseded-by` appended). Low-risk, high-clarity.
-- To start, future-us needs: add `Status` + `Supersedes`/`Superseded-by` (+ optional `Consequences`) to the decision template in `conventions/project-tracking.md`; teach `/project-log decision` to set them. Relates to [[tracking-skills-roundout]].
+- **Shipped (2026-07-05, the link half):** typed wikilinks — `[[supersedes::target]]`, `[[superseded_by::…]]` etc., targets may be fact slugs or `A-`/`D-` records — are now part of the memory schema (`conventions/memory.md`) and linted/reported by the vendored `scripts/memory_graph.py` (see `resolved.md` A-20260705-memory-graph-vendor). Remaining: the `Status:` line (+ optional `Consequences`) in the decision template in `conventions/project-tracking.md`, and teaching `/project-log decision` to set them — use the same predicate vocabulary, don't invent a second one.
+- To start, future-us needs: add `Status` (+ optional `Consequences`) to the decision template; teach `/project-log decision` to set them and to emit `[[supersedes::…]]` links. Relates to [[tracking-skills-roundout]].
 
 ### memory-backlinks-search — backlinks + search + note templates for the memory layer (from Notion/wikis)  (comparison 2026-06-28)
 - Workstream: memory
 - Priority: mid
 - Intended start: extend `/memory-lint` incrementally
 - Why/context: the memory layer already has `[[wikilinks]]` + an index but no **backlink view** and no **search** beyond grep — the two things wikis/Notion do well. Add (1) backlink awareness to `/memory-lint` (or a `/memory-search`) that, for a given fact, lists what links *to* it; (2) lightweight **note templates** for recurring memory flavors (the [[stale-priors-memory]] gotcha type is the first); (3) optionally Notion-style **property views** over facts (by type/tag). Closes the wiki gap while keeping memory git-native + agent-loaded (the thing Notion can't do).
-- To start, future-us needs: a backlink builder in `/memory-lint`, a `/memory-search` entrypoint, a templates set; decide whether templates live in the plugin or `docs/memory/`. Relates to [[SP2-memory]], [[stale-priors-memory]], [[tracking-skills-roundout]].
+- **Shipped (2026-07-05, the graph half):** the vendored `scripts/memory_graph.py` (from keystone, MIT) derives the whole link graph — per-note neighbors/degree (the backlink data), orphans, weakly-linked, hubs, `--json` export — and is now `/memory-lint`'s deterministic pass. See `resolved.md` A-20260705-memory-graph-vendor. Remaining: a user-facing `/memory-search`/backlink *view* over that data, and the note-templates set.
+- To start, future-us needs: a `/memory-search` entrypoint reading `memory_graph.py --json` output, a templates set; decide whether templates live in the plugin or `docs/memory/`. Relates to [[SP2-memory]], [[stale-priors-memory]], [[tracking-skills-roundout]].
+
+### keystone-module-guardrails — package the guardrail engine as a keystone utility module  (keystone 2026-07-05)
+- Workstream: meta
+- Priority: high
+- Intended start: after PR #8 (guardrail engine) merges and a conversation with Zach
+- Why/context: Zach shared his `zachburke9/keystone-*` ecosystem (engine / catalog / instance-template / 3 modules, private, MIT) on 2026-07-02 — a domain-neutral workspace OS with a module catalog + importer (`catalog.json` + `import_module.py`, vendored copies, `module.json` version-compat seam). The 2026-07-05 comparison (D-20260705-keystone-reposition) found keystone has **no policy-enforcement layer**: its hooks are advisory/protective, none declaratively configurable per repo. Our guardrail engine (declarative `.claude/guardrails.json` deny/warn rules + `ip_class` provenance tripwires, tested) fills that hole exactly, and fits his extension contract (a `kind: utility` module whose hook registers into his `hooks-registry.json` panel). Turns duplicated effort into collaboration; we keep authorship + the plugin distribution channel for our own repos.
+- To start, future-us needs: Zach's buy-in; a `module.json` (`kind: utility`, `provides.hooks`); a thin keystone-shaped wrapper around `hooks/guardrail.sh` + `templates/guardrails.json`; a registry entry for his `/workspace` panel. Relates to [[hook-starter-library]], [[provenance-guard]], [[SP4-meta-onboarding]].
+
+### two-tier-memory — private authoring source → rendered shared mirror  (keystone 2026-07-05)
+- Workstream: memory
+- Priority: someday (solo use doesn't need it; becomes real the moment a repo's memory has a second reader)
+- Why/context: keystone's memory is two-tier — a private personal source where the maintainer writes freely, rendered to the shared repo `memory/` via a sync manifest (transforms strip private paths / neutralize links on the way out), with **`/ingest backport`** to reconcile mirror-direct edits back into the source and a SessionStart mirror-ahead-of-source guard so a sync never silently clobbers a colleague's edit. Our current model (single-tier `docs/memory/` + `/memory-sync` bridging `~/.claude` auto-memory one fact at a time) is simpler and right for solo repos, but has no answer for a second writer. Borrow the *pattern* (sync manifest + backport + ahead-guard) wholesale from keystone (MIT) if/when needed — don't design it independently.
+- To start, future-us needs: a real multi-reader repo to motivate it; then adapt keystone's `sync_memory_to_workspace.py` + ingest-backport + `memory-ingest-guard.sh`/`memory-write-guard.sh` to the `docs/memory/` layout. Relates to [[SP2-memory]], [[memory-backlinks-search]].

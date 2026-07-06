@@ -62,6 +62,16 @@ Types:
 No `decision` type — decisions live in `decisions-log.md`. **Never write secrets** (keys,
 tokens, `.env` values) into memory — repos may be public.
 
+### Typed wikilinks (optional)
+
+A wikilink may carry a predicate — `[[supersedes::old-fact]]`, `[[blocked_by::other-fact]]` —
+kept in plain markdown so the substrate stays portable while the link gains meaning. Plain
+`[[target]]` stays valid (edge type "related"). Aliases compose: `[[type::target|label]]`.
+Suggested vocabulary (not enforced): `supersedes`, `superseded_by`, `blocked_by`, `depends_on`,
+`derived_from`, `verifies`, `contradicts`, `part_of`. Targets may be fact slugs or `A-`/`D-`
+tracking records. `scripts/memory_graph.py` (the deterministic pass of `/memory-lint`) lints
+resolution and reports typed-edge coverage.
+
 ## Index format (`MEMORY.md`)
 
 Grouped by type; one line per fact:
