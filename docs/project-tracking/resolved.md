@@ -130,7 +130,7 @@ Plugin v0.7.0. Decision D-20260705-keystone-reposition.
 - Status: done
 - Created: 2026-07-05
 - Completed: 2026-07-05
-- Commit: <PR # — fill at merge>
+- Commit: 4b5d68c (PR #11, branch decision-status)
 
 Added `Status: accepted` (written once, never edited) + optional `Consequences:` + conditional
 `Supersedes: [[supersedes::D-old]]` to the decision template in `conventions/project-tracking.md`,
