@@ -32,6 +32,18 @@ machine gets the upgrade.
 - **`/memory-adopt`** — adopt a repo's existing docs (README, design notes, CLAUDE.md reference content) into `docs/memory/` (opt-in, propose→confirm→apply).
 - **`/tracking-adopt`** — adopt a repo's existing roadmaps and TODO docs into `docs/project-tracking/` (routes roadmap entries → ideas, recorded decisions → decisions-log, open TODOs → action-items).
 
+## Guardrails
+
+A PreToolUse hook (`hooks/guardrail.sh`) guards Bash and Edit/Write calls. It ships **warn-only
+built-in defaults** — possible secrets in writes, force-push to `main`/`master`, `rm -rf` on
+root-like paths — plus **high-confidence secret denies** (private-key blocks, `AKIA…`, `sk-…`).
+
+Per-repo rules are declarative: copy `templates/guardrails.json` to `.claude/guardrails.json` and add
+`bash` / `write` rules (`{name, match, action: "deny"|"warn", reason}`; `write` rules match `content`
+or `path` via `field`). `deny` blocks the call; `warn` prints an advisory. The engine fails open when
+no config is present, so it's opt-in per repo. Tag the repo with `ip_class`
+(`personal`/`employer`/`clean-room`) and add tripwire `write` rules for cross-boundary IP leakage.
+
 ## How it works
 
 See [`conventions/project-tracking.md`](conventions/project-tracking.md) (tracking schema, IDs,

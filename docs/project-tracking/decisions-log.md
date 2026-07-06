@@ -72,3 +72,11 @@ Full design: `docs/specs/2026-06-26-sp2-memory-design.md`. Plan: `docs/plans/202
 - Spawns: A-20260628-memory-adopt-hardening
 
 Closes `adoption-import` sub-slices (c) + (d). Spec: `docs/specs/2026-06-28-memory-adopt-hardening-design.md`.
+
+### D-20260701-guardrail-engine — one guardrail engine, two rule packs (warn-only defaults; deny=exit 2)
+- Workstream: workflow
+- Created: 2026-07-01
+- Rationale: folded hook-starter-library + provenance-guard into ONE portable PreToolUse engine + per-repo `.claude/guardrails.json` (engine/data split, no external-plugin dependency — the "carry the engine job-to-job" premise rejects that coupling). Built-in defaults are warn-only so they never conflict with the user's global `~/.claude/hooks/guard.sh` (which already hard-denies secrets + asks on destructive); workspace-os's value-add is the declarative per-repo rules + provenance `ip_class`, not re-shipping generic denies. Only high-confidence secret patterns deny. `.env`/generic secrets warn (a hard deny bites `.env.example`, local `.env`, fake-key fixtures). deny=exit 2 + stderr (reason fed to Claude); warn=`{"systemMessage": reason}` JSON on stdout + exit 0 (the documented user-facing warning channel, verified against the Claude Code hooks docs — warns deliberately avoid `additionalContext` so routine edits don't pollute Claude's context). Retired `memory-secret-guard.sh` into the engine (broadened docs/memory→all writes). Deferred: PostToolUse lint template, `/guardrails` skill, `project-init` wiring.
+- Spawns: A-20260701-guardrail-engine
+
+Full design: `docs/specs/2026-07-01-guardrail-engine-design.md`. Plan: `docs/plans/2026-07-01-guardrail-engine.md`.

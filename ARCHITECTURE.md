@@ -25,10 +25,15 @@
 /memory-sync  ──migrates▶ a ~/.claude fact ──▶ docs/memory/
 /memory-adopt ──reshapes▶ existing docs ──▶ docs/memory/  (+ proposed CLAUDE.md trim)
 /tracking-adopt ──routes──▶ existing roadmap/TODO docs ──▶ docs/project-tracking/  (slice 1: docs-only)
+guardrail.sh  ──reads──▶ <repo>/.claude/guardrails.json   (PreToolUse deny/warn on Bash|Edit|Write)
   tracking skills ──read──▶ conventions/project-tracking.md   (schema + lifecycle, SoT)
   memory skills   ──read──▶ conventions/memory.md             (schema + boundary test, SoT)
 ```
 
+- **The guardrail engine** (`hooks/guardrail.sh`) is a PreToolUse hook: warn-only built-in defaults
+  (secrets, force-push, `rm -rf`) plus declarative per-repo rules in `.claude/guardrails.json`
+  (`bash`/`write` rules, `deny` blocks / `warn` advises). Opt in by copying `templates/guardrails.json`;
+  the engine fails open when the file is absent. Same engine/data split as the rest of the plugin.
 - **Skills** are model-interpreted instructions (`SKILL.md`). They contain no rules of their own
   beyond orchestration — the schema, ID scheme, and lifecycle live once in
   `conventions/project-tracking.md`, so there's no drift.
