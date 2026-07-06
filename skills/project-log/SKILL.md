@@ -28,9 +28,18 @@ Mint `A-<today>-<slug>` (today = `date +%Y%m%d`; slug = short kebab of the title
 
 ### `decision <workstream> <details>`
 Mint `D-<today>-<slug>`. If the user didn't give a rationale, ask for one. Append the
-**decision template** to `decisions-log.md` (append-only). If the decision implies new work, ask
+**decision template** to `decisions-log.md` (append-only) with `Status: accepted`; include the
+`Consequences:` line only when there are follow-on effects worth recording, and drop the
+`Supersedes:` line entirely when nothing is being replaced. If the decision implies new work, ask
 whether to also create linked action item(s) and, if yes, run `action` mode for each and fill the
 decision's `Spawns:` line with their IDs.
+
+**Supersession:** if the decision reverses or replaces a prior one (the user names an old `D-` id,
+or says "instead of / reversing / supersedes …" — confirm the target id if inferred), fill
+`Supersedes: [[supersedes::D-old-id]]` in the new record AND append exactly one line to the old
+record's list: `- Superseded-by: [[superseded_by::D-new-id]]`. That appended line is the **only**
+permitted change to an existing decision record — never edit its `Status:` or any other line
+(the read rule lives in the conventions doc).
 
 ### `done <A-id> [commit]`
 Complete an action:

@@ -47,11 +47,32 @@ record is tagged with exactly one. (Example for a data project: `data/pipeline �
 ### D-YYYYMMDD-slug — <title>
 - Workstream: <tag>
 - Created: YYYY-MM-DD
+- Status: accepted
 - Rationale: <why this choice>
+- Supersedes: [[supersedes::D-old-id]]     ← only when replacing/reversing a prior decision
+- Consequences: <follow-on effects worth recording — optional line>
 - Spawns: <linked A-IDs, or "none">
 
 <body: optional detail>
 ```
+
+### Decision status & supersession (append-only)
+
+- `Status:` is written **once, at creation**, always `accepted`. It is never edited afterwards.
+- To reverse or replace a decision, log a **new** decision whose `Supersedes:` line carries a
+  typed wikilink — `[[supersedes::D-old-id]]` — then append exactly **one** line to the old
+  record's list:
+  ```
+  - Superseded-by: [[superseded_by::D-new-id]]
+  ```
+  That appended line IS the superseded marker. **Read rule: a `Superseded-by:` line wins over
+  the `Status:` line**; a record with neither (pre-schema records are grandfathered) reads as
+  accepted. This keeps the log append-only — no line is ever rewritten.
+- The typed-link predicates are the **same vocabulary** as memory's typed wikilinks
+  (`conventions/memory.md`): `supersedes`/`superseded_by` here; don't invent tracking-only
+  predicates. `[[wikilink]]` targets may be `D-`/`A-` IDs or memory fact slugs;
+  `scripts/memory_graph.py` resolves `D-`/`A-` targets when linting `docs/memory/` (links
+  *inside* tracking files are not machine-linted — the read rule above is the human contract).
 
 **Idea** — appended to `ideas.md`:
 ```
@@ -72,7 +93,9 @@ record is tagged with exactly one. (Example for a data project: `data/pipeline �
   - Completed: YYYY-MM-DD
   - Commit: <sha or PR#>
   ```
-- `/project-log decision` → record appended to `decisions-log.md`. Append-only.
+- `/project-log decision` → record appended to `decisions-log.md`. Append-only. When it
+  supersedes a prior decision, the old record also gets its one `Superseded-by:` line appended
+  (see "Decision status & supersession").
 - `/project-plan` → idea appended to `ideas.md`. When an idea goes active, it graduates to an
   action in `action-items.md` (and can be removed from `ideas.md`).
 

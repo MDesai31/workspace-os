@@ -124,3 +124,19 @@ from orphan noise; trimmed upstream modes we don't use (--html/--relink/--sugges
 model = frontmatter/slug judgment. 9-case bash test harness (`tests/test-memory-graph.sh` +
 clean/broken fixtures) wired into CI; verified clean against klapp's live `docs/memory/`.
 Plugin v0.7.0. Decision D-20260705-keystone-reposition.
+
+### A-20260705-decision-status — Status + append-only supersession on decision records
+- Workstream: schema
+- Status: done
+- Created: 2026-07-05
+- Completed: 2026-07-05
+- Commit: <PR # — fill at merge>
+
+Added `Status: accepted` (written once, never edited) + optional `Consequences:` + conditional
+`Supersedes: [[supersedes::D-old]]` to the decision template in `conventions/project-tracking.md`,
+with an append-only supersession protocol: the old record gets exactly one appended
+`- Superseded-by: [[superseded_by::D-new]]` line; read rule = Superseded-by wins over Status;
+records with neither (pre-schema) are grandfathered as accepted. `/project-log decision` taught to
+set the new lines and perform the one permitted append to an old record. Same typed-link predicate
+vocabulary as `conventions/memory.md`. Closes the `decision-status` idea. Plugin v0.8.0.
+Decision D-20260705-decision-status-append-only.
