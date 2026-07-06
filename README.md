@@ -33,6 +33,7 @@ machine gets the upgrade.
 - **`/memory-sync`** — migrate a fact from your `~/.claude` auto-memory into a repo's `docs/memory/`.
 - **`/memory-adopt`** — adopt a repo's existing docs (README, design notes, CLAUDE.md reference content) into `docs/memory/` (opt-in, propose→confirm→apply).
 - **`/tracking-adopt`** — adopt a repo's existing roadmaps and TODO docs into `docs/project-tracking/` (routes roadmap entries → ideas, recorded decisions → decisions-log, open TODOs → action-items).
+- **`/continuity`** — scaffold/review a repo-root `CONTINUITY.md` bus-factor runbook: auto-inventories scheduled jobs (systemd/cron/CI), one deps→outs row per obligation with a Detection column, access *pointers* (never secrets), re-verify budgets, `TODO(owner)` gaps.
 
 ## Guardrails
 
