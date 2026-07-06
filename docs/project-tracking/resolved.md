@@ -111,7 +111,7 @@ into CI. Spec `docs/specs/2026-07-01-guardrail-engine-design.md`; plan
 - Status: done
 - Created: 2026-07-05
 - Completed: 2026-07-05
-- Commit: 87a71dd (PR #8, branch guardrail-engine)
+- Commit: 09b3ca6 (PR #10, branch memory-graph-vendor; supersedes closed #9)
 
 Vendored `scripts/memory_graph.py` from `zachburke9/keystone-engine`
 (`starter/scripts/memory_graph.py` @ cecb4b9, MIT, Zach Burke — courtesy attribution in the
