@@ -154,8 +154,8 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 
 ### keystone-module-guardrails — package the guardrail engine as a keystone utility module  (keystone 2026-07-05)
 - Workstream: meta
-- Priority: high
-- Intended start: after PR #8 (guardrail engine) merges and a conversation with Zach
+- Priority: low (backburnered 2026-07-05 by user — solo workspace-os slices first; revisit when a conversation with Zach happens)
+- Intended start: after a conversation with Zach (PR #8 prerequisite already merged)
 - Why/context: Zach shared his `zachburke9/keystone-*` ecosystem (engine / catalog / instance-template / 3 modules, private, MIT) on 2026-07-02 — a domain-neutral workspace OS with a module catalog + importer (`catalog.json` + `import_module.py`, vendored copies, `module.json` version-compat seam). The 2026-07-05 comparison (D-20260705-keystone-reposition) found keystone has **no policy-enforcement layer**: its hooks are advisory/protective, none declaratively configurable per repo. Our guardrail engine (declarative `.claude/guardrails.json` deny/warn rules + `ip_class` provenance tripwires, tested) fills that hole exactly, and fits his extension contract (a `kind: utility` module whose hook registers into his `hooks-registry.json` panel). Turns duplicated effort into collaboration; we keep authorship + the plugin distribution channel for our own repos.
 - To start, future-us needs: Zach's buy-in; a `module.json` (`kind: utility`, `provides.hooks`); a thin keystone-shaped wrapper around `hooks/guardrail.sh` + `templates/guardrails.json`; a registry entry for his `/workspace` panel. Relates to [[hook-starter-library]], [[provenance-guard]], [[SP4-meta-onboarding]].
 
