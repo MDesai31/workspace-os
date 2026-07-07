@@ -74,6 +74,42 @@ record is tagged with exactly one. (Example for a data project: `data/pipeline �
   `scripts/memory_graph.py` resolves `D-`/`A-` targets when linting `docs/memory/` (links
   *inside* tracking files are not machine-linted — the read rule above is the human contract).
 
+**Model decision** — a decision-template *variant* for DS/ML choices (architecture, features,
+validation protocol, champion/challenger). Same `D-` ID, same `decisions-log.md` home, same
+status/supersession rules — plus typed fields. Written by `/project-log model-decision`:
+```
+### D-YYYYMMDD-slug — <title>
+- Workstream: <tag>
+- Created: YYYY-MM-DD
+- Status: accepted
+- Model: <model/experiment name>
+- Dataset: <data + vintage/cutoff — the version trained against, not a path to secrets>
+- Architecture: <choice, vs <alternatives considered>>
+- Validation: <protocol — split/CV/walk-forward + the leakage guards applied>
+- Headline metric: <ONE number with its metric name — the full table lives at the run pointer>
+- Run: <MLflow/W&B run ID or URL; or, with no tracker, a MODEL_LOG.md row ref — the run layer owns the metrics; never re-log them here>
+- Outcome: champion | challenger-rejected | challenger-promoted
+- Rationale: <why this choice — the reasoning the run platform cannot hold>
+- Supersedes: [[supersedes::D-old-champion]]     ← on promotion: the new champion supersedes the old
+- Spawns: <linked A-IDs, or "none">
+
+<body: optional detail — a pointer plus the one headline number, never a metrics dump.>
+```
+**Champion/challenger lifecycle = the supersession protocol:** promoting a challenger mints a
+new model-decision record with `Outcome: challenger-promoted` and
+`Supersedes: [[supersedes::D-old]]`, and the old champion's record gets its one appended
+`- Superseded-by:` line. The decisions log thereby holds the model lineage for free.
+
+**The run layer (tracker-first, ledger fallback):** per-build hyperparameters and metrics are
+*run-level* data — an experiment tracker's job (MLflow/W&B/SageMaker), not this log's. When no
+tracker is available, the fallback is an in-repo build ledger: copy `templates/MODEL_LOG.md` to
+`docs/models/<model-name>.md` (one file per model, append-only, `merge=union`). Git already
+records what changed — configs/hyperparameters live in the diff between build shas — so a ledger
+row records only the association: *sha → headline metrics → verdict*, one row per **evaluated
+candidate** (a build you'd want to find again), never per debug run. Either way the decision
+record's `Run:` field points at the run layer (tracker run ID/URL, or a `MODEL_LOG.md` row);
+decisions-log.md stays the reasoning layer on top and never duplicates run data.
+
 **Idea** — appended to `ideas.md`:
 ```
 ### <name> — <one-line>

@@ -24,7 +24,7 @@ machine gets the upgrade.
 ## Skills
 
 - **`/project-init`** — bootstrap a repo: stamp `docs/project-tracking/` + `.gitattributes`, seed the repo's workstream tags.
-- **`/project-log`** — `action` / `decision` / `done`: append typed, ID'd records; completing an action moves it to the resolved record.
+- **`/project-log`** — `action` / `decision` / `model-decision` / `done`: append typed, ID'd records; completing an action moves it to the resolved record. `model-decision` is the DS variant (dataset vintage, validation protocol, headline metric + a run pointer — an MLflow/W&B run ID, or the `templates/MODEL_LOG.md` in-repo build ledger when no tracker exists; champion/challenger via the supersession protocol).
 - **`/project-plan`** — capture a *future* intent (the why + rough timing) without starting it.
 - **`/ingest`** — capture a durable project fact into `docs/memory/` + update the index.
 - **`/memory-lint`** — check `docs/memory/` integrity: a deterministic graph pass
