@@ -165,7 +165,7 @@ service/timer pairs.
 - Status: done
 - Created: 2026-07-06
 - Completed: 2026-07-06
-- Commit: <PR — fill at model-decision-log merge>
+- Commit: 0c7ac16 (PR #13, branch model-decision-log)
 
 Shipped the DS/ML tracking slice (D-20260706-model-log-run-layer): (1) **model-decision template
 variant** in `conventions/project-tracking.md` — same D- ID and decisions-log.md home, plus typed
