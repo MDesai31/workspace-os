@@ -73,13 +73,6 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Why/context: workspace-os's premise is "carry the engine job-to-job" — which is exactly when proprietary-content leakage is highest-risk. The user's new-job context (BI→Sr/Lead DS, theme-park ops forecasting, Azure→AWS) repeatedly stresses a Westgate↔Universal↔personal IP wall (clean-room blueprints; "skills are yours, code/data are the employer's"). Extend the existing `hooks/memory-secret-guard.sh` into a provenance layer: tag each repo with an `owner`/`ip-class` (personal · employer · clean-room) and warn on writes that look like cross-boundary leakage. Zach's repo shows a clean **zero-cost** mechanism: a dormant `.claude/security-patterns.yaml` read by the official `security-guidance` plugin's free deterministic per-edit regex layer (no model call) — ship a template with IP/secret/cross-repo patterns rather than a bespoke hook. Pairs with a "clean-room blueprint capture" memory/plan flavor (carry *patterns*, not *code* — mirrors the user's `sagemaker_lstm_port.md`).
 - To start, future-us needs: a repo-tagging scheme (`ip-class` in the tracking README or a config), a `security-patterns.yaml` template + pattern set, and a hook-vs-plugin delivery decision. Relates to [[SP2-memory]], [[adoption-import]].
 
-### model-decision-log — DS experiment / model-decision tracking record  (brainstorm 2026-06-28)
-- Workstream: skills
-- Priority: high
-- Intended start: incremental, alongside [[tracking-skills-roundout]]
-- Why/context: the user's DS work already treats model decisions as first-class artifacts (an "Architecture Decisions" table in `Model_Summary.md`; an `opportunities.md` ranking ML use cases by value vs readiness). Make that a typed tracking record / `/model-decision` mode: dataset/vintage, architecture choice, validation protocol, metric, champion/challenger outcome. Immediate use at the new job (SageMaker forecasting + model registry) and on the Options Analyzer. DS-specific sibling of the generic `D-` decision record.
-- To start, future-us needs: a record template added to `conventions/project-tracking.md` + either a `/project-log model-decision` mode or a standalone `/model-decision` skill. Relates to [[tracking-skills-roundout]].
-- Borrow (comparison 2026-06-28): link to MLflow/W&B **run IDs** and adopt their champion/challenger + model-version vocab — never re-log metrics (that's the platform's job); optionally commit a tiny metrics snapshot beside the narrative (DVC metrics-in-git). The record is the portable *reasoning* layer those tools lack.
 
 ### github-native-tracking — tracking surface in GitHub Issues/Projects (a decision to deliberate)  (brainstorm 2026-06-28)
 - Workstream: schema

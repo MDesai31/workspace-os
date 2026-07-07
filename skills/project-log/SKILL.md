@@ -4,7 +4,7 @@ description: Log a project action item, decision, or mark one done. Use when the
 user-invocable: true
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
-argument-hint: "[action|decision|done] <workstream> <details>   (e.g. action data/pipeline \"fix the X gap\")"
+argument-hint: "[action|decision|model-decision|done] <workstream> <details>   (e.g. action data/pipeline \"fix the X gap\")"
 ---
 
 # Project Log
@@ -41,6 +41,19 @@ record's list: `- Superseded-by: [[superseded_by::D-new-id]]`. That appended lin
 permitted change to an existing decision record — never edit its `Status:` or any other line
 (the read rule lives in the conventions doc).
 
+### `model-decision <workstream> <details>`
+A DS/ML decision (architecture choice, feature set, validation protocol, champion/challenger
+call). Mint a normal `D-<today>-<slug>` and append the **model-decision template variant** to
+`decisions-log.md` — same file, same append-only + supersession rules as `decision` mode. Fill
+the typed fields from what the user gives; ask only for the ones that guard against future
+confusion: `Dataset` (vintage/cutoff), `Validation` (protocol + leakage guards), and `Run` (the
+MLflow/W&B run ID or URL; if the repo has no tracker, offer the ledger fallback — a
+`docs/models/<model-name>.md` from `templates/MODEL_LOG.md`, per the conventions' "run layer"
+section — and point `Run:` at its row). **Never copy a metrics table into the record** — one
+headline number, the run pointer owns the rest. If this is a champion promotion, apply the supersession protocol
+against the old champion's record (`Outcome: challenger-promoted` + `Supersedes:` + the one
+appended `Superseded-by:` line).
+
 ### `done <A-id> [commit]`
 Complete an action:
 1. Find the `<A-id>` record in `action-items.md`.
@@ -54,8 +67,10 @@ Complete an action:
    placeholder.)
 
 ### Quick-add (no mode keyword)
-Infer from the wording: "should/decided/use X instead" → decision; "fix/add/remove/implement" →
-action; an `A-id` + "done/close/finished" → done. If ambiguous, ask.
+Infer from the wording: "should/decided/use X instead" → decision; model/experiment vocabulary
+("champion/challenger", "promoted the model", "chose <architecture>", "validated with
+walk-forward", a run ID) → model-decision; "fix/add/remove/implement" → action; an `A-id` +
+"done/close/finished" → done. If ambiguous, ask.
 
 ## After writing
 Show the user the exact record you added (or moved) and which file it's in. Do **not** commit

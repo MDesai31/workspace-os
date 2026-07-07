@@ -159,3 +159,22 @@ cron, CI `on: schedule`, app schedulers + maintenance docs and proposes pre-fill
 inventory against the doc, lists TODOs by owner, nudges stale re-verify dates. Home = repo root
 (D-20260705-continuity-home-root). Plugin v0.9.0. First real consumer: OA's 12 systemd
 service/timer pairs.
+
+### A-20260706-model-decision-log — model-decision record variant + MODEL_LOG run-layer fallback
+- Workstream: skills
+- Status: done
+- Created: 2026-07-06
+- Completed: 2026-07-06
+- Commit: <PR — fill at model-decision-log merge>
+
+Shipped the DS/ML tracking slice (D-20260706-model-log-run-layer): (1) **model-decision template
+variant** in `conventions/project-tracking.md` — same D- ID and decisions-log.md home, plus typed
+fields (Model, Dataset vintage/cutoff, Architecture vs alternatives, Validation protocol + leakage
+guards, ONE headline metric, `Run:` pointer, Outcome); champion/challenger lifecycle rides the
+existing supersession protocol, so the log holds model lineage for free. (2) **`/project-log
+model-decision` mode** — asks only for Dataset/Validation/Run, never copies metrics tables;
+promotion applies supersession against the old champion. Quick-add infers from model vocabulary.
+(3) **Run layer, tracker-first with fallback**: `Run:` points at an MLflow/W&B run ID/URL; with no
+tracker, `templates/MODEL_LOG.md` → `docs/models/<name>.md` — append-only merge=union table,
+sha → headline metrics → verdict, one row per evaluated candidate (git owns "what changed").
+Plugin v0.10.0. Graduated from the model-decision-log idea (brainstorm 2026-06-28).
