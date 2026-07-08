@@ -3,7 +3,7 @@ name: project-plan
 description: Capture a future project or task without starting it. Use on /project-plan or on future-intent language ("someday", "next quarter", "don't let me forget", "park this idea", "eventually"). Records the idea, the reasoning around it, and rough timing so future-you can pick it up cold. Does NOT generate a task list or begin the work.
 user-invocable: true
 disable-model-invocation: false
-allowed-tools: Read, Write, Edit, Glob, Grep
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 argument-hint: "<natural-language description of the future idea>"
 ---
 

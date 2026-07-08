@@ -47,12 +47,13 @@ other write.
    exist). Owner defaults to the repo's committer (`git log -1 --format=%an`) with a TODO to
    confirm.
 3. **Show the proposed file and confirm before writing** (same propose→confirm→apply discipline
-   as the adopt skills). Then write `CONTINUITY.md` at the repo root from the template with the
-   proposed rows, `<REPO>` replaced by the repo name, and the unfilled sections left as
-   template guidance.
-4. Point it from the repo: offer to add one line to the repo's `CLAUDE.md`
+   as the adopt skills). Then write `CONTINUITY.md` *(in-repo only:)* at the repo root from the
+   template with the proposed rows, `<REPO>` replaced by the repo name, and the unfilled
+   sections left as template guidance. *(sidecar:)* write to `<data_root>/CONTINUITY.md` instead.
+4. Point it from the repo *(in-repo only)*: offer to add one line to the repo's `CLAUDE.md`
    (`- Continuity runbook: CONTINUITY.md` under an existing pointers section) — a pointer, not
-   an import; this doc is for humans first and must not load every session.
+   an import; this doc is for humans first and must not load every session. In sidecar mode
+   this step is skipped.
 
 ## Mode: `review` (CONTINUITY.md present)
 
