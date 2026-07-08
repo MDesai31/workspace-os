@@ -7,10 +7,15 @@
 1. **Engine (this plugin, portable).** Skills, the conventions doc, and the templates. Installed
    once into `~/.claude`, available in every repo, updated centrally. This is the only thing you
    carry job-to-job.
-2. **Data (per-repo, version-controlled).** `<repo>/docs/project-tracking/*.md` (tracking records)
+2. **Data (per-repo, version-controlled — location RESOLVED, never assumed).** Default (in-repo
+   mode): `<repo>/docs/project-tracking/*.md` (tracking records)
    and `<repo>/docs/memory/*.md` (a shared knowledge base, indexed by `MEMORY.md` and surfaced via
    a `@docs/memory/MEMORY.md` import in the repo's CLAUDE.md) — living with each project's code and
    readable by Claude in that project's sessions.
+   In a **marked workspace** (`_meta/workspace.json` — see `conventions/data-root.md`), the same
+   data layer lives OUT of tree in a local-only `_meta/<repo>/` sidecar git repo instead
+   (enterprise repos stay byte-identical to origin); memory gains a workspace tier
+   (`_meta/memory/`) shared across the workspace's repos.
 3. **Portfolio (deferred).** A future cross-repo registry. Not built in this version.
 
 ## How the pieces relate
@@ -18,6 +23,9 @@
 ```
 /project-init ──stamps──▶ <repo>/docs/project-tracking/ + docs/memory/   (from templates/)
               └─ adds @docs/memory/MEMORY.md to the repo's CLAUDE.md
+/workspace-init ──marks──▶ <workspace>/_meta/ (sidecar git repo, no remote) + workspace.json
+resolve-data-root.sh ──answers──▶ mode + data_root   (run FIRST by every skill/hook)
+sidecar-memory-context.sh ──SessionStart──▶ injects _meta memory (workspace tier, then repo tier)
 /project-log  ──writes──▶ action-items.md · decisions-log.md · resolved.md
 /project-plan ──writes──▶ ideas.md
 /ingest       ──writes──▶ docs/memory/<slug>.md + MEMORY.md index
