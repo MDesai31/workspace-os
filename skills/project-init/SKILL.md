@@ -8,8 +8,9 @@ allowed-tools: Read, Write, Bash, Glob
 
 # Project Init
 
-Bootstrap `docs/project-tracking/` in the current repository. Idempotent-safe: refuses if
-tracking already exists.
+Bootstrap this repository's workspace-os tracking + memory. Idempotent-safe: refuses if
+tracking already exists. Where the data lives is RESOLVED, never assumed — see this plugin's
+`conventions/data-root.md`.
 
 The template files live in this plugin's `templates/` directory — i.e. `../../templates/`
 relative to this skill's base directory (the plugin root is two levels up from
@@ -17,45 +18,61 @@ relative to this skill's base directory (the plugin root is two levels up from
 
 ## Steps
 
-1. **Confirm the target.** Run `git rev-parse --show-toplevel` and confirm with the user that
-   this repo is where they want tracking. If not in a git repo, stop and say so.
+0. **Resolve the data root.** Run and parse (key=value lines):
 
-2. **Refuse if already initialized.** If `docs/project-tracking/` already exists, do **not**
-   overwrite. Report that it's already set up and stop (offer `/project-log` instead).
+   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-data-root.sh"`
 
-3. **Stamp the templates.** Create `docs/project-tracking/` and copy the five `.md` templates
-   into it:
-   - `templates/README.md` → `docs/project-tracking/README.md`
-   - `templates/action-items.md` → `docs/project-tracking/action-items.md`
-   - `templates/ideas.md` → `docs/project-tracking/ideas.md`
-   - `templates/decisions-log.md` → `docs/project-tracking/decisions-log.md`
-   - `templates/resolved.md` → `docs/project-tracking/resolved.md`
+   Not in a git repo → stop and say so. Note `mode`, `data_root`, and (sidecar) `workspace_root`.
+   Announce the mode to the user before proceeding. In **sidecar** mode, never create, modify,
+   or stage any file inside the repo's working tree (`conventions/data-root.md` safety
+   invariant) — steps below marked *(in-repo only)* are SKIPPED, and every path is under
+   `data_root` (i.e. `_meta/<repo>/`).
 
-3a. **Scaffold memory.** Create `docs/memory/` and copy `templates/memory/MEMORY.md` →
-    `docs/memory/MEMORY.md`. (The `docs/memory/MEMORY.md merge=union` line is already in
-    `templates/gitattributes`, applied by the gitattributes step below.)
+1. **Confirm the target.** Confirm with the user that this repo is where they want tracking.
 
-3b. **Wire retrieval.** Add the line `@docs/memory/MEMORY.md` to the repo's `CLAUDE.md` — this is
-    Claude Code's `@`-path import syntax (a bare `@path`, **not** an `@import` keyword). If
-    `CLAUDE.md` exists, append the line only if not already present; if it does not exist, create it
-    containing that single line plus a one-line comment. Never duplicate the line.
+2. **Refuse if already initialized.** If `<data_root>/project-tracking/` already exists, do
+   **not** overwrite. Report that it's already set up and stop (offer `/project-log` instead).
 
-4. **Add the union-merge attributes.** Append the lines from `templates/gitattributes` to the
-   repo's `.gitattributes` (create it if absent; if it exists, append only lines not already
-   present — do not duplicate).
+3. **Stamp the templates.** Create `<data_root>/project-tracking/` and copy the five `.md`
+   templates into it:
+   - `templates/README.md` → `<data_root>/project-tracking/README.md`
+   - `templates/action-items.md` → `<data_root>/project-tracking/action-items.md`
+   - `templates/ideas.md` → `<data_root>/project-tracking/ideas.md`
+   - `templates/decisions-log.md` → `<data_root>/project-tracking/decisions-log.md`
+   - `templates/resolved.md` → `<data_root>/project-tracking/resolved.md`
 
-5. **Seed workstreams.** Ask the user: *"What workstreams (areas of work) does this repo have?"*
-   (e.g. `data/pipeline, strategy, ML, risk, ops`). Write them as a bullet list into the
-   `## Workstreams` section of `docs/project-tracking/README.md`, replacing the
+3a. **Scaffold memory.** Create `<data_root>/memory/` and copy `templates/memory/MEMORY.md` →
+    `<data_root>/memory/MEMORY.md`.
+
+3b. **Wire retrieval** *(in-repo only)*. Add the line `@docs/memory/MEMORY.md` to the repo's
+    `CLAUDE.md` — Claude Code's `@`-path import syntax (a bare `@path`, **not** an `@import`
+    keyword). If `CLAUDE.md` exists, append the line only if not already present; if it does
+    not exist, create it containing that single line plus a one-line comment. Never duplicate
+    the line. In sidecar mode this step is replaced by the plugin's SessionStart hook — do
+    nothing.
+
+4. **Add the union-merge attributes.** *(in-repo only:)* append the lines from
+   `templates/gitattributes` to the repo's `.gitattributes` (create if absent; never duplicate
+   lines). *(sidecar:)* append those lines to `<workspace_root>/.gitattributes` instead, with
+   each path prefixed by `<repo-folder-name>/` and the `docs/` prefix dropped (e.g.
+   `docs/project-tracking/action-items.md merge=union` becomes
+   `repo-a/project-tracking/action-items.md merge=union`).
+
+5. **Seed workstreams.** Ask the user: *"What workstreams (areas of work) does this repo
+   have?"* (e.g. `data/pipeline, strategy, ML, risk, ops`). Write them as a bullet list into
+   the `## Workstreams` section of `<data_root>/project-tracking/README.md`, replacing the
    `<!-- workstream list, seeded by /project-init -->` placeholder.
 
-6. **Report.** Print the created trees (`ls docs/project-tracking/` and `ls docs/memory/`) and
-   remind the user they can now use `/project-log`, `/project-plan`, `/ingest`, and
-   `/memory-lint`. Do **not** commit unless the user asks — leave the new files staged-ready for
-   them to commit as they see fit.
+6. **Commit (sidecar only).** `git -C <workspace_root> add -A` then commit with message
+   `project-init: scaffold <repo-folder-name>`. In in-repo mode do **not** commit unless the
+   user asks — leave the new files staged-ready for them.
+
+7. **Report.** Print the created trees and the resolved mode, and remind the user they can now
+   use `/project-log`, `/project-plan`, `/ingest`, and `/memory-lint`.
 
 ## Notes
 
 - All record/schema rules live in this plugin's `conventions/project-tracking.md`; the stamped
   files reference it. Do not restate them here.
-- Memory schema/rules live in `conventions/memory.md`; do not restate them.
+- Memory schema/rules live in `conventions/memory.md`; mode rules in `conventions/data-root.md`;
+  do not restate them.
