@@ -17,8 +17,10 @@ exactly; do not restate the rules here.
 
 This is **opt-in and non-destructive to source docs**: every source doc (including `CLAUDE.md`) is
 read only. The skill writes only under `<data_root>/project-tracking/` (plus the bootstrap
-`.gitattributes` lines), and only with your confirmation. It is the tracking-side sibling of
-`/memory-adopt`, which owns durable knowledge; the two are complementary.
+`merge=union` lines — to the repo's `.gitattributes` in in-repo mode, to
+`<workspace_root>/.gitattributes` in sidecar, never the repo tree), and only with your
+confirmation. It is the tracking-side sibling of `/memory-adopt`, which owns durable knowledge;
+the two are complementary.
 
 ## Steps
 
@@ -31,8 +33,10 @@ read only. The skill writes only under `<data_root>/project-tracking/` (plus the
 1. **Bootstrap if needed.** If `<data_root>/project-tracking/` does not exist, scaffold it like
    `/project-init`: copy this plugin's `templates/{action-items,ideas,decisions-log,resolved}.md`
    and `templates/README.md` into `<data_root>/project-tracking/`; append the `merge=union` lines
-   from `templates/gitattributes` to the repo's `.gitattributes` (if not already present). For the
-   workstream enum, **propose a set inferred from the scanned docs** (Step 2) for the user to
+   from `templates/gitattributes` *(in-repo:)* to the repo's `.gitattributes` (if not already
+   present) *(sidecar:)* to `<workspace_root>/.gitattributes` instead, rekeyed as in
+   `/project-init` (drop the `docs/` prefix, prefix `<repo-folder-name>/`) — never the repo's
+   `.gitattributes`. For the workstream enum, **propose a set inferred from the scanned docs** (Step 2) for the user to
    confirm/edit, then write it into the README's `## Workstreams`.
 2. **Scan candidates.** Glob `README*`, `docs/**/*.md`, `NOTES*`, `CLAUDE.md`, `TODO*`/`TODOS*`,
    `CHANGELOG*`/`RELEASES*` (honor the optional path/glob argument). **Exclude**

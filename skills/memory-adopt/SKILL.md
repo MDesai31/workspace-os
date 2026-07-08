@@ -28,9 +28,12 @@ only. The only files ever edited are **instruction files** (`CLAUDE.md`, `AGENTS
    the sidecar repo (`git -C <workspace_root> add -A && git -C <workspace_root> commit`).
 1. **Bootstrap if needed.** If `<data_root>/memory/` does not exist, scaffold it like
    `/project-init`'s memory step: copy this plugin's `templates/memory/MEMORY.md` →
-   `<data_root>/memory/MEMORY.md`; add the line `@docs/memory/MEMORY.md` to the repo's
-   `CLAUDE.md` (append if not present; create `CLAUDE.md` with just that line if there is none);
-   add `docs/memory/MEMORY.md merge=union` to `.gitattributes` (append if not present).
+   `<data_root>/memory/MEMORY.md`. *(in-repo only:)* add the line `@docs/memory/MEMORY.md` to the
+   repo's `CLAUDE.md` (append if not present; create `CLAUDE.md` with just that line if there is
+   none); add `docs/memory/MEMORY.md merge=union` to the repo's `.gitattributes` (append if not
+   present). *(sidecar:)* the CLAUDE.md import is replaced by the plugin's SessionStart hook — do
+   nothing; append the `merge=union` line to `<workspace_root>/.gitattributes` instead, rekeyed
+   as in `/project-init` (drop the `docs/` prefix, prefix `<repo-folder-name>/`).
 2. **Scan candidates.** Build the candidate set per `conventions/memory.md` — instruction files
    (`CLAUDE.md`, `AGENTS.md`) and free-form docs (`README*`, `docs/**/*.md`, `NOTES*`, `RUNNING.md`,
    `CONTRIBUTING.md`, `ARCHITECTURE.md`, `DEVELOPMENT.md`), honoring the optional path/glob
