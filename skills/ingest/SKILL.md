@@ -9,13 +9,17 @@ argument-hint: "<the fact to remember>  (e.g. \"we use Auth.js v5 beta because X
 
 # Ingest
 
-Author a durable fact into this repo's canonical shared memory at `docs/memory/`. The schema,
-types, the CLAUDE.md-vs-memory boundary test, the index format, and the retrieval model all live
-in this plugin's `conventions/memory.md` — read it and follow it exactly; do not restate the
-rules here.
+Author a durable fact into this repo's canonical shared memory at `<data_root or chosen
+tier>/memory/` (`docs/memory/` in in-repo mode). The schema, types, the CLAUDE.md-vs-memory
+boundary test, the index format, and the retrieval model all live in this plugin's
+`conventions/memory.md` — read it and follow it exactly; do not restate the rules here.
 
-**Prerequisite:** the repo must have `docs/memory/` (run `/project-init` if not). If it's
-missing, stop and say so.
+**Prerequisite — resolve the data root first:** run
+`bash "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-data-root.sh"` and parse `mode`/`data_root`
+(+ `workspace_root` in sidecar mode) — see `conventions/data-root.md`. Memory lives at
+`<data_root>/memory/`; if that directory is missing, stop and say so (run `/project-init`
+first). Announce the resolved mode in your report. In sidecar mode never write inside the
+repo's working tree.
 
 ## Steps
 
@@ -23,15 +27,24 @@ missing, stop and say so.
    went looking, would it make a costly mistake first?" If **YES**, this belongs in CLAUDE.md,
    not memory — tell the user and stop. If it's a **decision** (a choice + why), it belongs in
    `decisions-log.md` — offer `/project-log decision` instead and stop.
-2. **Pick the type** — `domain | convention | reference` (see conventions). Ask only if unclear.
-3. **Mint the slug** — short kebab-case from the fact's gist; ensure no existing
-   `docs/memory/<slug>.md` collision (suffix `-2`, etc. if needed). The `name:` frontmatter
-   must equal the filename stem.
-4. **Secret scan** — never write keys/tokens/`.env`-style values. If the fact contains one,
+2. **Apply the tier test (sidecar mode only)** — conventions/memory.md § two-tier memory:
+   "would this fact be just as true and useful in every repo of this workspace?" Default is
+   the **repo tier** (`<data_root>/memory/`). If the test clearly passes, PROPOSE the
+   workspace tier (`<workspace_root>/memory/`) and let the user confirm. An explicit user
+   scope request ("workspace level", "just this repo") always wins. In in-repo mode skip
+   this step. All later steps use the chosen tier's `memory/` dir and its `MEMORY.md`.
+3. **Pick the type** — `domain | convention | reference` (see conventions). Ask only if unclear.
+4. **Mint the slug** — short kebab-case from the fact's gist; ensure no existing
+   `<data_root or chosen tier>/memory/<slug>.md` collision (suffix `-2`, etc. if needed). The
+   `name:` frontmatter must equal the filename stem.
+5. **Secret scan** — never write keys/tokens/`.env`-style values. If the fact contains one,
    refuse and tell the user.
-5. **Write the fact file** `docs/memory/<slug>.md` using the fact schema from conventions
-   (frontmatter `name`/`description`/`type` + body; link related facts/decisions with
-   `[[wikilink]]`).
-6. **Update the index** — append `- [<name>](<slug>.md) — <hook>` under the matching type
-   section in `docs/memory/MEMORY.md` (replace a `_No facts yet._` placeholder if present).
-7. **Report** the file written and the index line added. Do **not** commit unless asked.
+6. **Write the fact file** `<data_root or chosen tier>/memory/<slug>.md` using the fact schema
+   from conventions (frontmatter `name`/`description`/`type` + body; link related facts/decisions
+   with `[[wikilink]]`).
+7. **Update the index** — append `- [<name>](<slug>.md) — <hook>` under the matching type
+   section in `<data_root or chosen tier>/memory/MEMORY.md` (replace a `_No facts yet._`
+   placeholder if present).
+8. **Commit (sidecar mode only)** — `git -C <workspace_root> add -A` then commit with message
+   `ingest(<repo-folder-name or workspace>): <slug>`. In in-repo mode do not commit unless asked.
+9. **Report** the file written, the tier chosen (sidecar), and the index line added.

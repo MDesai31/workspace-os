@@ -8,23 +8,37 @@ allowed-tools: Read, Edit, Bash, Glob, Grep
 
 # Memory Lint
 
-Verify the integrity of this repo's `docs/memory/`. The schema and rules live in this plugin's
-`conventions/memory.md`.
+Verify the integrity of this repo's `<data_root>/memory/` (`docs/memory/` in in-repo mode). The
+schema and rules live in this plugin's `conventions/memory.md`.
 
-**Prerequisite:** the repo must have `docs/memory/`. If missing, say so and stop.
+**Prerequisite — resolve the data root first:** run
+`bash "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-data-root.sh"` (see `conventions/data-root.md`).
+Memory lives at `<data_root>/memory/`; if missing, say so and stop. Announce the resolved mode.
 
 ## Step 1 — run the deterministic pass (the graph script)
 
-Run this plugin's `scripts/memory_graph.py` from the repo root (resolve the plugin root via
-`${CLAUDE_PLUGIN_ROOT}` when set, else the plugin's install directory):
+Resolve the plugin root via `${CLAUDE_PLUGIN_ROOT}` when set, else the plugin's install
+directory.
 
-```
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/memory_graph.py"
-```
+In-repo mode (from the repo root):
+
+    python3 "${CLAUDE_PLUGIN_ROOT}/scripts/memory_graph.py"
+
+Sidecar mode — pass the resolved paths, plus the workspace tier as a link root so cross-tier
+wikilinks resolve (conventions/memory.md § two-tier memory):
+
+    python3 "${CLAUDE_PLUGIN_ROOT}/scripts/memory_graph.py" \
+      --root "<data_root>/memory" \
+      --tracking-root "<data_root>/project-tracking" \
+      --link-root "<workspace_root>/memory"
+
+To lint the workspace tier itself, run again with `--root "<workspace_root>/memory"` and
+`--link-root` pointing at each repo's `_meta/<repo>/memory`.
 
 It mechanically covers **index ↔ file parity** (unindexed files, dangling `MEMORY.md` entries)
 and **wikilink resolution** (against fact files *and* `A-`/`D-` records in
-`docs/project-tracking/`), plus graph health: orphans, weakly-linked notes, hubs, naming drift,
+`<data_root>/project-tracking/` — `docs/project-tracking/` in in-repo mode), plus graph health:
+orphans, weakly-linked notes, hubs, naming drift,
 duplicate `name:`/basenames, and typed-edge coverage (`[[supersedes::target]]` predicates — see
 `conventions/memory.md`). Any BROKEN LINK, unindexed file, or dangling entry is a FAIL.
 (`--check` is the CI/pre-commit form of the same gate.)

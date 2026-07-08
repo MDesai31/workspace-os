@@ -56,6 +56,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - To start, future-us needs: a decision on where the registry lives given separate repos; then a `projects.md` schema + a `/project-status` portfolio mode that aggregates across repos.
 - Borrow (comparison 2026-06-28): reuse Backstage's catalog **entity model** (owner / lifecycle / system / `dependsOn`) for the `projects.md` schema + a per-repo `catalog-info`-style header — don't invent fields; the header also feeds [[continuity-runbook]] (owner) and [[provenance-guard]] (ip-class).
 - Note (keystone 2026-07-05): keystone's `projects.md` registry solves the *single-workspace* case only; our cross-**separate-repo** portfolio problem remains unsolved there — this idea stays differentiated, not overlap. See D-20260705-keystone-reposition.
+- Note (sidecar 2026-07-07): the "where does it live" blocker is answered for the single-workspace case — workspace-level files under `_meta/` root (D-20260707-sidecar-data-layer). Cross-workspace aggregation remains open.
 
 ### engine-hooks — automated upkeep
 - Workstream: workflow

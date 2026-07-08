@@ -333,6 +333,10 @@ def main():
     ap.add_argument("--tracking-root", default="docs/project-tracking",
                     help="dir harvested for A-/D- record link targets "
                          "(default: docs/project-tracking; missing = no records)")
+    ap.add_argument("--link-root", action="append", default=[],
+                    help="additional memory dir(s) whose file stems resolve [[wikilinks]] "
+                         "(e.g. the sidecar workspace tier); scanned for names only, "
+                         "not linted (missing dir = fail open)")
     ap.add_argument("--json", help="also write graph JSON to this path")
     ap.add_argument("--mermaid", help="also write a Mermaid graph to this path")
     ap.add_argument("--check", action="store_true",
@@ -346,6 +350,11 @@ def main():
         return 2
 
     records = harvest_records(Path(args.tracking_root))
+    for lr in args.link_root:
+        lrp = Path(lr)
+        if lrp.is_dir():
+            for f in sorted(lrp.rglob("*.md")):
+                records.add(norm(f.stem))
     data = scan(root)
     a = analyze(data, records)
 

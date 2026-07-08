@@ -10,6 +10,12 @@ command -v jq >/dev/null 2>&1 || exit 0   # can't parse -> fail open
 tool="$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null || true)"
 denies=(); warns=()
 
+# Sidecar resolution (conventions/data-root.md). Fail open: resolver errors = in-repo behavior.
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+sc_out="$(bash "$HOOK_DIR/../scripts/resolve-data-root.sh" 2>/dev/null || true)"
+sc_mode="$(printf '%s\n' "$sc_out" | sed -n 's/^mode=//p')"
+sc_root="$(printf '%s\n' "$sc_out" | sed -n 's/^data_root=//p')"
+
 case "$tool" in
   Bash)
     cmd="$(printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null || true)"
@@ -31,6 +37,11 @@ case "$tool" in
       denies+=("guardrail: high-confidence secret detected in write content. Remove it before writing.")
     fi
     path="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null || true)"
+    if [ "$sc_mode" = "sidecar" ] \
+       && printf '%s' "$path" | grep -qE '(^|/)(docs/project-tracking|docs/memory)(/|$)|(^|/)\.claude/guardrails\.json$' \
+       && ! printf '%s' "$path" | grep -qF '/_meta/'; then
+      warns+=("guardrail: sidecar mode — the workspace-os data layer for this repo lives in _meta/, not in the repo tree ('$path'). See conventions/data-root.md.")
+    fi
     if printf '%s' "$content" | grep -qEi '(api[_-]?key|secret|token|password)'; then
       warns+=("guardrail: possible secret in write content ('$path'). Files are version-controlled — do not commit secrets.")
     fi
@@ -42,6 +53,10 @@ if [ -z "$config" ]; then
   root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
   [ -z "$root" ] && root="${CLAUDE_PROJECT_DIR:-$PWD}"
   config="$root/.claude/guardrails.json"
+  # Sidecar fallback: in-repo config wins where present (spec §6).
+  if [ ! -f "$config" ] && [ "$sc_mode" = "sidecar" ] && [ -f "$sc_root/guardrails.json" ]; then
+    config="$sc_root/guardrails.json"
+  fi
 fi
 
 if [ -n "$config" ] && [ -f "$config" ] && jq -e . "$config" >/dev/null 2>&1; then

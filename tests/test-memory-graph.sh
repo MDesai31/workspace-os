@@ -48,6 +48,19 @@ case "$report" in *"BROKEN LINKS (0)"*) echo "PASS: clean report has zero broken
 out="$(python3 "$SCRIPT" --check --root "$CLEAN/docs/memory" --tracking-root "$CLEAN/nonexistent" 2>&1)"; ec=$?
 check "missing tracking root = no crash, D- link now broken" "$ec" "1" "$out" "d_20260101_fixture_decision"
 
+# --- two-tier (sidecar): --link-root resolves cross-tier wikilinks ---
+TWO="$HERE/fixtures/memory-two-tier"
+out="$(python3 "$SCRIPT" --check --root "$TWO/repo/docs/memory" 2>&1)"; ec=$?
+check "cross-tier link WITHOUT --link-root is broken" "$ec" "1" "$out" "shared_data_contract"
+
+out="$(python3 "$SCRIPT" --check --root "$TWO/repo/docs/memory" \
+      --link-root "$TWO/workspace/memory" 2>&1)"; ec=$?
+check "cross-tier link WITH --link-root resolves" "$ec" "0" "$out" "clean"
+
+out="$(python3 "$SCRIPT" --check --root "$TWO/repo/docs/memory" \
+      --link-root "$TWO/nonexistent" 2>&1)"; ec=$?
+check "missing --link-root dir fails open (link broken, no crash)" "$ec" "1" "$out" "shared_data_contract"
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

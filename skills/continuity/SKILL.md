@@ -10,14 +10,24 @@ argument-hint: "[scaffold|review]   (default: scaffold if CONTINUITY.md absent, 
 # Continuity
 
 Create or maintain `CONTINUITY.md` **at the repo root** (a bus-factor doc must be findable by a
-stranger — it sits next to README.md). The template and its conventions live in this plugin's
-`templates/CONTINUITY.md`; follow its structure exactly — the five sections and the
-`TODO(<owner>)` convention are the contract.
+stranger — it sits next to README.md). In sidecar mode, CONTINUITY.md lives at
+`<data_root>/CONTINUITY.md` instead of the repo root, and the CLAUDE.md pointer line is skipped.
+The template and its conventions live in this plugin's `templates/CONTINUITY.md`; follow its
+structure exactly — the five sections and the `TODO(<owner>)` convention are the contract.
 
 **Never write a secret** into this file — key values, tokens, passwords, connection strings.
 Pointers only ("lives in `~/.config/secrets/…`, held by X"). This is the same rule as
 `conventions/memory.md`, and the guardrail engine's secret patterns apply to this file like any
 other write.
+
+## Step 0
+
+0. **Resolve the data root.** Run `bash "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-data-root.sh"`
+   and parse its `key=value` output (`conventions/data-root.md`). Tracking lives at
+   `<data_root>/project-tracking/`, memory at `<data_root>/memory/` — in BOTH modes; never
+   hardcode `docs/…`. Announce the resolved mode. In **sidecar** mode: never create, modify,
+   or stage any file inside the repo's working tree, and after each write commit the change in
+   the sidecar repo (`git -C <workspace_root> add -A && git -C <workspace_root> commit`).
 
 ## Mode: `scaffold` (CONTINUITY.md absent)
 
@@ -37,12 +47,13 @@ other write.
    exist). Owner defaults to the repo's committer (`git log -1 --format=%an`) with a TODO to
    confirm.
 3. **Show the proposed file and confirm before writing** (same propose→confirm→apply discipline
-   as the adopt skills). Then write `CONTINUITY.md` at the repo root from the template with the
-   proposed rows, `<REPO>` replaced by the repo name, and the unfilled sections left as
-   template guidance.
-4. Point it from the repo: offer to add one line to the repo's `CLAUDE.md`
+   as the adopt skills). Then write `CONTINUITY.md` *(in-repo only:)* at the repo root from the
+   template with the proposed rows, `<REPO>` replaced by the repo name, and the unfilled
+   sections left as template guidance. *(sidecar:)* write to `<data_root>/CONTINUITY.md` instead.
+4. Point it from the repo *(in-repo only)*: offer to add one line to the repo's `CLAUDE.md`
    (`- Continuity runbook: CONTINUITY.md` under an existing pointers section) — a pointer, not
-   an import; this doc is for humans first and must not load every session.
+   an import; this doc is for humans first and must not load every session. In sidecar mode
+   this step is skipped.
 
 ## Mode: `review` (CONTINUITY.md present)
 

@@ -10,16 +10,23 @@ argument-hint: "<auto-memory fact name or description to migrate>"
 # Memory Sync
 
 Bridge: move ONE fact from the user's personal `~/.claude` auto-memory into THIS repo's shared
-`docs/memory/`, with confirmation. Schema, types, and the boundary test live in this plugin's
-`conventions/memory.md`.
+`<data_root>/memory/` (`docs/memory/` in in-repo mode), with confirmation. Schema, types, and the
+boundary test live in this plugin's `conventions/memory.md`.
 
 Direction is **one-way (personal → repo) by design**: git already carries repo memory across
 machines, so this skill exists only to relocate facts that landed in the wrong store (including
 ones auto-saved to `~/.claude` mid-session).
 
-**Prerequisite:** the repo must have `docs/memory/` (run `/project-init` if not).
+**Prerequisite:** the repo must have `<data_root>/memory/` (run `/project-init` if not).
 
 ## Steps
+
+0. **Resolve the data root.** Run `bash "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-data-root.sh"`
+   and parse its `key=value` output (`conventions/data-root.md`). Tracking lives at
+   `<data_root>/project-tracking/`, memory at `<data_root>/memory/` — in BOTH modes; never
+   hardcode `docs/…`. Announce the resolved mode. In **sidecar** mode: never create, modify,
+   or stage any file inside the repo's working tree, and after each write commit the change in
+   the sidecar repo (`git -C <workspace_root> add -A && git -C <workspace_root> commit`).
 
 1. **Locate the source fact.** Auto-memory lives in the session's memory directory (the
    `~/.claude/.../memory/` dir referenced in this session's context). Find the file matching the
@@ -36,7 +43,8 @@ ones auto-saved to `~/.claude` mid-session).
    rule** in `conventions/memory.md` (the two taxonomies differ; re-slug to clean kebab, and note
    some types — e.g. `user` — should not migrate).
 5. **Confirm with the user** the exact target file path and translated content before writing.
-6. **Write** `docs/memory/<slug>.md` and append the index line to `MEMORY.md` (per conventions).
+6. **Write** `<data_root>/memory/<slug>.md` and append the index line to `MEMORY.md` (per
+   conventions).
 7. **Offer cleanup** — ask whether to remove the original auto-memory file (and its `MEMORY.md`
    index line) or leave it. **Default: leave it;** only remove on explicit confirmation.
 8. **Report** what moved and where. Do **not** commit.

@@ -31,6 +31,26 @@ Generic worked example: a framework's non-obvious import path — where the wron
 compiles to a broken state — is *costly-first* → **CLAUDE.md**. The *rationale* for choosing that
 framework is *consult-when-relevant* → **docs/memory/**.
 
+## Two-tier memory in sidecar workspaces
+
+In a marked workspace (`conventions/data-root.md`), memory has two tiers:
+
+- **Repo tier** — `_meta/<repo>/memory/`: facts specific to one repo.
+- **Workspace tier** — `_meta/memory/`: facts true across the whole project — shared domain
+  vocabulary, the data contract between the repos, environment/infra facts, team conventions.
+
+Each tier keeps its own `MEMORY.md` index. Retrieval surfaces the workspace tier first, then
+the repo tier (general before specific), via the plugin's SessionStart hook.
+
+**The tier test** (applied by `/ingest` after the boundary rule): *would this fact be just as
+true and useful in every repo of this workspace?* → workspace tier. Otherwise → repo tier.
+`/ingest` defaults to the repo tier and proposes the workspace tier when the test clearly
+passes; an explicit user scope request always wins.
+
+**Cross-tier wikilinks are allowed** (a repo fact may link `[[shared-data-contract]]` in the
+workspace tier). `/memory-lint` passes the workspace tier as `--link-root` to
+`scripts/memory_graph.py` so these resolve. In-repo mode has exactly one tier; nothing changes.
+
 ## Files (per target repo)
 
 Created by `/project-init` under `<repo>/docs/memory/`:

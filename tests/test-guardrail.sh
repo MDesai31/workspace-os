@@ -86,6 +86,35 @@ else
   echo "FAIL: deny leaked to stdout (stdout=[$deny_out])"; fail=$((fail+1))
 fi
 
+# --- Task: sidecar mode (config fallback + repo-tree backstop) ---
+# Runtime fixture: a marked workspace (committed fixtures can't hold nested .git dirs).
+SWTMP="$(mktemp -d)"; trap 'rm -rf "$SWTMP"' EXIT
+mkdir -p "$SWTMP/ws/_meta/repo-a" "$SWTMP/ws/repo-a"
+printf '{ "workspace-os": "sidecar", "workspace": "gw" }\n' > "$SWTMP/ws/_meta/workspace.json"
+git -C "$SWTMP/ws/repo-a" init -q
+cat > "$SWTMP/ws/_meta/repo-a/guardrails.json" <<'JSON'
+{ "bash": [ { "name": "no-prod", "match": "deploy --prod", "action": "deny", "reason": "sidecar-rule: no prod deploys" } ] }
+JSON
+
+# run_hook_in <dir> <json> -> prints "<exit_code>\t<combined output>"  (GUARDRAIL_CONFIG unset)
+run_hook_in() {
+  local dir="$1" json="$2" out ec
+  out="$(cd "$dir" && bash "$HOOK" <<<"$json" 2>&1)"; ec=$?
+  printf '%s\t%s' "$ec" "$out"
+}
+
+IFS=$'\t' read -r ec err < <(run_hook_in "$SWTMP/ws/repo-a" '{"tool_name":"Bash","tool_input":{"command":"deploy --prod now"}}')
+check "sidecar guardrails.json fallback denies" "$ec" "2" "$err" "sidecar-rule"
+
+IFS=$'\t' read -r ec err < <(run_hook_in "$SWTMP/ws/repo-a" '{"tool_name":"Write","tool_input":{"file_path":"docs/project-tracking/action-items.md","content":"x"}}')
+check "sidecar write into repo tracking warns" "$ec" "0" "$err" "sidecar mode"
+
+IFS=$'\t' read -r ec err < <(run_hook_in "$SWTMP/ws/repo-a" '{"tool_name":"Write","tool_input":{"file_path":"src/app.py","content":"print(1)"}}')
+check "sidecar write to normal code passes" "$ec" "0" "$err" ""
+
+IFS=$'\t' read -r ec err < <(run_hook_in "$SWTMP/ws/repo-a" '{"tool_name":"Write","tool_input":{"file_path":"'"$SWTMP"'/ws/_meta/repo-a/memory/fact.md","content":"x"}}')
+check "sidecar write into _meta passes" "$ec" "0" "$err" ""
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
