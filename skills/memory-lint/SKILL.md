@@ -37,7 +37,8 @@ To lint the workspace tier itself, run again with `--root "<workspace_root>/memo
 
 It mechanically covers **index ↔ file parity** (unindexed files, dangling `MEMORY.md` entries)
 and **wikilink resolution** (against fact files *and* `A-`/`D-` records in
-`docs/project-tracking/`), plus graph health: orphans, weakly-linked notes, hubs, naming drift,
+`<data_root>/project-tracking/` — `docs/project-tracking/` in in-repo mode), plus graph health:
+orphans, weakly-linked notes, hubs, naming drift,
 duplicate `name:`/basenames, and typed-edge coverage (`[[supersedes::target]]` predicates — see
 `conventions/memory.md`). Any BROKEN LINK, unindexed file, or dangling entry is a FAIL.
 (`--check` is the CI/pre-commit form of the same gate.)
