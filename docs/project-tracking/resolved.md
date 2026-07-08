@@ -178,3 +178,17 @@ promotion applies supersession against the old champion. Quick-add infers from m
 tracker, `templates/MODEL_LOG.md` → `docs/models/<name>.md` — append-only merge=union table,
 sha → headline metrics → verdict, one row per evaluated candidate (git owns "what changed").
 Plugin v0.10.0. Graduated from the model-decision-log idea (brainstorm 2026-06-28).
+
+### A-20260707-sidecar-data-layer — build sidecar data-layer mode per spec
+- Workstream: meta
+- Status: done
+- Created: 2026-07-07
+- Completed: 2026-07-07
+- Commit: 4d9b40a (PR #14, squash of feat/sidecar-data-layer 0f1c0ff..5f96dbd)
+
+Implemented docs/specs/2026-07-07-sidecar-data-layer-design.md (v0.11.0), built subagent-driven
+per docs/plans/2026-07-07-sidecar-data-layer.md: `scripts/resolve-data-root.sh` resolver +
+`/workspace-init` + sidecar branches in all 9 skills + SessionStart two-tier memory hook +
+`guardrail.sh` sidecar fallback/backstop + `memory_graph.py --link-root` +
+`conventions/data-root.md` + 54 test checks across 4 suites. Final whole-branch review fixes
+landed in 5f96dbd. Spawned by D-20260707-sidecar-data-layer.
