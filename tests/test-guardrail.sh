@@ -115,6 +115,10 @@ check "sidecar write to normal code passes" "$ec" "0" "$err" ""
 IFS=$'\t' read -r ec err < <(run_hook_in "$SWTMP/ws/repo-a" '{"tool_name":"Write","tool_input":{"file_path":"'"$SWTMP"'/ws/_meta/repo-a/memory/fact.md","content":"x"}}')
 check "sidecar write into _meta passes" "$ec" "0" "$err" ""
 
+# Windows file_path is backslashed — the repo-tree backstop must still fire (regression: forward-slash-only grep)
+IFS=$'\t' read -r ec err < <(run_hook_in "$SWTMP/ws/repo-a" '{"tool_name":"Write","tool_input":{"file_path":"docs\\project-tracking\\action-items.md","content":"x"}}')
+check "sidecar backslash path warns (Windows)" "$ec" "0" "$err" "sidecar mode"
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

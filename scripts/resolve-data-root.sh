@@ -8,7 +8,14 @@
 # Not inside a git repo -> message on stderr, exit 1. jq optional (grep fallback).
 set -uo pipefail
 
-repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "resolve-data-root: not inside a git repository" >&2
+  exit 1
+fi
+# Repo root in the SHELL's path form (MSYS `/c/...` on Windows) — NOT git's `C:/...`
+# `--show-toplevel` form — so emitted paths match `pwd` and downstream tooling on every platform.
+cdup="$(git rev-parse --show-cdup 2>/dev/null)"
+repo_root="$(cd "./${cdup}" 2>/dev/null && pwd)"
 if [ -z "$repo_root" ]; then
   echo "resolve-data-root: not inside a git repository" >&2
   exit 1
@@ -52,8 +59,9 @@ while :; do
     echo "workspace_root=$dir/_meta"
     exit 0
   fi
-  [ "$dir" = "/" ] && break
-  dir="$(dirname "$dir")"
+  parent="$(dirname "$dir")"
+  [ "$parent" = "$dir" ] && break   # POSIX "/" and Windows "C:" both self-parent
+  dir="$parent"
 done
 
 echo "mode=in-repo"

@@ -37,9 +37,10 @@ case "$tool" in
       denies+=("guardrail: high-confidence secret detected in write content. Remove it before writing.")
     fi
     path="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null || true)"
+    path_fwd="$(printf '%s' "$path" | tr '\\' '/')"   # Windows file_path is backslashed; match on a forward-slash view
     if [ "$sc_mode" = "sidecar" ] \
-       && printf '%s' "$path" | grep -qE '(^|/)(docs/project-tracking|docs/memory)(/|$)|(^|/)\.claude/guardrails\.json$' \
-       && ! printf '%s' "$path" | grep -qF '/_meta/'; then
+       && printf '%s' "$path_fwd" | grep -qE '(^|/)(docs/project-tracking|docs/memory)(/|$)|(^|/)\.claude/guardrails\.json$' \
+       && ! printf '%s' "$path_fwd" | grep -qF '/_meta/'; then
       warns+=("guardrail: sidecar mode — the workspace-os data layer for this repo lives in _meta/, not in the repo tree ('$path'). See conventions/data-root.md.")
     fi
     if printf '%s' "$content" | grep -qEi '(api[_-]?key|secret|token|password)'; then
@@ -73,7 +74,7 @@ if [ -n "$config" ] && [ -f "$config" ] && jq -e . "$config" >/dev/null 2>&1; th
       while IFS=$'\t' read -r action reason; do
         [ -z "$action" ] && continue
         if [ "$action" = "deny" ]; then denies+=("$reason"); else warns+=("$reason"); fi
-      done < <(jq -r --arg path "${path:-}" --arg content "${content:-}" \
+      done < <(jq -r --arg path "${path_fwd:-}" --arg content "${content:-}" \
         '(.write // [])[] | .match as $m | select($m != null and ((if (.field // "content") == "path" then $path else $content end) | test($m))) | "\(.action)\t\(.reason)"' \
         "$config" 2>/dev/null)
       ;;
