@@ -9,15 +9,25 @@ argument-hint: "[action|decision|model-decision|done] <workstream> <details>   (
 
 # Project Log
 
-Append typed records to this repo's `docs/project-tracking/`. All record formats, the ID rule,
-and the lifecycle live in this plugin's `conventions/project-tracking.md` — read it and follow
-it exactly; do not restate the rules here.
+Append typed records to this repo's `<data_root>/project-tracking/` (`docs/project-tracking/` in
+in-repo mode). All record formats, the ID rule, and the lifecycle live in this plugin's
+`conventions/project-tracking.md` — read it and follow it exactly; do not restate the rules here.
 
-**Prerequisite:** the repo must already have `docs/project-tracking/` (run `/project-init` if
-not). If it's missing, stop and say so.
+**Prerequisite:** the repo must already have `<data_root>/project-tracking/` (run
+`/project-init` if not). If it's missing, stop and say so.
 
 **Workstream validation:** the tag must be one listed under `## Workstreams` in
-`docs/project-tracking/README.md`. If the given tag isn't there, list the valid ones and ask.
+`<data_root>/project-tracking/README.md`. If the given tag isn't there, list the valid ones and
+ask.
+
+## Step 0
+
+0. **Resolve the data root.** Run `bash "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-data-root.sh"`
+   and parse its `key=value` output (`conventions/data-root.md`). Tracking lives at
+   `<data_root>/project-tracking/`, memory at `<data_root>/memory/` — in BOTH modes; never
+   hardcode `docs/…`. Announce the resolved mode. In **sidecar** mode: never create, modify,
+   or stage any file inside the repo's working tree, and after each write commit the change in
+   the sidecar repo (`git -C <workspace_root> add -A && git -C <workspace_root> commit`).
 
 ## Modes
 
@@ -48,7 +58,8 @@ call). Mint a normal `D-<today>-<slug>` and append the **model-decision template
 the typed fields from what the user gives; ask only for the ones that guard against future
 confusion: `Dataset` (vintage/cutoff), `Validation` (protocol + leakage guards), and `Run` (the
 MLflow/W&B run ID or URL; if the repo has no tracker, offer the ledger fallback — a
-`docs/models/<model-name>.md` from `templates/MODEL_LOG.md`, per the conventions' "run layer"
+`<data_root>/models/<model-name>.md` (`docs/models/<model-name>.md` in in-repo mode) from
+`templates/MODEL_LOG.md`, per the conventions' "run layer"
 section — and point `Run:` at its row). **Never copy a metrics table into the record** — one
 headline number, the run pointer owns the rest. If this is a champion promotion, apply the supersession protocol
 against the old champion's record (`Outcome: challenger-promoted` + `Supersedes:` + the one
