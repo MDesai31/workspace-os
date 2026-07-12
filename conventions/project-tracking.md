@@ -151,8 +151,10 @@ each chunk:
 - explicit decision (a "Key decisions" item, "Supersedes…", "chose X because Y") → a **`D-` record**
   in `decisions-log.md` (the body `[[wikilink]]`s the source doc);
 - open TODO / unchecked `- [ ]` / "next up" → an **`A-` record** in `action-items.md`, status `open`;
-- completed / checked `- [x]` / changelog "done" → **skip for now** (belongs in `resolved.md`, which
-  needs a real commit ref — adopted via git history in a later slice, not from prose);
+- completed / checked `- [x]` / changelog "done" → **docs-only mode: skip** (a resolved record
+  needs a real commit ref, which prose cannot supply — run `/tracking-adopt git`); **git mode:
+  cross-match** against the mined units (see "Git-history archaeology" below) — matched → enriches
+  that unit's single record, unmatched → stays skipped and reported;
 - durable knowledge / imperative / about-the-person → **out of lane, skip** (knowledge is
   `/memory-adopt`'s job).
 
@@ -162,6 +164,35 @@ grandfathered, never rewritten (see IDs above). **Workstreams:** tag against the
 scanned docs for confirmation. **Source docs are read-only** — never modified (not even `CLAUDE.md`).
 **Idempotent:** before proposing, skip any record whose slug or content is already in tracking.
 **Never write secrets.** Apply only on explicit confirmation.
+
+### Git-history archaeology (`/tracking-adopt git`)
+
+The explicit `git` mode adds **git history** as a source and produces **`resolved.md` records
+only** — the one record type prose cannot legitimize, because a resolved record needs a real
+`Commit:` ref. One record per **merged unit**: a merge commit, a squash commit carrying a `(#N)`
+PR marker in its subject, or a model-grouped run of related direct-to-main commits;
+chore/typo/CI/formatting/version-bump noise is skipped, never recorded.
+
+**Bound:** default = since the newest reachable tag if one exists, else the last ~30 merged
+units; an explicit git range argument (`v1.0..HEAD`, `HEAD~50..`, `--all`) overrides. Over ~30
+candidates → propose the newest ~30 and report how to continue with an explicit range.
+
+**Record shape:** the action template plus `- Completed:` (merge date) and `- Commit:` (SHA, plus
+`(PR #N)` when known); ID = `A-<merge-date>-slug` — dated by when the work **landed**, so imports
+sort naturally and re-runs mint identical slugs; `Created:` = the PR open date when enrichment
+supplies it, else the merge date; Status `done`; a 2–4 line body from the PR body / commit
+messages ending `Imported from git history by /tracking-adopt git.`
+
+**Enrichment is opportunistic:** with a GitHub remote and a working `gh`/GitHub MCP, fetch PR
+title/body/open-date; on **any** failure (no remote, no auth, offline) degrade silently to commit
+messages. Never required, never blocks.
+
+**Dedup key: the SHA/PR#.** Skip any candidate whose SHA or PR number already appears in
+`resolved.md` — covers prior imports *and* organic `/project-log done` records. Slug/content
+match is secondary. Re-running the same range proposes nothing new.
+
+**Out of scope (deliberate):** decision mining from commit/PR prose ("chose X because Y" → `D-`)
+and open branches/stale issues → `action-items.md` — fuzzy and noisy; deferred, not implied.
 
 ## Concurrency
 
