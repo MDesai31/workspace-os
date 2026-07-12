@@ -192,3 +192,19 @@ per docs/plans/2026-07-07-sidecar-data-layer.md: `scripts/resolve-data-root.sh` 
 `guardrail.sh` sidecar fallback/backstop + `memory_graph.py --link-root` +
 `conventions/data-root.md` + 54 test checks across 4 suites. Final whole-branch review fixes
 landed in 5f96dbd. Spawned by D-20260707-sidecar-data-layer.
+
+### A-20260711-tracking-adopt-git — build /tracking-adopt git mode per spec
+- Workstream: skills
+- Status: done
+- Created: 2026-07-11
+- Completed: 2026-07-11
+- Commit: 382311d..9d9674c + b063b74 (branch tracking-adopt-git; PR pending)
+
+Shipped the `git` mode on `/tracking-adopt` (G2–G9): bounded history mining (newest tag, else
+last ~30 merged units) → one `resolved.md` record per merged unit (merge commit, squash `(#N)`,
+or grouped direct-to-main run), opportunistic `gh` enrichment that degrades silently, doc-completed
+cross-match, and SHA/PR#-primary dedup. New "Git-history archaeology" sub-subsection in
+`conventions/project-tracking.md` is the SoT for bound/record-shape/dedup rules. Plugin v0.12.0.
+Propose-only self-run against workspace-os's own history confirmed zero duplicate proposals
+(4d9b40a/PR #14, 0c7ac16/PR #13, f99188b/PR #12 all correctly skipped). Graduated adoption-import
+sub-slice (b.2). Decision D-20260711-tracking-adopt-git-design.
