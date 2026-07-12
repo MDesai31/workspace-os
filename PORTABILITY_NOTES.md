@@ -34,11 +34,11 @@ If the repo already has existing docs (README, design notes, CLAUDE.md reference
 `/memory-adopt` instead of starting empty — it scans, proposes a mapping, and applies only on
 confirmation (opt-in, propose→confirm→apply).
 
-If the repo has existing roadmaps, TODO lists, or prior planning docs, run `/tracking-adopt` — it routes roadmap entries → ideas, recorded decisions → decisions-log, and open TODOs → action-items.
+If the repo has existing roadmaps, TODO lists, or prior planning docs, run `/tracking-adopt` — it routes roadmap entries → ideas, recorded decisions → decisions-log, and open TODOs → action-items. The `git` mode additionally mines merged git history into resolved-record proposals (local git is the base; `gh` enrichment is optional).
 
 ## Not included (future slices)
 
 A `finish-task`-style closing ritual; a meta/management panel; remaining adoption sub-slices
-(foreign memory-format conversion; roadmap/TODO → tracking); and the cross-repo portfolio
+(foreign memory-format conversion); and the cross-repo portfolio
 registry. Each is its own future slice — see `docs/specs/` and
 `docs/project-tracking/ideas.md`.

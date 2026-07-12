@@ -32,7 +32,7 @@ sidecar-memory-context.sh ──SessionStart──▶ injects _meta memory (work
 /memory-lint  ──checks──▶ docs/memory/ index + wikilink integrity
 /memory-sync  ──migrates▶ a ~/.claude fact ──▶ docs/memory/
 /memory-adopt ──reshapes▶ existing docs ──▶ docs/memory/  (+ proposed CLAUDE.md trim)
-/tracking-adopt ──routes──▶ existing roadmap/TODO docs ──▶ docs/project-tracking/  (slice 1: docs-only)
+/tracking-adopt ──routes──▶ existing roadmap/TODO docs ──▶ docs/project-tracking/  (git mode: merged history ──▶ resolved.md)
 guardrail.sh  ──reads──▶ <repo>/.claude/guardrails.json   (PreToolUse deny/warn on Bash|Edit|Write)
   tracking skills ──read──▶ conventions/project-tracking.md   (schema + lifecycle, SoT)
   memory skills   ──read──▶ conventions/memory.md             (schema + boundary test, SoT)
