@@ -47,7 +47,7 @@ into `resolved.md` — see "Git mode" below.
    lists. List what you'll consider.
 3. **Classify** each detected chunk through the routing in `conventions/project-tracking.md`: → an
    idea (`ideas.md`), → a `D-` decision (`decisions-log.md`), → an `A-` action (`action-items.md`),
-   → skip-for-now (completed → `resolved.md`, a later slice), or → out-of-lane (durable knowledge →
+   → skip in docs-only mode (completed → `resolved.md` via the git mode below), or → out-of-lane (durable knowledge →
    `/memory-adopt`).
 4. **Dedup.** Read existing `<data_root>/project-tracking/`; if a proposed record's slug already
    exists or its content is clearly already present, mark it "already adopted — skip." Grandfather
@@ -76,7 +76,7 @@ bootstrap) run unchanged; then:
 
 G2. **Bound the walk.** With a `[range]` argument, pass it to `git log` verbatim. Otherwise:
     default branch = `git symbolic-ref --short refs/remotes/origin/HEAD | sed 's|origin/||'`
-    (fallback: the current branch); bound = `$(git describe --tags --abbrev=0)..HEAD` when a tag
+    (fallback: the current branch); bound = `$(git describe --tags --abbrev=0 <branch>)..<branch>` when a tag
     exists, else the last ~30 merged units. Announce the resolved bound.
 G3. **Mine candidate units.** Walk
     `git log --first-parent --date=short --pretty=format:'%h%x09%ad%x09%s%x09%b%x1e' <bound>`
@@ -101,8 +101,7 @@ G8. **Propose one batch:** one `resolved.md` record per unit, per the SoT record
     repo enum, 2–4 line body + provenance line). Each proposal shows the SHA/PR# and the
     enrichment/cross-match source. Over ~30 candidates → propose the newest ~30 and say how to
     continue with an explicit range.
-G9. **Confirm → Apply → Report** exactly as Steps 7–9 above. `resolved.md`'s italic placeholder
-    is `_Nothing resolved yet._` — replace it on first write. All sidecar rules and the
+G9. **Confirm → Apply → Report** exactly as Steps 7–9 above. Replace `resolved.md`'s italic placeholder line on first write (the shipped template's is `_Nothing resolved yet._`) — match the italic line, not a fixed string. All sidecar rules and the
     no-auto-commit rule apply unchanged.
 
 ## Known limitations
