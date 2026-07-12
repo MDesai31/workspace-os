@@ -1,10 +1,10 @@
 ---
 name: tracking-adopt
-description: Adopt a repo's existing roadmap / TODO / decision docs into docs/project-tracking/. Use when starting workspace-os in a repo that already has work-state docs (a README roadmap, a TODO file, design-doc decisions) and you want them captured as tracking records. Opt-in; propose-confirm-apply; never auto-runs.
+description: Adopt a repo's existing roadmap / TODO / decision docs into docs/project-tracking/, and (git mode) its merged git history into resolved.md. Use when starting workspace-os in a repo that already has work-state docs or a real commit history you want captured as tracking records. Opt-in; propose-confirm-apply; never auto-runs.
 user-invocable: true
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
-argument-hint: "[path or glob to limit the scan]   (default: the repo's common doc locations)"
+argument-hint: "[path or glob to limit the scan] | git [range]   (docs scan by default; git mode mines merged history — default bound: newest tag, else last ~30 merged units)"
 ---
 
 # Tracking Adopt
@@ -21,6 +21,8 @@ read only. The skill writes only under `<data_root>/project-tracking/` (plus the
 `<workspace_root>/.gitattributes` in sidecar, never the repo tree), and only with your
 confirmation. It is the tracking-side sibling of `/memory-adopt`, which owns durable knowledge;
 the two are complementary.
+The explicit **`git` mode** (`/tracking-adopt git [range]`) additionally mines merged git history
+into `resolved.md` — see "Git mode" below.
 
 ## Steps
 
@@ -65,10 +67,48 @@ the two are complementary.
 9. **Report** what was created per file, what was skipped (+ why), and what's out-of-lane for
    `/memory-adopt`. Do **not** commit — leave everything staged-ready.
 
+## Git mode (`/tracking-adopt git [range]`)
+
+Adds **git history** as a source; routes to **`resolved.md` only**. The routing, record shape,
+bound, and dedup rules live in `conventions/project-tracking.md` ("Git-history archaeology") —
+read them and follow them exactly; do not restate them here. Steps 0–1 above (data root,
+bootstrap) run unchanged; then:
+
+G2. **Bound the walk.** With a `[range]` argument, pass it to `git log` verbatim. Otherwise:
+    default branch = `git symbolic-ref --short refs/remotes/origin/HEAD | sed 's|origin/||'`
+    (fallback: the current branch); bound = `$(git describe --tags --abbrev=0)..HEAD` when a tag
+    exists, else the last ~30 merged units. Announce the resolved bound.
+G3. **Mine candidate units.** Walk
+    `git log --first-parent --date=short --pretty=format:'%h%x09%ad%x09%s%x09%b%x1e' <bound>`
+    on the default branch. One unit per: **merge commit**; **squash commit with a `(#N)` PR
+    marker** in its subject; a **model-grouped run of related direct-to-main commits**
+    (judgment). Skip noise — chore/typo/CI/formatting/version-bump — never record it.
+G4. **Enrich opportunistically.** If a GitHub remote exists and `gh` (or the GitHub MCP) works,
+    fetch `gh pr view <N> --json title,body,createdAt` for candidate PR numbers. On **any**
+    failure, degrade silently to commit messages — enrichment never blocks or fails the run.
+G5. **Cross-match doc-completed items.** Run the docs scan (Step 2 globs) for **completed items
+    only** (checked `- [x]`, changelog "done"); match each against the mined units by content
+    similarity. Matched → enrich that unit's single record (the doc phrasing may improve the
+    title/body); never a second record. Unmatched → skip and report — prose alone does not
+    legitimize a resolved record.
+G6. **Dedup.** Primary key = **SHA/PR#**: skip any candidate whose SHA or PR number already
+    appears in `resolved.md` (prior imports and organic `/project-log done` records alike).
+    Secondary: slug/content, as in Step 4 above.
+G7. **Secret-scan** each proposed record — commit messages and PR bodies can carry tokens
+    (same rule as Step 5 above).
+G8. **Propose one batch:** one `resolved.md` record per unit, per the SoT record shape
+    (`A-<merge-date>-slug`, `Created:`/`Completed:`/`Commit:`, Status `done`, workstream from the
+    repo enum, 2–4 line body + provenance line). Each proposal shows the SHA/PR# and the
+    enrichment/cross-match source. Over ~30 candidates → propose the newest ~30 and say how to
+    continue with an explicit range.
+G9. **Confirm → Apply → Report** exactly as Steps 7–9 above. `resolved.md`'s italic placeholder
+    is `_Nothing resolved yet._` — replace it on first write. All sidecar rules and the
+    no-auto-commit rule apply unchanged.
+
 ## Known limitations
 
-- **Slice 1 is docs-only.** Completed work is not adopted (it belongs in `resolved.md`, which needs
-  a real commit ref); git-history reconstruction for docs-poor repos is a later slice.
+- **Git mode routes to `resolved.md` only.** Decision mining from commit/PR prose and open
+  branches/stale issues → `action-items.md` are deliberately deferred (fuzzy, noisy); inline code
+  `// TODO`s are not mined.
 - **Candidate set is fixed** to the globs above (minus `<data_root>/project-tracking/` and
-  `<data_root>/memory/`). Other docs are scanned only if named in the path/glob argument. Inline
-  code `// TODO`s are not mined.
+  `<data_root>/memory/`). Other docs are scanned only if named in the path/glob argument.
