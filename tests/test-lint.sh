@@ -81,7 +81,7 @@ check "backslash path matches slash rule (Windows)" "$ec" "0" "$out" "E501"
 
 # --- sidecar config fallback (no LINT_CONFIG; resolve via a marked workspace's _meta/) ---
 # Runtime fixture: committed fixtures can't hold nested .git dirs.
-SW="$(mktemp -d)"
+SW="$TMP/sw"; mkdir -p "$SW"
 mkdir -p "$SW/ws/_meta/repo-a" "$SW/ws/repo-a"
 printf '{ "workspace-os": "sidecar", "workspace": "gw" }\n' > "$SW/ws/_meta/workspace.json"
 git -C "$SW/ws/repo-a" init -q
@@ -93,7 +93,6 @@ if printf '%s' "$sc_out" | jq -e '.hookSpecificOutput.additionalContext | test("
 else
   echo "FAIL: sidecar fallback (stdout=[$sc_out])"; fail=$((fail+1))
 fi
-rm -rf "$SW"
 
 echo "----"
 echo "$pass passed, $fail failed"

@@ -221,6 +221,6 @@ Shipped `hooks/lint.sh` (PostToolUse `Edit|Write|MultiEdit`): runs each linter a
 `<command> <file_path>`, and injects non-empty output as `additionalContext` (nested under
 `hookSpecificOutput`; truncated to ~9,500 chars); clean/absent-config/absent-linter → silent,
 fail-open throughout. Sidecar fallback to `_meta/<repo>/lint.json`. Registered in `hooks/hooks.json`;
-`templates/lint.json` (inert until edited); 12-case bash harness (`tests/test-lint.sh` + stub
+`templates/lint.json` (inert until edited); 11-case bash harness (`tests/test-lint.sh` + stub
 `fake-linter.sh`) wired into CI. Plugin v0.13.0. Closes `hook-starter-library` (last sub-slice).
 Decision D-20260713-lint-hook.
