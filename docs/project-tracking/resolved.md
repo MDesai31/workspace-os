@@ -198,7 +198,7 @@ landed in 5f96dbd. Spawned by D-20260707-sidecar-data-layer.
 - Status: done
 - Created: 2026-07-11
 - Completed: 2026-07-11
-- Commit: 382311d..9d9674c + b063b74 (branch tracking-adopt-git; PR pending)
+- Commit: 5b8bf56 (PR #16, squash of tracking-adopt-git 382311d..862c4ce)
 
 Shipped the `git` mode on `/tracking-adopt` (G2–G9): bounded history mining (newest tag, else
 last ~30 merged units) → one `resolved.md` record per merged unit (merge commit, squash `(#N)`,
