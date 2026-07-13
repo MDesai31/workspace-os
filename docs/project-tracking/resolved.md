@@ -214,7 +214,7 @@ sub-slice (b.2). Decision D-20260711-tracking-adopt-git-design.
 - Status: done
 - Created: 2026-07-13
 - Completed: 2026-07-13
-- Commit: <PR # or merge sha — fill at merge>
+- Commit: c8f2b80 (PR #17, squash of lint-hook 6e693e1..264c18e)
 
 Shipped `hooks/lint.sh` (PostToolUse `Edit|Write|MultiEdit`): runs each linter a repo declares in
 `.claude/lint.json` (`{name, match, command}`) whose `match` regex matches the edited file's path, as
