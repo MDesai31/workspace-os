@@ -211,3 +211,12 @@ Ships in v0.17.0 (A-20260812-memory-hygiene-lints).
 - Spawns: none
 
 Design: `docs/specs/2026-08-12-proactive-capture-cadence-design.md`. Plan: `docs/plans/2026-08-12-proactive-capture-cadence.md`.
+### D-20260712-project-status-design — /project-status as read-only prose skill on per-repo tracking files
+- Workstream: skills
+- Created: 2026-07-12
+- Status: accepted
+- Rationale: borrow keystone's report/brief output shapes (MIT) but re-found them on the four per-repo tracking files — keystone's version reads a single-workspace project registry (projects.md + CODEs) that workspace-os deliberately doesn't have (portfolio-registry stays parked). Pure SKILL.md prose, no parser script: records are markdown for humans/LLMs, and lenient judgment-parsing survives adopted repos' legacy formats where a deterministic parser would choke. Read-only contract (writes nothing) → no propose/confirm gate; model invocation enabled since triggers are conversational ("what's next", "status").
+- Consequences: first skill in the plugin with model invocation enabled and a pure read-only contract; keystone's set mode (lifecycle/priority mutation) deliberately dropped.
+- Spawns: A-20260712-project-status
+
+Spec: docs/specs/2026-07-12-project-status-design.md. First sub-slice of tracking-skills-roundout.
