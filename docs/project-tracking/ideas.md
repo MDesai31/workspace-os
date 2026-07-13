@@ -13,8 +13,9 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - **Dogfood (2026-06-27):** ran live (user-triggered) on klapp — adopted 2 domain facts, correctly proposed **no** CLAUDE.md trim (already clean), secret-scan flagged README seed-login passwords, surfaced findings (c)/(d) below + the CLAUDE.md-scope contradiction → D-20260627-memory-adopt-claudemd-scope.
 - **Shipped (v0.4.0):** sub-slice (b) **SHIPPED (docs-only)** — `/tracking-adopt` slice 1 routes roadmaps/TODOs → tracking (ideas/decisions-log/action-items). See `resolved.md` A-20260627-tracking-adopt. Decision: D-20260627-tracking-adopt-design. Remaining of (b): git-history archaeology + resolved.md import = slice 2.
 - **Shipped (v0.5.0):** sub-slices (c) + (d) — recursive `@import` resolution + wider candidate set, via the always-loaded **instruction-file class** (`CLAUDE.md` + `AGENTS.md` + `@import` targets, all trimmable). See `resolved.md` A-20260628-memory-adopt-hardening. Decision: D-20260628-memory-adopt-instruction-file-class.
-- **Remaining sub-slices:** (a) foreign memory-format conversion (top-level `memory/`, wiki → workspace-os schema); (b.2) git-history + resolved.md import (slice 2).
-- To start remaining sub-slices, future-us needs: foreign-format detection heuristics + schema mapping; a `/project-adopt-tracking` skill or a new mode on `/memory-adopt` for tracking-doc import. Relates to [[SP2-memory]].
+- **Shipped (v0.12.0):** sub-slice (b.2) — git-history + resolved.md import via `/tracking-adopt git`. See `resolved.md` A-20260711-tracking-adopt-git. Decision: D-20260711-tracking-adopt-git-design.
+- **Remaining sub-slices:** (a) foreign memory-format conversion (top-level `memory/`, wiki → workspace-os schema).
+- To start remaining sub-slices, future-us needs: foreign-format detection heuristics + schema mapping. Relates to [[SP2-memory]].
 
 ### SP2-memory — in-repo structured memory + reconciliation  (SHIPPED 2026-06-26 — SP2a + SP2b)
 - Workstream: memory

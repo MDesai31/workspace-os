@@ -32,7 +32,7 @@ machine gets the upgrade.
   `--check` for CI/pre-commit) plus model checks (frontmatter, slug match).
 - **`/memory-sync`** — migrate a fact from your `~/.claude` auto-memory into a repo's `docs/memory/`.
 - **`/memory-adopt`** — adopt a repo's existing docs (README, design notes, CLAUDE.md reference content) into `docs/memory/` (opt-in, propose→confirm→apply).
-- **`/tracking-adopt`** — adopt a repo's existing roadmaps and TODO docs into `docs/project-tracking/` (routes roadmap entries → ideas, recorded decisions → decisions-log, open TODOs → action-items).
+- **`/tracking-adopt`** — adopt a repo's existing roadmaps and TODO docs into `docs/project-tracking/` (routes roadmap entries → ideas, recorded decisions → decisions-log, open TODOs → action-items); the `git` mode mines merged history into resolved.md (one record per merged unit, real commit SHAs, SHA-deduped).
 - **`/continuity`** — scaffold/review a repo-root `CONTINUITY.md` bus-factor runbook: auto-inventories scheduled jobs (systemd/cron/CI), one deps→outs row per obligation with a Detection column, access *pointers* (never secrets), re-verify budgets, `TODO(owner)` gaps.
 - **`/workspace-init`** — mark a workspace for sidecar mode — data layer in a local-only `_meta/` repo, enterprise repos untouched.
 
