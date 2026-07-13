@@ -48,6 +48,15 @@ or `path` via `field`). `deny` blocks the call; `warn` prints an advisory. The e
 no config is present, so it's opt-in per repo. Tag the repo with `ip_class`
 (`personal`/`employer`/`clean-room`) and add tripwire `write` rules for cross-boundary IP leakage.
 
+## Lint
+
+A PostToolUse hook (`hooks/lint.sh`) runs a repo-declared linter on each edited file and feeds any
+diagnostics back to Claude to fix. It ships **no built-in linters** — opt in by copying
+`templates/lint.json` to `.claude/lint.json` and listing `linters` as `{name, match, command}`
+(`match` is a regex on the file path; the engine runs `<command> <file_path>` and injects non-empty
+output). A clean file is silent; the engine fails open when the config or the linter is absent. This
+is the quality-advice counterpart to the security-blocking guardrail — hence a separate config file.
+
 ## How it works
 
 See [`conventions/project-tracking.md`](conventions/project-tracking.md) (tracking schema, IDs,

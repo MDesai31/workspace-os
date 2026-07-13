@@ -1,0 +1,8 @@
+{
+  "_comment": "workspace-os lint rules for THIS repo. Copy to .claude/lint.json and edit. After every Edit/Write/MultiEdit the engine runs each entry whose `match` (regex on the file path) matches, as `<command> <file_path>`, and feeds any output back to Claude to fix. Nothing runs until you add entries to `linters` (the engine ships no built-in linters). Prefer commands that are SILENT on success (e.g. `ruff check`, `eslint`) so a clean file stays silent.",
+  "linters": [],
+  "_examples": [
+    { "name": "python", "match": "\\.py$", "command": "ruff check" },
+    { "name": "js", "match": "\\.(js|ts|jsx|tsx)$", "command": "eslint" }
+  ]
+}

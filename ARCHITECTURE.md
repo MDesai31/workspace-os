@@ -34,6 +34,7 @@ sidecar-memory-context.sh ──SessionStart──▶ injects _meta memory (work
 /memory-adopt ──reshapes▶ existing docs ──▶ docs/memory/  (+ proposed CLAUDE.md trim)
 /tracking-adopt ──routes──▶ existing roadmap/TODO docs ──▶ docs/project-tracking/  (git mode: merged history ──▶ resolved.md)
 guardrail.sh  ──reads──▶ <repo>/.claude/guardrails.json   (PreToolUse deny/warn on Bash|Edit|Write)
+lint.sh       ──reads──▶ <repo>/.claude/lint.json   (PostToolUse: lints edited file → additionalContext for Claude)
   tracking skills ──read──▶ conventions/project-tracking.md   (schema + lifecycle, SoT)
   memory skills   ──read──▶ conventions/memory.md             (schema + boundary test, SoT)
 ```
@@ -42,6 +43,11 @@ guardrail.sh  ──reads──▶ <repo>/.claude/guardrails.json   (PreToolUse 
   (secrets, force-push, `rm -rf`) plus declarative per-repo rules in `.claude/guardrails.json`
   (`bash`/`write` rules, `deny` blocks / `warn` advises). Opt in by copying `templates/guardrails.json`;
   the engine fails open when the file is absent. Same engine/data split as the rest of the plugin.
+- **The lint engine** (`hooks/lint.sh`) is the PostToolUse counterpart: after an `Edit`/`Write`/
+  `MultiEdit`, it runs each linter a repo declares in `.claude/lint.json` (`{name, match, command}`)
+  whose `match` regex matches the edited file's path, and feeds any diagnostics back to Claude as
+  `additionalContext` ("fix if quick"); a clean file is silent. It ships **no built-in linters** and
+  fails open when the config or a linter is absent — opt in by copying `templates/lint.json`.
 - **Skills** are model-interpreted instructions (`SKILL.md`). They contain no rules of their own
   beyond orchestration — the schema, ID scheme, and lifecycle live once in
   `conventions/project-tracking.md`, so there's no drift.

@@ -208,3 +208,19 @@ cross-match, and SHA/PR#-primary dedup. New "Git-history archaeology" sub-subsec
 Propose-only self-run against workspace-os's own history confirmed zero duplicate proposals
 (4d9b40a/PR #14, 0c7ac16/PR #13, f99188b/PR #12 all correctly skipped). Graduated adoption-import
 sub-slice (b.2). Decision D-20260711-tracking-adopt-git-design.
+
+### A-20260713-lint-hook — PostToolUse advisory-lint hook + template
+- Workstream: workflow
+- Status: done
+- Created: 2026-07-13
+- Completed: 2026-07-13
+- Commit: <PR # or merge sha — fill at merge>
+
+Shipped `hooks/lint.sh` (PostToolUse `Edit|Write|MultiEdit`): runs each linter a repo declares in
+`.claude/lint.json` (`{name, match, command}`) whose `match` regex matches the edited file's path, as
+`<command> <file_path>`, and injects non-empty output as `additionalContext` (nested under
+`hookSpecificOutput`; truncated to ~9,500 chars); clean/absent-config/absent-linter → silent,
+fail-open throughout. Sidecar fallback to `_meta/<repo>/lint.json`. Registered in `hooks/hooks.json`;
+`templates/lint.json` (inert until edited); 11-case bash harness (`tests/test-lint.sh` + stub
+`fake-linter.sh`) wired into CI. Plugin v0.13.0. Closes `hook-starter-library` (last sub-slice).
+Decision D-20260713-lint-hook.
