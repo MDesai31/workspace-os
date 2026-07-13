@@ -12,12 +12,22 @@ file_path="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/de
 [ -z "$file_path" ] && exit 0
 path_fwd="$(printf '%s' "$file_path" | tr '\\' '/')"   # Windows file_path is backslashed; match on a forward-slash view
 
-# Config resolution: LINT_CONFIG (test override), else <repo-root>/.claude/lint.json.
+# Config resolution: LINT_CONFIG (test override), else <repo-root>/.claude/lint.json;
+# in a marked workspace with no in-repo config, fall back to the sidecar <data_root>/lint.json.
 config="${LINT_CONFIG:-}"
 if [ -z "$config" ]; then
   root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
   [ -z "$root" ] && root="${CLAUDE_PROJECT_DIR:-$PWD}"
   config="$root/.claude/lint.json"
+  if [ ! -f "$config" ]; then
+    HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    sc_out="$(bash "$HOOK_DIR/../scripts/resolve-data-root.sh" 2>/dev/null || true)"
+    sc_mode="$(printf '%s\n' "$sc_out" | sed -n 's/^mode=//p')"
+    sc_root="$(printf '%s\n' "$sc_out" | sed -n 's/^data_root=//p')"
+    if [ "$sc_mode" = "sidecar" ] && [ -f "$sc_root/lint.json" ]; then
+      config="$sc_root/lint.json"
+    fi
+  fi
 fi
 
 [ -n "$config" ] && [ -f "$config" ] && jq -e . "$config" >/dev/null 2>&1 || exit 0

@@ -79,6 +79,22 @@ jq -n --arg c "$LINTER" '{linters:[{name:"src-py",match:"src/.*\\.py$",command:$
 IFS=$'\t' read -r ec out < <(run_hook '{"tool_name":"Edit","tool_input":{"file_path":"src\\dirty.py"}}' "$TMP/slash.json")
 check "backslash path matches slash rule (Windows)" "$ec" "0" "$out" "E501"
 
+# --- sidecar config fallback (no LINT_CONFIG; resolve via a marked workspace's _meta/) ---
+# Runtime fixture: committed fixtures can't hold nested .git dirs.
+SW="$(mktemp -d)"
+mkdir -p "$SW/ws/_meta/repo-a" "$SW/ws/repo-a"
+printf '{ "workspace-os": "sidecar", "workspace": "gw" }\n' > "$SW/ws/_meta/workspace.json"
+git -C "$SW/ws/repo-a" init -q
+jq -n --arg c "$LINTER" '{linters:[{name:"sc",match:"\\.py$",command:$c}]}' > "$SW/ws/_meta/repo-a/lint.json"
+
+sc_out="$(cd "$SW/ws/repo-a" && bash "$HOOK" <<<'{"tool_name":"Edit","tool_input":{"file_path":"dirty.py"}}' 2>/dev/null)"
+if printf '%s' "$sc_out" | jq -e '.hookSpecificOutput.additionalContext | test("E501")' >/dev/null 2>&1; then
+  echo "PASS: sidecar lint.json fallback injects"; pass=$((pass+1))
+else
+  echo "FAIL: sidecar fallback (stdout=[$sc_out])"; fail=$((fail+1))
+fi
+rm -rf "$SW"
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
