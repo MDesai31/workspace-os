@@ -23,11 +23,11 @@ check() {
   if [ "$ok" = 1 ]; then echo "PASS: $name"; pass=$((pass+1))
   else echo "FAIL: $name (exit=$got_ec want=$want_ec stdout=[$got_out])"; fail=$((fail+1)); fi
 }
-# check_empty <name> <got_out> : passes only if stdout is empty (the silent case)
+# check_empty <name> <got_ec> <got_out> : passes only if exit code is 0 AND stdout is empty (the silent, fail-open case)
 check_empty() {
-  local name="$1" got="$2"
-  if [ -z "$got" ]; then echo "PASS: $name"; pass=$((pass+1))
-  else echo "FAIL: $name (expected silent, stdout=[$got])"; fail=$((fail+1)); fi
+  local name="$1" got_ec="$2" got="$3"
+  if [ "$got_ec" = "0" ] && [ -z "$got" ]; then echo "PASS: $name"; pass=$((pass+1))
+  else echo "FAIL: $name (expected exit 0 + silent, got exit=$got_ec stdout=[$got])"; fail=$((fail+1)); fi
 }
 
 # A config that lints *.py with the stub linter.
@@ -39,25 +39,25 @@ check "dirty file injects diagnostics" "$ec" "0" "$out" "E501"
 
 # 2. Clean .py -> silent
 IFS=$'\t' read -r ec out < <(run_hook '{"tool_name":"Edit","tool_input":{"file_path":"/tmp/clean.py"}}' "$TMP/lint.json")
-check_empty "clean file is silent" "$out"
+check_empty "clean file is silent" "$ec" "$out"
 
 # 3. Non-matching extension -> silent
 IFS=$'\t' read -r ec out < <(run_hook '{"tool_name":"Write","tool_input":{"file_path":"/tmp/dirty.txt"}}' "$TMP/lint.json")
-check_empty "no-match extension is silent" "$out"
+check_empty "no-match extension is silent" "$ec" "$out"
 
 # 4. Missing config -> fail open silent
 IFS=$'\t' read -r ec out < <(run_hook '{"tool_name":"Edit","tool_input":{"file_path":"/tmp/dirty.py"}}' "$TMP/none.json")
-check_empty "missing config fails open" "$out"
+check_empty "missing config fails open" "$ec" "$out"
 
 # 5. Malformed config -> fail open silent
 printf '{ "linters": [ this is not json\n' > "$TMP/bad.json"
 IFS=$'\t' read -r ec out < <(run_hook '{"tool_name":"Edit","tool_input":{"file_path":"/tmp/dirty.py"}}' "$TMP/bad.json")
-check_empty "malformed config fails open" "$out"
+check_empty "malformed config fails open" "$ec" "$out"
 
 # 6. Linter not on PATH (exit 127) -> silent
 jq -n '{linters:[{name:"nope",match:"\\.py$",command:"workspace-os-no-such-linter-xyz"}]}' > "$TMP/nolinter.json"
 IFS=$'\t' read -r ec out < <(run_hook '{"tool_name":"Edit","tool_input":{"file_path":"/tmp/dirty.py"}}' "$TMP/nolinter.json")
-check_empty "missing linter fails open" "$out"
+check_empty "missing linter fails open" "$ec" "$out"
 
 # 7. Multiple matching linters concatenate
 jq -n --arg c "$LINTER" '{linters:[{name:"one",match:"\\.py$",command:$c},{name:"two",match:"\\.py$",command:$c}]}' > "$TMP/multi.json"
