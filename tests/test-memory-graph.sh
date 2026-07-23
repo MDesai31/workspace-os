@@ -71,6 +71,14 @@ check "search is case-insensitive" "$ec" "0" "$out" "fact-a"
 out="$(python3 "$SCRIPT" --search "zzz-no-such-term" --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
 check "search no-match is MATCHES (0), exit 0" "$ec" "0" "$out" "MATCHES (0)"
 
+# --- backlinks mode: typed LINKS OUT + a BACKLINK both appear; unknown node = no crash ---
+out="$(python3 "$SCRIPT" --backlinks fact-a --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
+check "backlinks shows typed LINKS OUT" "$ec" "0" "$out" "supersedes -> fact-b"
+check "backlinks shows BACKLINK source" "$ec" "0" "$out" "fact-b (related)"
+
+out="$(python3 "$SCRIPT" --backlinks no-such-fact --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
+check "backlinks unknown node = no crash, exit 0" "$ec" "0" "$out" "no such fact"
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
