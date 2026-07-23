@@ -61,6 +61,16 @@ out="$(python3 "$SCRIPT" --check --root "$TWO/repo/docs/memory" \
       --link-root "$TWO/nonexistent" 2>&1)"; ec=$?
 check "missing --link-root dir fails open (link broken, no crash)" "$ec" "1" "$out" "shared_data_contract"
 
+# --- search mode: name/description substring, case-insensitive, empty result = exit 0 ---
+out="$(python3 "$SCRIPT" --search "second fixture" --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
+check "search finds fact by description" "$ec" "0" "$out" "fact-b"
+
+out="$(python3 "$SCRIPT" --search "FIRST FIXTURE" --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
+check "search is case-insensitive" "$ec" "0" "$out" "fact-a"
+
+out="$(python3 "$SCRIPT" --search "zzz-no-such-term" --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
+check "search no-match is MATCHES (0), exit 0" "$ec" "0" "$out" "MATCHES (0)"
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
