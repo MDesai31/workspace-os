@@ -70,6 +70,7 @@ MDLINK = re.compile(r"\]\(([^)]+?\.md)\)")
 FENCE = re.compile(r"```.*?```", re.DOTALL)
 INLINE_CODE = re.compile(r"`[^`]*`")
 FRONTMATTER_NAME = re.compile(r"^name:\s*(.+?)\s*$", re.MULTILINE)
+FRONTMATTER_DESC = re.compile(r"^description:\s*(.+?)\s*$", re.MULTILINE)
 RECORD_HEADING = re.compile(r"^###\s+([AD]-\d{8}-[A-Za-z0-9-]+)", re.MULTILINE)
 
 INDEX_NAME = "MEMORY.md"
@@ -121,6 +122,7 @@ def scan(root: Path):
     names = defaultdict(list)  # frontmatter name: -> [paths]
     basenames = defaultdict(list)  # file basename -> [paths]
     wiki_edges = []  # (src, type, dst, raw, file, lineno)
+    descriptions = {}  # norm stem -> frontmatter description: (one line, may be "")
     index_edges = set()  # (src, dst)  markdown-link hub->leaf
     index_targets = set()  # norm stems of every .md the index links to (resolved or not)
 
@@ -136,6 +138,8 @@ def scan(root: Path):
         text = f.read_text(encoding="utf-8", errors="ignore")
         for m in FRONTMATTER_NAME.finditer(text[:400]):  # frontmatter is near the top
             names[norm(m.group(1))].append(str(f))
+        dm = FRONTMATTER_DESC.search(text[:400])
+        descriptions[s] = dm.group(1).strip() if dm else ""
         # wikilinks, with ACCURATE line numbers: walk the original lines and skip fenced
         # code blocks + inline code spans (so example links in prose are not counted, and
         # collapsing fences does not shift the reported line numbers).
@@ -163,6 +167,7 @@ def scan(root: Path):
     return {
         "files": files,
         "present": present,
+        "descriptions": descriptions,
         "raw_targets": raw_targets,
         "names": names,
         "basenames": basenames,
@@ -299,6 +304,64 @@ def print_report(data, a, root):
     p("")
 
 
+def print_search(data, query):
+    """Print facts whose name (file stem) or description contains QUERY, case-insensitive.
+
+    Name-matches sort before description-only matches; alphabetical within each group.
+    Empty query or no matches -> MATCHES (0). Display uses the real hyphenated file stem.
+    """
+    q = query.strip().lower()
+    present = data["present"]
+    descriptions = data["descriptions"]
+    index_stem = data["index_stem"]
+    hits = []  # (rank, sort_key, display_name, description)
+    if q:
+        for s in sorted(present):
+            if s == index_stem:  # the MEMORY.md index is not a fact
+                continue
+            display = present[s].stem
+            desc = descriptions.get(s, "")
+            in_name = q in display.lower()
+            in_desc = q in desc.lower()
+            if in_name or in_desc:
+                hits.append((0 if in_name else 1, display.lower(), display, desc))
+    hits.sort(key=lambda h: (h[0], h[1]))
+    print(f'MATCHES ({len(hits)})  for "{query}"')
+    for _rank, _sort, display, desc in hits:
+        snippet = desc if len(desc) <= 70 else desc[:67] + "..."
+        sep = "  -  " if snippet else ""
+        print(f"  {display}{sep}{snippet}")
+
+
+def print_backlinks(data, node):
+    """Print LINKS OUT (edges from NODE) and BACKLINKS (edges into NODE) for one fact.
+
+    Display uses raw wikilink targets and real source stems, not normalized ids.
+    Unknown NODE -> a 'no such fact' line + up to 5 near spellings, still exit 0.
+    """
+    target = norm(node)
+    present = data["present"]
+    wiki_edges = data["wiki_edges"]
+
+    if target not in present:
+        print(f"no such fact: {node}")
+        near = sorted(s for s in present if target in s or s in target)[:5]
+        if near:
+            print("  did you mean: " + ", ".join(present[s].stem for s in near))
+        return
+
+    print(present[target].stem)
+    out = sorted({(etype, raw) for s, etype, _d, raw, _f, _ln in wiki_edges if s == target})
+    print(f"  LINKS OUT ({len(out)}):")
+    for etype, raw in out:
+        print(f"    {etype} -> {raw}")
+    back = sorted({(present[s].stem, etype)
+                   for s, etype, d, _raw, _f, _ln in wiki_edges if d == target})
+    print(f"  BACKLINKS ({len(back)}):")
+    for src, etype in back:
+        print(f"    {src} ({etype})")
+
+
 def write_json(data, a, path):
     nodes = [
         {"id": n, "file": data["present"][n].as_posix(), "degree": a["deg"].get(n, 0)}
@@ -342,6 +405,12 @@ def main():
     ap.add_argument("--check", action="store_true",
                     help="exit 1 on broken links / unindexed files / dangling index "
                          "entries; print problems only")
+    ap.add_argument("--search", metavar="QUERY",
+                    help="print facts whose name or description contains QUERY "
+                         "(case-insensitive); read-only recall, exit 0 even if none match")
+    ap.add_argument("--backlinks", metavar="NODE",
+                    help="print LINKS OUT and BACKLINKS for NODE from the wikilink graph; "
+                         "read-only, exit 0 even if NODE is unknown")
     args = ap.parse_args()
 
     root = Path(args.root)
@@ -356,6 +425,12 @@ def main():
             for f in sorted(lrp.rglob("*.md")):
                 records.add(norm(f.stem))
     data = scan(root)
+    if args.search is not None:
+        print_search(data, args.search)
+        return 0
+    if args.backlinks is not None:
+        print_backlinks(data, args.backlinks)
+        return 0
     a = analyze(data, records)
 
     if args.check:

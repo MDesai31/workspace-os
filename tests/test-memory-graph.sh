@@ -61,6 +61,29 @@ out="$(python3 "$SCRIPT" --check --root "$TWO/repo/docs/memory" \
       --link-root "$TWO/nonexistent" 2>&1)"; ec=$?
 check "missing --link-root dir fails open (link broken, no crash)" "$ec" "1" "$out" "shared_data_contract"
 
+# --- search mode: name/description substring, case-insensitive, empty result = exit 0 ---
+out="$(python3 "$SCRIPT" --search "second fixture" --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
+check "search finds fact by description" "$ec" "0" "$out" "fact-b"
+
+out="$(python3 "$SCRIPT" --search "FIRST FIXTURE" --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
+check "search is case-insensitive" "$ec" "0" "$out" "fact-a"
+
+out="$(python3 "$SCRIPT" --search "zzz-no-such-term" --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
+check "search no-match is MATCHES (0), exit 0" "$ec" "0" "$out" "MATCHES (0)"
+
+# the MEMORY.md index file is not a fact: a name-match on it must NOT surface as a hit
+out="$(python3 "$SCRIPT" --search memory --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
+case "$out" in *MEMORY*) echo "FAIL: --search returns the MEMORY.md index as a hit"; fail=$((fail+1));;
+  *) echo "PASS: --search excludes the MEMORY.md index"; pass=$((pass+1));; esac
+
+# --- backlinks mode: typed LINKS OUT + a BACKLINK both appear; unknown node = no crash ---
+out="$(python3 "$SCRIPT" --backlinks fact-a --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
+check "backlinks shows typed LINKS OUT" "$ec" "0" "$out" "supersedes -> fact-b"
+check "backlinks shows BACKLINK source" "$ec" "0" "$out" "fact-b (related)"
+
+out="$(python3 "$SCRIPT" --backlinks no-such-fact --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
+check "backlinks unknown node = no crash, exit 0" "$ec" "0" "$out" "no such fact"
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
