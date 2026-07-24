@@ -30,6 +30,7 @@ sidecar-memory-context.sh ──SessionStart──▶ injects _meta memory (work
 /project-plan ──writes──▶ ideas.md
 /ingest       ──writes──▶ docs/memory/<slug>.md + MEMORY.md index
 /memory-lint  ──checks──▶ docs/memory/ index + wikilink integrity
+/memory-search ──queries──▶ docs/memory/ facts, by keyword or backlinks   (read-only)
 /memory-sync  ──migrates▶ a ~/.claude fact ──▶ docs/memory/
 /memory-adopt ──reshapes▶ existing docs ──▶ docs/memory/  (+ proposed CLAUDE.md trim)
 /tracking-adopt ──routes──▶ existing roadmap/TODO docs ──▶ docs/project-tracking/  (git mode: merged history ──▶ resolved.md)

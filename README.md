@@ -30,6 +30,7 @@ machine gets the upgrade.
 - **`/memory-lint`** — check `docs/memory/` integrity: a deterministic graph pass
   (`scripts/memory_graph.py` — broken wikilinks, index parity, orphans, typed-edge coverage;
   `--check` for CI/pre-commit) plus model checks (frontmatter, slug match).
+- **`/memory-search`** - search `docs/memory/` facts by keyword (name + description), or list backlinks for a fact; read-only.
 - **`/memory-sync`** — migrate a fact from your `~/.claude` auto-memory into a repo's `docs/memory/`.
 - **`/memory-adopt`** — adopt a repo's existing docs (README, design notes, CLAUDE.md reference content) into `docs/memory/` (opt-in, propose→confirm→apply).
 - **`/tracking-adopt`** — adopt a repo's existing roadmaps and TODO docs into `docs/project-tracking/` (routes roadmap entries → ideas, recorded decisions → decisions-log, open TODOs → action-items); the `git` mode mines merged history into resolved.md (one record per merged unit, real commit SHAs, SHA-deduped).

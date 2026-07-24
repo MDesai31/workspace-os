@@ -140,3 +140,11 @@ Full design: `docs/specs/2026-07-11-tracking-adopt-git-design.md`.
 - Rationale: the guardrail spec deferred this as a "separate hook, separate concern" — confirmed: it must be PostToolUse (lint runs after the edit lands), so it cannot fold into the PreToolUse `guardrail.sh`. Channel is `additionalContext` (nested under `hookSpecificOutput`, `hookEventName:"PostToolUse"`, exit 0 — confirmed against the Claude Code hooks docs), the deliberate opposite of the guardrail's `systemMessage`: lint output is for the model to act on, guardrail warns are for the user. No built-in linters (unlike the guardrail's warn-only defaults) because a linter executes external tooling that may be absent and is repo-specific — the hook stays inert until a repo opts in. Config lives in its own `.claude/lint.json`, not `guardrails.json`: PreToolUse security-blocking and PostToolUse quality-advice are different concerns with different lifecycles. Opt-in = explicit config (not auto-detection); injection = whole edited file, any diagnostic (not diff-scoped) — matches the OA hook this generalizes. Sidecar fallback (`_meta/<repo>/lint.json`) mirrors the guardrail so enterprise repos keep lint config out of tree.
 
 Full design: `docs/specs/2026-07-13-lint-hook-design.md`. Plan: `docs/plans/2026-07-13-lint-hook.md`.
+
+### D-20260723-memory-search-scope - /memory-search matches name+description only, off the derived graph; property-views deferred
+- Workstream: memory
+- Created: 2026-07-23
+- Rationale: recall is built as two modes on the existing `memory_graph.py` (reusing `scan()` + `wiki_edges`), not a new `memory_search.py` and not logic in the skill - a second parser would drift from the linter's view of the graph. Search scope was narrowed to name + one-line `description` (no body/full-text) so the whole feature runs off the graph the engine already derives, with zero new file-grep data source; `type` is therefore not parsed this slice. Property-views by type/tag and the note-templates set (the idea's other two capabilities) are deferred to later slices. Invocation is user-only (`disable-model-invocation: true`, matching `/memory-lint`; reversible in one line).
+- Spawns: none
+
+Full design: `docs/specs/2026-07-19-memory-search-design.md`. Plan: `docs/plans/2026-07-23-memory-search.md`.
