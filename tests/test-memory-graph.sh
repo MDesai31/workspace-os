@@ -71,6 +71,11 @@ check "search is case-insensitive" "$ec" "0" "$out" "fact-a"
 out="$(python3 "$SCRIPT" --search "zzz-no-such-term" --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
 check "search no-match is MATCHES (0), exit 0" "$ec" "0" "$out" "MATCHES (0)"
 
+# the MEMORY.md index file is not a fact: a name-match on it must NOT surface as a hit
+out="$(python3 "$SCRIPT" --search memory --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
+case "$out" in *MEMORY*) echo "FAIL: --search returns the MEMORY.md index as a hit"; fail=$((fail+1));;
+  *) echo "PASS: --search excludes the MEMORY.md index"; pass=$((pass+1));; esac
+
 # --- backlinks mode: typed LINKS OUT + a BACKLINK both appear; unknown node = no crash ---
 out="$(python3 "$SCRIPT" --backlinks fact-a --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
 check "backlinks shows typed LINKS OUT" "$ec" "0" "$out" "supersedes -> fact-b"

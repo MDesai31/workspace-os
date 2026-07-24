@@ -230,6 +230,6 @@ Decision D-20260713-lint-hook.
 - Status: done
 - Created: 2026-07-23
 - Completed: 2026-07-23
-- Commit: 0eb80a5..cffce14 (branch feature/memory-search)
+- Commit: 0eb80a5^..cffce14 (branch feature/memory-search)
 
 Extended `scripts/memory_graph.py` with two read-only query modes reusing `scan()`/`wiki_edges`: `--search QUERY` (case-insensitive substring over each fact's name + frontmatter description; added a `description:` parse) and `--backlinks NODE` (LINKS OUT + BACKLINKS with real spellings + typed edges). New `/memory-search` skill dispatches `--links <fact>`→backlinks, else query→search; read-only, no commit, mirrors `/memory-lint`. Tests added to `tests/test-memory-graph.sh` (all green, existing modes unchanged). Spec: `docs/specs/2026-07-19-memory-search-design.md`. Plan: `docs/plans/2026-07-23-memory-search.md`. Decision: D-20260723-memory-search-scope. Closes the search/backlink half of `memory-backlinks-search` (property-views + note-templates remain).

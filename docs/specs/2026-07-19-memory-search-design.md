@@ -1,10 +1,10 @@
-# `/memory-search` — Design Spec
+# `/memory-search` - Design Spec
 
 **Date:** 2026-07-19
 **Status:** Approved design, ready for plan
 **Idea:** `memory-backlinks-search` (the search + backlink half; property-views stay deferred), `ideas.md`
-**Relates to:** `scripts/memory_graph.py` (the graph engine this extends — search/backlinks are
-operations over the graph it already derives), `skills/memory-lint/SKILL.md` (sibling skill — same
+**Relates to:** `scripts/memory_graph.py` (the graph engine this extends - search/backlinks are
+operations over the graph it already derives), `skills/memory-lint/SKILL.md` (sibling skill - same
 data-root prereq and read-only, no-commit posture), `conventions/memory.md` (frontmatter schema:
 `name`/`description`/`type`), `conventions/data-root.md` (in-repo vs sidecar resolution)
 
@@ -13,8 +13,8 @@ data-root prereq and read-only, no-commit posture), `conventions/memory.md` (fro
 ## 1. Summary
 
 A read-only recall tool over this repo's `docs/memory/` (or the sidecar `<data_root>/memory/`): find
-a fact by keyword, and see what links to/from a fact. It closes the two gaps the idea names — no
-**backlink view** and no **search** beyond grep — while keeping memory git-native and engine-derived.
+a fact by keyword, and see what links to/from a fact. It closes the two gaps the idea names - no
+**backlink view** and no **search** beyond grep - while keeping memory git-native and engine-derived.
 
 Both features are operations over the knowledge graph `memory_graph.py` **already derives** from the
 markdown (it scans every fact and builds the directed `wiki_edges` list). So the engine work is small
@@ -23,18 +23,18 @@ No new store, no embeddings, no second thing that parses memory.
 
 **Two scoping decisions taken in brainstorming (both narrowing):**
 - Search matches a fact's **`name` + one-line `description` only**, not body text. This removes any
-  need to read/grep file bodies — the whole feature runs off the graph the engine computes.
+  need to read/grep file bodies - the whole feature runs off the graph the engine computes.
 - **Property-views by type/tag are out** (the idea marks them "optional"). Deferred to a later slice.
 
 ## 2. Scope
 
 **In:**
-- `scripts/memory_graph.py` — two new modes: `--search QUERY` and `--backlinks NODE`. `--search`
+- `scripts/memory_graph.py` - two new modes: `--search QUERY` and `--backlinks NODE`. `--search`
   needs one new frontmatter parse (`description:`; `name:` is already parsed). Existing modes
   (`--check`, `--json`, `--mermaid`, default report) untouched.
-- `skills/memory-search/SKILL.md` — new user-invocable skill: resolve the data root, dispatch to the
+- `skills/memory-search/SKILL.md` - new user-invocable skill: resolve the data root, dispatch to the
   right engine mode, print the result. Read-only; no edits, no commit.
-- `tests/test-memory-graph.sh` — cases for both new modes against the existing fixtures.
+- `tests/test-memory-graph.sh` - cases for both new modes against the existing fixtures.
 - Docs + tracking close-out: `plugin.json` prose + version bump; `ideas.md` marks the search/backlink
   half of `memory-backlinks-search` shipped; `resolved.md` action record + `decisions-log.md` decision.
 
@@ -48,12 +48,12 @@ No new store, no embeddings, no second thing that parses memory.
 - **Ranking/relevance scoring.** Deterministic substring match with a simple, documented sort order
   (see §4). No TF-IDF/fuzzy matching.
 - **`/memory-search` as a model-invoked recall path.** Ships `disable-model-invocation: true` to match
-  `memory-lint` — a deliberate user command (see §5, flagged as a one-line reversible choice).
+  `memory-lint` - a deliberate user command (see §5, flagged as a one-line reversible choice).
 
 ## 3. Architecture
 
 ```
-scripts/memory_graph.py   (the graph engine — already scans docs/memory + builds wiki_edges)
+scripts/memory_graph.py   (the graph engine - already scans docs/memory + builds wiki_edges)
   ├─ NEW --search QUERY    substring match of QUERY vs each fact's name + description
   │                        (adds a `description:` frontmatter parse in scan())
   └─ NEW --backlinks NODE   from wiki_edges: LINKS OUT (source==NODE) + BACKLINKS (target==NODE)
@@ -66,7 +66,7 @@ skills/memory-search/SKILL.md   (thin dispatcher)
 Search and backlinks are cohesive with the script's existing job (deriving + reporting over the memory
 graph): `analyze()` already computes neighbour sets, and `wiki_edges` already holds directed, typed
 edges. Reusing `scan()` avoids a second parser that could drift out of sync with the linter's view of
-the graph — the copy-paste-drift failure mode to avoid.
+the graph - the copy-paste-drift failure mode to avoid.
 
 ## 4. Engine modes (`scripts/memory_graph.py`)
 
@@ -79,12 +79,12 @@ answer, not an error); exit `2` stays reserved for "root not found" as today.
   the same near-top frontmatter window `name:` uses), into a `{norm_stem: description}` map.
 - Match: case-insensitive substring of `QUERY` against the fact's `name` (its frontmatter name / stem)
   **or** its `description`.
-- Output: one line per hit — the fact name, then a short description snippet. Example:
+- Output: one line per hit - the fact name, then a short description snippet. Example:
 
   ```
   MATCHES (2)  for "output"
-    forecasting-output-writers   — "the legacy blob CSV is the UOR scheduler's read; 1.0 floor..."
-    scheduling-output-writeback  — "legacy schedule CSV, 3-phase sub-venue allocation, UKG export"
+    forecasting-output-writers   - "the legacy blob CSV is the UOR scheduler's read; 1.0 floor..."
+    scheduling-output-writeback  - "legacy schedule CSV, 3-phase sub-venue allocation, UKG export"
   ```
 - Sort order (deterministic, documented): name-matches before description-only matches, alphabetical
   within each group. No relevance scoring.
@@ -92,9 +92,9 @@ answer, not an error); exit `2` stays reserved for "root not found" as today.
 
 **`--backlinks NODE`**
 - Normalize `NODE` (the script's `norm()`), then from `wiki_edges`:
-  - **LINKS OUT** — edges where `source == NODE`: print `type -> target` (type omitted/`related` shown
+  - **LINKS OUT** - edges where `source == NODE`: print `type -> target` (type omitted/`related` shown
     plainly), so typed edges (`[[part_of::…]]`) are visible.
-  - **BACKLINKS** — edges where `target == NODE`: print `source (type)`.
+  - **BACKLINKS** - edges where `target == NODE`: print `source (type)`.
 - Example:
 
   ```
@@ -127,7 +127,7 @@ Mirrors `memory-lint`'s shape and posture.
   "<query>"`. Pass the resolved `--root`/`--tracking-root` (and, in sidecar mode, `--link-root` for the
   workspace tier, matching `memory-lint`).
 - **Output:** print the engine's output verbatim; the model may add a one-line summary. **No edits, no
-  commit** — read-only recall, same as `memory-lint`.
+  commit** - read-only recall, same as `memory-lint`.
 
 **Flagged choice (reversible in one line):** `disable-model-invocation: true` matches `memory-lint` and
 keeps `/memory-search` a deliberate user command. If model-invoked recall is wanted later, drop that
@@ -148,26 +148,26 @@ Same plain-bash / substring-assertion style, against the existing `fixtures/memo
 
 ## 7. Changes by file
 
-- **`scripts/memory_graph.py`** — add `--search` / `--backlinks` args; a `FRONTMATTER_DESC` parse +
+- **`scripts/memory_graph.py`** - add `--search` / `--backlinks` args; a `FRONTMATTER_DESC` parse +
   `descriptions` map in `scan()`; two small print functions; dispatch in `main()` before the default
   report. Existing modes and their output unchanged.
-- **`skills/memory-search/SKILL.md`** — new skill (auto-discovered from `skills/`; no manifest wiring
+- **`skills/memory-search/SKILL.md`** - new skill (auto-discovered from `skills/`; no manifest wiring
   needed to load it).
-- **`tests/test-memory-graph.sh`** — the §6 cases; possible one-line `description:` addition to a
+- **`tests/test-memory-graph.sh`** - the §6 cases; possible one-line `description:` addition to a
   fixture fact.
-- **`.claude-plugin/plugin.json`** — mention `memory-search` in the description prose; version bump
+- **`.claude-plugin/plugin.json`** - mention `memory-search` in the description prose; version bump
   `0.13.0 → 0.14.0`.
-- **`docs/project-tracking/`** — on completion: `resolved.md` action record; `decisions-log.md`
+- **`docs/project-tracking/`** - on completion: `resolved.md` action record; `decisions-log.md`
   decision (search scope = name+description only; backlinks/search both off the derived graph, no new
   store; property-views deferred); update `memory-backlinks-search` in `ideas.md` to mark the
   search/backlink half shipped (property-views + note-templates remain).
-- **`README.md` / `ARCHITECTURE.md`** — a short line on `/memory-search` if the memory section warrants
+- **`README.md` / `ARCHITECTURE.md`** - a short line on `/memory-search` if the memory section warrants
   it (match how `memory-lint` is documented there; skip if it adds noise).
 
 ## 8. Verification
 
 - `scripts/validate-plugin.py` passes; `memory_graph.py` still valid, existing modes unchanged (run the
-  full `tests/test-memory-graph.sh` — all prior cases plus the new ones green).
+  full `tests/test-memory-graph.sh` - all prior cases plus the new ones green).
 - **Live check (not just the harness):** from the repo root, `python3 scripts/memory_graph.py --search
   <known-keyword>` returns the expected fact(s); `--backlinks <known-fact>` lists the edges that fact's
   markdown actually has (spot-check against the file). Then invoke `/memory-search` end-to-end so the

@@ -313,9 +313,12 @@ def print_search(data, query):
     q = query.strip().lower()
     present = data["present"]
     descriptions = data["descriptions"]
+    index_stem = data["index_stem"]
     hits = []  # (rank, sort_key, display_name, description)
     if q:
         for s in sorted(present):
+            if s == index_stem:  # the MEMORY.md index is not a fact
+                continue
             display = present[s].stem
             desc = descriptions.get(s, "")
             in_name = q in display.lower()
