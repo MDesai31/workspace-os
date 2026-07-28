@@ -48,6 +48,26 @@ if [ "$sec" -ge 0 ]; then
   for ((j=sec+1; j<n; j++)); do
     case "${lines[j]}" in \#*) end=$j; break;; esac
   done
+  if [ "$end" -eq "$n" ]; then
+    # no next heading: pull end back before a trailing @import block (if any) so the
+    # bullet lands under the section instead of demoting the import from last. Never
+    # walk back past the section heading itself.
+    last=-1
+    for ((i=n-1; i>sec; i--)); do
+      if [ -n "$(trim "${lines[i]}")" ]; then last=$i; break; fi
+    done
+    if [ "$last" -gt "$sec" ]; then
+      case "$(trim "${lines[last]}")" in
+        @*)
+          end=$last
+          for ((i=last-1; i>sec; i--)); do
+            t="$(trim "${lines[i]}")"
+            if [ -z "$t" ] || [ "${t#@}" != "$t" ]; then end=$i; else break; fi
+          done
+          ;;
+      esac
+    fi
+  fi
   for ((i=0; i<end; i++)); do out+=("${lines[i]}"); done
   out+=("$bullet")
   for ((i=end; i<n; i++)); do out+=("${lines[i]}"); done

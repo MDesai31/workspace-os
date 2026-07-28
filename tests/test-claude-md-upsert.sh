@@ -60,6 +60,33 @@ f="$TMP/g.md"; printf '# P\n\nSENTINEL-XYZ\n\n@a.md\n' > "$f"
 bash "$SCRIPT" "$f" "$SECTION" "$BULLET" >/dev/null
 contains "$f" "SENTINEL-XYZ"; assert "preserve: sentinel intact" $?
 
+# case 8: two-insert sequence (section-absent create, then section-present append)
+# on a project-init-shaped file (trailing @import, no managed section yet) -
+# the trailing @import must still be last non-blank after BOTH inserts.
+f="$TMP/h.md"
+printf '# Project\n\nSome intro.\n\nSome content line.\n\n@docs/memory/MEMORY.md\n' > "$f"
+BULLET_A="- Case8 topic A: use A2, NOT A1 (training prior is wrong here)."
+BULLET_B="- Case8 topic B: use B2, NOT B1 (training prior is wrong here)."
+out="$(bash "$SCRIPT" "$f" "$SECTION" "$BULLET_A")"; ec=$?
+[ "$ec" = 0 ]; assert "case8: first insert exit 0" $?
+[ "$out" = "created section" ]; assert "case8: first insert says created section" $?
+out="$(bash "$SCRIPT" "$f" "$SECTION" "$BULLET_B")"; ec=$?
+[ "$ec" = 0 ]; assert "case8: second insert exit 0" $?
+[ "$out" = "appended" ]; assert "case8: second insert says appended" $?
+contains "$f" "$BULLET_A"; assert "case8: bullet A present" $?
+contains "$f" "$BULLET_B"; assert "case8: bullet B present" $?
+awk -v a="$BULLET_A" -v b="$BULLET_B" -v imp="@docs/memory/MEMORY.md" '
+  index($0,a){ai=NR}
+  index($0,b){bi=NR}
+  $0==imp{ii=NR}
+  END{exit !(ai>0 && bi>0 && ii>0 && ai<ii && bi<ii)}
+' "$f"
+assert "case8: both bullets appear before @import" $?
+last="$(awk 'NF{l=$0} END{print l}' "$f")"; case "$last" in @*) true;; *) false;; esac
+assert "case8: @import still last non-blank" $?
+[ "$(grep -cF -e "$BULLET_A" "$f")" = 1 ]; assert "case8: bullet A not duplicated" $?
+[ "$(grep -cF -e "$BULLET_B" "$f")" = 1 ]; assert "case8: bullet B not duplicated" $?
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

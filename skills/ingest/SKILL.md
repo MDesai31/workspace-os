@@ -38,6 +38,8 @@ repo's working tree.
      Resolve the repo CLAUDE.md path (`git rev-parse --show-toplevel`/CLAUDE.md, else
      `$CLAUDE_PROJECT_DIR`/`$PWD`). Grep the managed section for a same-topic bullet; if one exists
      with different content, surface it and ask (add-anyway vs edit-by-hand) rather than auto-editing.
+     Secret-scan the bullet first (the same rule as Step 5): if it contains a key, token, or
+     `.env`-style value, refuse and stop without writing or displaying it.
      Show the exact bullet + the CLAUDE.md path and get explicit confirmation, then run
      `bash "${CLAUDE_PLUGIN_ROOT}/scripts/claude-md-upsert.sh" "<claude_md>" "## Stale priors (training vs reality)" "<bullet>"`.
      Report the script's status word (`created section` / `appended` / `skipped: already present`)
