@@ -148,3 +148,11 @@ Full design: `docs/specs/2026-07-13-lint-hook-design.md`. Plan: `docs/plans/2026
 - Spawns: none
 
 Full design: `docs/specs/2026-07-19-memory-search-design.md`. Plan: `docs/plans/2026-07-23-memory-search.md`.
+
+### D-20260727-ingest-gotcha-claudemd - /ingest may write a confirmed CLAUDE.md bullet for the explicit gotcha trigger (in-repo only)
+- Workstream: memory
+- Created: 2026-07-27
+- Rationale: completing `/ingest`'s costly-first branch for stale-priors means writing an imperative bullet into CLAUDE.md, the home the boundary rule already assigns to costly-first facts (D-20260626-repo-canonical-memory). This is consistent with D-20260627-memory-adopt-claudemd-scope (the "never migrate CLAUDE.md" ban is scoped to the passive default; explicit confirmed flows may write CLAUDE.md, as `/memory-adopt` already does), so it is an extension, not a reversal. Kept narrow to avoid overreach: the write fires only on the explicit `gotcha:`/`stale-prior:` trigger (a normal costly-first fact still tells-and-stops); it is confirm-before-write; the mechanical insert is a tested idempotent, add-only helper (`scripts/claude-md-upsert.sh`) rather than model-driven editing of an always-loaded file; and it is in-repo only (sidecar workspaces never touch the repo tree, so the day-job/sidecar case gets the `docs/memory/` half only). Property-views by type/tag remain deferred.
+- Spawns: none
+
+Full design: `docs/specs/2026-07-27-ingest-gotcha-design.md`. Plan: `docs/plans/2026-07-27-ingest-gotcha.md`.

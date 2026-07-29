@@ -23,10 +23,34 @@ repo's working tree.
 
 ## Steps
 
+0. **Gotcha trigger (stale-prior flavor).** If the argument begins with `gotcha:` or `stale-prior:`
+   (case-insensitive), strip the keyword and set a `gotcha` flag; the remainder is a stale-prior
+   fact ("training prior says X; here it is actually Y"). See `conventions/memory.md` § Recurring
+   flavors for the two body shapes. If the trigger is absent, ignore this step and proceed normally
+   (no behavior change).
 1. **Apply the boundary test** (conventions/memory.md): "If the model didn't see this until it
-   went looking, would it make a costly mistake first?" If **YES**, this belongs in CLAUDE.md,
-   not memory — tell the user and stop. If it's a **decision** (a choice + why), it belongs in
-   `decisions-log.md` — offer `/project-log decision` instead and stop.
+   went looking, would it make a costly mistake first?"
+   - If it's a **decision** (a choice + why), it belongs in `decisions-log.md` - offer
+     `/project-log decision` instead and stop.
+   - **YES (costly-first), not a gotcha:** belongs in CLAUDE.md, not memory - tell the user and stop.
+   - **YES (costly-first), gotcha, in-repo mode:** build the imperative bullet (conventions §
+     Recurring flavors): `- <topic>: use <Y>, NOT <X> (training prior is wrong here). <why/[[link]]>`.
+     Resolve the repo CLAUDE.md path (`git rev-parse --show-toplevel`/CLAUDE.md, else
+     `$CLAUDE_PROJECT_DIR`/`$PWD`). Grep the managed section for a same-topic bullet; if one exists
+     with different content, surface it and ask (add-anyway vs edit-by-hand) rather than auto-editing.
+     Secret-scan the bullet first (the same rule as Step 5): if it contains a key, token, or
+     `.env`-style value, refuse and stop without writing or displaying it.
+     Show the exact bullet + the CLAUDE.md path and get explicit confirmation, then run
+     `bash "${CLAUDE_PLUGIN_ROOT}/scripts/claude-md-upsert.sh" "<claude_md>" "## Stale priors (training vs reality)" "<bullet>"`.
+     Report the script's status word (`created section` / `appended` / `skipped: already present`)
+     and stop.
+   - **YES (costly-first), gotcha, sidecar mode:** the repo CLAUDE.md must not be touched in a
+     sidecar workspace - tell the user the bullet belongs in the repo's CLAUDE.md and to add it by
+     hand, and stop.
+   - **NO (consult-when-relevant):** continue to the steps below and write a `docs/memory/` fact. If
+     this is a gotcha, use the gotcha body shape (conventions § Recurring flavors): `type: convention`
+     unless clearly `domain`; `description: training prior wrong for <topic>`; body `Training prior
+     says <X>. In this repo it is actually <Y>. Why: <reason>. See [[<related>]].`
 2. **Apply the tier test (sidecar mode only)** — conventions/memory.md § two-tier memory:
    "would this fact be just as true and useful in every repo of this workspace?" Default is
    the **repo tier** (`<data_root>/memory/`). If the test clearly passes, PROPOSE the

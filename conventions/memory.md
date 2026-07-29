@@ -92,6 +92,26 @@ Suggested vocabulary (not enforced): `supersedes`, `superseded_by`, `blocked_by`
 tracking records. `scripts/memory_graph.py` (the deterministic pass of `/memory-lint`) lints
 resolution and reports typed-edge coverage.
 
+### Recurring flavors
+
+Some facts recur in a shape worth capturing consistently. Each flavor names a body shape and the
+home it routes to (the boundary test above still decides the home).
+
+**stale-prior / gotcha** - "your training prior says X; in this repo it is actually Y."
+- Captured with `/ingest gotcha: <prior-vs-reality>` (or `stale-prior:`).
+- Routing is the boundary test: a pure stale-prior (the model will confidently do the wrong thing)
+  is usually costly-first; a "we chose differently, and why" prior is usually consult-when-relevant.
+- **Costly-first -> CLAUDE.md** as an imperative bullet under the managed section
+  `## Stale priors (training vs reality)`:
+  `- <topic>: use <Y>, NOT <X> (training prior is wrong here). <one-clause why or [[link]]>`
+  The bullet is written by `/ingest` via `scripts/claude-md-upsert.sh` (idempotent, add-only) after
+  an explicit confirm. **In-repo mode only:** in a sidecar workspace the repo CLAUDE.md is never
+  touched, so `/ingest` tells you and stops for this case.
+- **Consult-when-relevant -> `docs/memory/`** as a fact (`type: convention` unless clearly `domain`),
+  body shape:
+  `Training prior says <X>. In this repo it is actually <Y>. Why: <reason>. See [[<related>]].`
+  with `description: training prior wrong for <topic>`.
+
 ## Index format (`MEMORY.md`)
 
 Grouped by type; one line per fact:
