@@ -121,7 +121,7 @@ readable and maintainable by any agent or human without special tooling.
 
 ## Maintaining the base
 - Add a fact: follow the procedure in `docs/memory/README.md`.
-- Check integrity: `python docs/memory/memory_graph.py --check` (stdlib Python, no deps).
+- Check integrity: `python docs/tools/memory_graph.py --check` (stdlib Python, no deps).
 
 ## Always-loaded instructions
 <!-- Costly-if-unseen facts - ones an agent must see BEFORE acting or it makes a wrong
@@ -166,15 +166,16 @@ agree.
 ## 8. Mode handling
 
 - **In-repo:** manual at `docs/memory/README.md`; `AGENTS.md` and the bridged `CLAUDE.md` at repo
-  root; `memory_graph.py` vendored at `docs/memory/memory_graph.py` (lives with the memory). True
+  root; `memory_graph.py` vendored at `docs/tools/memory_graph.py` (tooling, kept out of the fact
+  folder and under the workspace-os-owned `docs/` so it cannot collide with a host `tools/`). True
   auto-discovery.
 - **Sidecar (`_meta`):** repo working tree is never touched (data-root safety invariant), so there
-  is no repo `AGENTS.md`. The manual lands at `_meta/conventions/memory-base-guide.md` and the
-  validator at `_meta/conventions/memory_graph.py` (one shared copy, since sidecar has two memory
-  tiers); the entry point stays `_meta/INDEX.md`, enriched with a pointer to the manual and a "Link
-  grammar" pointer. Discovery is "correct but the operator must aim the agent at `_meta`" - inherent
-  to sidecar. `CLAUDE.md`/`AGENTS.md` bridging and the gotcha retarget (section 7) apply to in-repo
-  mode only.
+  is no repo `AGENTS.md`. The manual lands at `_meta/conventions/memory-base-guide.md` (with the
+  other playbooks) and the validator at `_meta/tools/memory_graph.py` (one shared copy for both
+  tiers, next to any existing tools like `nbtool.py`); the entry point stays `_meta/INDEX.md`,
+  enriched with a pointer to the manual and a "Link grammar" pointer. Discovery is "correct but the
+  operator must aim the agent at `_meta`" - inherent to sidecar. `CLAUDE.md`/`AGENTS.md` bridging and
+  the gotcha retarget (section 7) apply to in-repo mode only.
 
 ## 9. workspace-os changes
 
@@ -244,8 +245,9 @@ Recorded here and in the stamped manual where a cold reader would look:
 - Retrofit skill name: **`/make-portable`** (verb-first, distinct from the `*-init` family).
 - Manual filename: **`docs/memory/README.md`** in-repo; **`_meta/conventions/memory-base-guide.md`**
   sidecar.
-- Vendored `memory_graph.py` location: **`docs/memory/memory_graph.py`** in-repo (with the memory);
-  **`_meta/conventions/memory_graph.py`** sidecar (one shared copy for both tiers).
+- Vendored `memory_graph.py` location: **`docs/tools/memory_graph.py`** in-repo (tooling, kept out of
+  the fact folder); **`_meta/tools/memory_graph.py`** sidecar (one shared copy for both tiers, next to
+  the existing `_meta/tools/`). The manual (`README.md`) stays in the base folder.
 
 ## 15. Records to create on completion
 
