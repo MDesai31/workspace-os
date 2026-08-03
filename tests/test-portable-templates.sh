@@ -34,7 +34,7 @@ has "$IDX" "./README.md"; assert "index header points at local manual" $?
 grep -qF "conventions/memory.md" "$IDX" && { echo "FAIL: index still points at plugin cache"; fail=$((fail+1)); } || { echo "PASS: index no plugin-cache pointer"; pass=$((pass+1)); }
 
 # no em dashes in the new templates
-for f in "$MAN" "$AGENTS"; do
+for f in "$MAN" "$AGENTS" "$IDX"; do
   if grep -qP '\x{2014}' "$f"; then echo "FAIL: em dash in $f"; fail=$((fail+1)); else echo "PASS: no em dash in $(basename "$f")"; pass=$((pass+1)); fi
 done
 

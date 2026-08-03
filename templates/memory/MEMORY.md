@@ -1,4 +1,4 @@
-# Memory — repo knowledge base
+# Memory - repo knowledge base
 
 Canonical, shared, version-controlled reference knowledge for this repo. One fact per file,
 indexed below.

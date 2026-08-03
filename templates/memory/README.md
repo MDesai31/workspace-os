@@ -51,14 +51,16 @@ in the project-tracking decisions log.
 
 ## Checking integrity (what `/memory-lint` automates)
 
-Run the vendored validator (stdlib Python, no dependencies), which lives in the base's `tools/`
-folder (separate from the fact files):
+Run the vendored validator (stdlib Python, no dependencies), which lives in a sibling `docs/tools/`
+folder (a sibling of the memory base `docs/memory/`, kept separate from the fact files):
 
 `python docs/tools/memory_graph.py --check`
 
 run from the repo root (its default `--root` is `docs/memory`). In a sidecar `_meta` layout run
-`python _meta/tools/memory_graph.py --check --root _meta/memory` and `--root _meta/<repo>/memory`,
-with `--link-root` for cross-tier links. It reports and exits non-zero
+`python _meta/tools/memory_graph.py --check --root _meta/memory` and `--root _meta/<repo>/memory`
+(`<repo>` is the repo-folder name under `_meta/`), with `--link-root <path>` for cross-tier links,
+which tells the validator where to resolve wikilink targets when facts and the index live in
+different tiers. It reports and exits non-zero
 on any of these, which you can also verify by hand:
 
 - **broken wikilink** - a `[[target]]` whose target has no fact file and is not a known tracking record.
