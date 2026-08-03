@@ -35,13 +35,16 @@ repo's working tree.
    - **YES (costly-first), not a gotcha:** belongs in CLAUDE.md, not memory - tell the user and stop.
    - **YES (costly-first), gotcha, in-repo mode:** build the imperative bullet (conventions §
      Recurring flavors): `- <topic>: use <Y>, NOT <X> (training prior is wrong here). <why/[[link]]>`.
-     Resolve the repo CLAUDE.md path (`git rev-parse --show-toplevel`/CLAUDE.md, else
-     `$CLAUDE_PROJECT_DIR`/`$PWD`). Grep the managed section for a same-topic bullet; if one exists
-     with different content, surface it and ask (add-anyway vs edit-by-hand) rather than auto-editing.
+     Resolve the repo AGENTS.md path (`git rev-parse --show-toplevel`/AGENTS.md, else
+     `$CLAUDE_PROJECT_DIR`/`$PWD`). If AGENTS.md does not exist, note that the base may not be
+     portable yet and suggest `/make-portable`, then proceed to create/append via the helper (it
+     creates the managed section if absent). Grep the managed section for a same-topic bullet; if
+     one exists with different content, surface it and ask (add-anyway vs edit-by-hand) rather than
+     auto-editing.
      Secret-scan the bullet first (the same rule as Step 5): if it contains a key, token, or
      `.env`-style value, refuse and stop without writing or displaying it.
-     Show the exact bullet + the CLAUDE.md path and get explicit confirmation, then run
-     `bash "${CLAUDE_PLUGIN_ROOT}/scripts/claude-md-upsert.sh" "<claude_md>" "## Stale priors (training vs reality)" "<bullet>"`.
+     Show the exact bullet + the AGENTS.md path and get explicit confirmation, then run
+     `bash "${CLAUDE_PLUGIN_ROOT}/scripts/claude-md-upsert.sh" "<agents_md>" "## Stale priors (training vs reality)" "<bullet>"`.
      Report the script's status word (`created section` / `appended` / `skipped: already present`)
      and stop.
    - **YES (costly-first), gotcha, sidecar mode:** the repo CLAUDE.md must not be touched in a

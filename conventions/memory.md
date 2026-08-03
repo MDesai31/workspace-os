@@ -101,7 +101,7 @@ home it routes to (the boundary test above still decides the home).
 - Captured with `/ingest gotcha: <prior-vs-reality>` (or `stale-prior:`).
 - Routing is the boundary test: a pure stale-prior (the model will confidently do the wrong thing)
   is usually costly-first; a "we chose differently, and why" prior is usually consult-when-relevant.
-- **Costly-first -> CLAUDE.md** as an imperative bullet under the managed section
+- **Costly-first -> AGENTS.md** as an imperative bullet under the managed section
   `## Stale priors (training vs reality)`:
   `- <topic>: use <Y>, NOT <X> (training prior is wrong here). <one-clause why or [[link]]>`
   The bullet is written by `/ingest` via `scripts/claude-md-upsert.sh` (idempotent, add-only) after
