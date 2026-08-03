@@ -23,7 +23,7 @@ machine gets the upgrade.
 
 ## Skills
 
-- **`/project-init`** — bootstrap a repo: stamp `docs/project-tracking/` + `.gitattributes` + the portable memory layer (operator's manual, vendored `memory_graph.py`, `AGENTS.md`, `CLAUDE.md` bridge), seed the repo's workstream tags.
+- **`/project-init`** - bootstrap a repo: stamp `docs/project-tracking/` + `.gitattributes` + the portable memory layer (operator's manual, vendored `memory_graph.py`, `AGENTS.md`, `CLAUDE.md` bridge), seed the repo's workstream tags.
 - **`/project-log`** — `action` / `decision` / `model-decision` / `done`: append typed, ID'd records; completing an action moves it to the resolved record. `model-decision` is the DS variant (dataset vintage, validation protocol, headline metric + a run pointer — an MLflow/W&B run ID, or the `templates/MODEL_LOG.md` in-repo build ledger when no tracker exists; champion/challenger via the supersession protocol).
 - **`/project-plan`** — capture a *future* intent (the why + rough timing) without starting it.
 - **`/ingest`** — capture a durable project fact into `docs/memory/` + update the index; `gotcha:`/`stale-prior:` routes a stale-prior to a confirmed CLAUDE.md bullet (in-repo only) or a `docs/memory/` fact.
