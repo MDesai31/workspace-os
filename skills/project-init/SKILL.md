@@ -44,12 +44,20 @@ relative to this skill's base directory (the plugin root is two levels up from
 3a. **Scaffold memory.** Create `<data_root>/memory/` and copy `templates/memory/MEMORY.md` →
     `<data_root>/memory/MEMORY.md`.
 
-3b. **Wire retrieval** *(in-repo only)*. Add the line `@docs/memory/MEMORY.md` to the repo's
-    `CLAUDE.md` — Claude Code's `@`-path import syntax (a bare `@path`, **not** an `@import`
-    keyword). If `CLAUDE.md` exists, append the line only if not already present; if it does
-    not exist, create it containing that single line plus a one-line comment. Never duplicate
-    the line. In sidecar mode this step is replaced by the plugin's SessionStart hook — do
-    nothing.
+3b. **Stamp the portable layer.** Run the shared stamper so the base is self-describing and
+    vendor-neutral. `${CLAUDE_PLUGIN_ROOT}` is this plugin's root.
+    - *(in-repo)*:
+      `bash "${CLAUDE_PLUGIN_ROOT}/scripts/stamp-portable-layer.sh" --manual-dest docs/memory/README.md --graph-dest docs/tools/memory_graph.py --agents AGENTS.md --claude-bridge CLAUDE.md`
+      This copies the operator's manual (into the base folder) and vendors `memory_graph.py` (into
+      `docs/tools/`, separate from the facts), creates `AGENTS.md` (the vendor-neutral entry point,
+      canonical home for costly-first facts), and ensures `CLAUDE.md` imports `@AGENTS.md` and
+      `@docs/memory/MEMORY.md` (the bridge). Add-only and idempotent.
+    - *(sidecar)*: run with only the copy dests under `_meta/` (never the repo tree):
+      `bash "${CLAUDE_PLUGIN_ROOT}/scripts/stamp-portable-layer.sh" --manual-dest <workspace_root>/conventions/memory-base-guide.md --graph-dest <workspace_root>/tools/memory_graph.py`
+      (the guide with the other playbooks in `conventions/`; the validator in `tools/` next to any
+      existing tools). Then enrich `<workspace_root>/INDEX.md`: add a pointer to
+      `conventions/memory-base-guide.md` as the schema/how-to source and a one-line "Link grammar"
+      note. Do not create a repo `AGENTS.md`/`CLAUDE.md` in sidecar mode.
 
 4. **Add the union-merge attributes.** *(in-repo only:)* append the lines from
    `templates/gitattributes` to the repo's `.gitattributes` (create if absent; never duplicate
@@ -74,5 +82,4 @@ relative to this skill's base directory (the plugin root is two levels up from
 
 - All record/schema rules live in this plugin's `conventions/project-tracking.md`; the stamped
   files reference it. Do not restate them here.
-- Memory schema/rules live in `conventions/memory.md`; mode rules in `conventions/data-root.md`;
-  do not restate them.
+- Memory schema/rules live in `conventions/memory.md`; each base also stamps a self-contained operator's manual (`docs/memory/README.md` in-repo, `_meta/conventions/memory-base-guide.md` sidecar) via the portable-layer step. `AGENTS.md` is canonical; `CLAUDE.md` bridges to it. Mode rules in `conventions/data-root.md`; do not restate them.
