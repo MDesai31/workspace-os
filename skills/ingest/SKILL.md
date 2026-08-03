@@ -32,7 +32,7 @@ repo's working tree.
    went looking, would it make a costly mistake first?"
    - If it's a **decision** (a choice + why), it belongs in `decisions-log.md` - offer
      `/project-log decision` instead and stop.
-   - **YES (costly-first), not a gotcha:** belongs in CLAUDE.md, not memory - tell the user and stop.
+   - **YES (costly-first), not a gotcha:** belongs in AGENTS.md, not memory - tell the user and stop.
    - **YES (costly-first), gotcha, in-repo mode:** build the imperative bullet (conventions §
      Recurring flavors): `- <topic>: use <Y>, NOT <X> (training prior is wrong here). <why/[[link]]>`.
      Resolve the repo AGENTS.md path (`git rev-parse --show-toplevel`/AGENTS.md, else
@@ -47,8 +47,8 @@ repo's working tree.
      `bash "${CLAUDE_PLUGIN_ROOT}/scripts/claude-md-upsert.sh" "<agents_md>" "## Stale priors (training vs reality)" "<bullet>"`.
      Report the script's status word (`created section` / `appended` / `skipped: already present`)
      and stop.
-   - **YES (costly-first), gotcha, sidecar mode:** the repo CLAUDE.md must not be touched in a
-     sidecar workspace - tell the user the bullet belongs in the repo's CLAUDE.md and to add it by
+   - **YES (costly-first), gotcha, sidecar mode:** the repo AGENTS.md must not be touched in a
+     sidecar workspace - tell the user the bullet belongs in the repo's AGENTS.md and to add it by
      hand, and stop.
    - **NO (consult-when-relevant):** continue to the steps below and write a `docs/memory/` fact. If
      this is a gotcha, use the gotcha body shape (conventions § Recurring flavors): `type: convention`

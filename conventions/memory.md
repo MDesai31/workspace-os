@@ -16,7 +16,7 @@ every machine) via git, **alongside** CLAUDE.md, not replacing it.
 Each durable fact has exactly ONE home. Decide with this test:
 
 > "If the model didn't see this until it went looking, would it make a costly mistake first?"
-> - **YES → CLAUDE.md** (always-loaded, imperative "how to work here").
+> - **YES → AGENTS.md** (always-loaded, imperative "how to work here").
 > - **NO — only needed when the topic comes up → `docs/memory/`** (on-demand reference).
 
 - A **decision** (a choice + when + why) → `docs/project-tracking/decisions-log.md` (a `D-`
@@ -28,7 +28,7 @@ Each durable fact has exactly ONE home. Decide with this test:
   confirmation** — see "Adopting existing docs" below.
 
 Generic worked example: a framework's non-obvious import path — where the wrong guess silently
-compiles to a broken state — is *costly-first* → **CLAUDE.md**. The *rationale* for choosing that
+compiles to a broken state — is *costly-first* → **AGENTS.md**. The *rationale* for choosing that
 framework is *consult-when-relevant* → **docs/memory/**.
 
 ## Two-tier memory in sidecar workspaces
@@ -110,7 +110,7 @@ home it routes to (the boundary test above still decides the home).
   `## Stale priors (training vs reality)`:
   `- <topic>: use <Y>, NOT <X> (training prior is wrong here). <one-clause why or [[link]]>`
   The bullet is written by `/ingest` via `scripts/claude-md-upsert.sh` (idempotent, add-only) after
-  an explicit confirm. **In-repo mode only:** in a sidecar workspace the repo CLAUDE.md is never
+  an explicit confirm. **In-repo mode only:** in a sidecar workspace the repo's AGENTS.md is never
   touched, so `/ingest` tells you and stops for this case.
 - **Consult-when-relevant -> `docs/memory/`** as a fact (`type: convention` unless clearly `domain`),
   body shape:
@@ -144,7 +144,7 @@ in order:
    person (preferences, role) → **stop, leave it in `~/.claude`**.
 2. **Knowledge-vs-state gate.** Is it stable *knowledge*, or *work state* (a goal, status, intent,
    TODO)? Work state → it belongs in tracking (`ideas.md` / `action-items.md`), not memory → **stop**.
-3. **CLAUDE.md gate** (the boundary test above): costly-if-unseen → **CLAUDE.md, stop**; otherwise
+3. **AGENTS.md gate** (the boundary test above): costly-if-unseen → **AGENTS.md, stop**; otherwise
    it's genuine reference knowledge → migrate, then pick the type.
 
 Type hints (the gates decide; this only nudges the target type):
@@ -153,7 +153,7 @@ Type hints (the gates decide; this only nudges the target type):
 |---|---|---|
 | `reference` | `reference` | almost always migrates as-is |
 | `project` | `domain` | only if it's codebase/domain knowledge; a goal/status/intent → tracking, stop |
-| `feedback` | `convention` | only if it's a repo-specific shared "how we work here" rule; personal/global → stop; always-apply → CLAUDE.md |
+| `feedback` | `convention` | only if it's a repo-specific shared "how we work here" rule; personal/global → stop; always-apply → AGENTS.md |
 | `user` | — | never migrate |
 
 **Slug rule:** re-slug to clean kebab — strip the `project_`/`feedback_` prefix, convert `_`→`-`,
