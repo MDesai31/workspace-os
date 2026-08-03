@@ -82,6 +82,11 @@ Types:
 No `decision` type — decisions live in `decisions-log.md`. **Never write secrets** (keys,
 tokens, `.env` values) into memory — repos may be public.
 
+The canonical vendor-neutral statement of this schema and its maintenance procedure is the
+portable operator's manual template (`templates/memory/README.md`), stamped into each base by
+`/project-init` and `/make-portable`; this convention file is the plugin-internal source and
+should stay consistent with that template.
+
 ### Typed wikilinks (optional)
 
 A wikilink may carry a predicate — `[[supersedes::old-fact]]`, `[[blocked_by::other-fact]]` —
