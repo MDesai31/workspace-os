@@ -28,7 +28,7 @@ Each durable fact has exactly ONE home. Decide with this test:
   confirmation** — see "Adopting existing docs" below.
 
 Generic worked example: a framework's non-obvious import path — where the wrong guess silently
-compiles to a broken state — is *costly-first* → **AGENTS.md**. The *rationale* for choosing that
+compiles to a broken state - is *costly-first* → **AGENTS.md**. The *rationale* for choosing that
 framework is *consult-when-relevant* → **docs/memory/**.
 
 ## Two-tier memory in sidecar workspaces
