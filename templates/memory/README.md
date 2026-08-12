@@ -68,6 +68,23 @@ on any of these, which you can also verify by hand:
 - **orphans** - facts nothing links to (informational).
 - **typed-edge coverage** - how many links carry a predicate (informational).
 
+### Keeping citations honest
+
+Two more checks the same validator runs, so a citation to code does not silently rot:
+
+- **Citation freshness** - `python docs/tools/memory_graph.py --check-citations --root docs/memory
+  --src-root .` (with `--src-root` pointing at the code the facts cite) verifies that `file:NNN` and
+  `` `path::symbol` `` citations still land on the right symbol. It reports STALE (the cited line is
+  outside the symbol's definition block, or a `` `path::symbol` `` anchor whose symbol is gone) and,
+  non-fatally, AMBIGUOUS (a bare filename matching several files - add a path prefix), UNRESOLVABLE
+  (file not found under src-root), and UNANCHORED (a `file:NNN` with no adjacent backticked symbol to
+  check). Prefer the `` `path::symbol` `` anchor form when you add a citation: it survives line-number
+  drift, so it never goes stale on an edit that only moves lines.
+- **Boundary drift** - `python docs/tools/memory_graph.py --check-tracking --tracking-root
+  docs/project-tracking` flags a tracking record whose body has grown too large or embeds a
+  `**MEASURED**` block. Measured evidence and long detail belong in a memory fact here, not in a
+  tracking record body: tracking says what to do, memory says what is true.
+
 ## Provenance
 
 Two trust tiers, marked in the fact body:

@@ -169,3 +169,29 @@ Full design: `docs/specs/2026-07-27-ingest-gotcha-design.md`. Plan: `docs/plans/
 - Spawns: none
 
 Full design: `docs/specs/2026-07-30-portable-memory-base-design.md`. Plan: `docs/plans/2026-07-30-portable-memory-base.md`.
+
+### D-20260812-project-init-existing-store-pointer - /project-init emits a pointer, never an empty index over an existing store
+- Workstream: memory
+- Created: 2026-08-12
+- Rationale: an empty `memory/MEMORY.md` stamped over a store already in use (especially a sidecar
+  workspace-tier `_meta/memory/`) is an active hazard - it contradicts practice and invites a second
+  store. `/project-init` now detects an existing repo-tier or workspace-tier store and writes a
+  pointer header (shared facts live in the workspace tier; this index holds only repo-specific facts)
+  instead of a competing empty stub. From use-audit feedback (three byte-identical empty stubs).
+- Spawns: none
+
+Ships in v0.17.0 (A-20260812-memory-hygiene-lints).
+
+### D-20260812-citation-lint-definition-anchored - the citation lint checks definition blocks, not a line window; basename collisions are ambiguous
+- Workstream: memory
+- Created: 2026-08-12
+- Rationale: a naive "line within +/-N of the symbol" check false-positives on every correct citation
+  to a line INSIDE a long function. The lint instead resolves the cited symbol's definition and
+  accepts any line within its block; only a backticked token actually DEFINED in the file is
+  checkable (a nearby import/exception/literal degrades to UNANCHORED, never STALE); and a bare
+  basename matching several files is AMBIGUOUS (disambiguate with a path prefix), not stale. Chosen
+  after validating read-only against the real `_meta` base, where the naive rule produced five false
+  positives and this rule produced zero.
+- Spawns: none
+
+Ships in v0.17.0 (A-20260812-memory-hygiene-lints).

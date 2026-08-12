@@ -258,3 +258,21 @@ now the canonical always-loaded home; the `/ingest gotcha:` write retargets ther
 Skills/hooks/plugin stay Claude-only. Spec: `docs/specs/2026-07-30-portable-memory-base-design.md`.
 Plan: `docs/plans/2026-07-30-portable-memory-base.md`. Ships the survival half of `[[vendor-neutral-runtime]]`;
 multi-vendor USE (MCP) remains.
+
+### A-20260812-memory-hygiene-lints - citation-freshness + boundary lints and a project-init store guard (v0.17.0)
+- Workstream: memory
+- Status: done
+- Created: 2026-08-12
+- Completed: 2026-08-12
+- Commit: pending (built on main after v0.16.0; SHA filled at commit)
+
+From use-audit feedback on the memory base. Three quick wins: `memory_graph.py --check-citations`
+(definition-anchored block containment + `path::symbol` anchors; bare-basename collisions reported
+AMBIGUOUS, not stale) catches `file:NNN` citations that rot; `--check-tracking` flags tracking
+records over ~40 lines or carrying a `**MEASURED**` block (the memory/tracking boundary, now in
+`conventions/project-tracking.md`); and `/project-init` no longer stamps an empty index over an
+existing store, emitting a pointer instead (D-20260812-project-init-existing-store-pointer). Both
+lints wired into `/memory-lint` and documented in the portable operator's manual. Validated
+read-only against the real `_meta` base: zero false-positive stales. Heuristic:
+D-20260812-citation-lint-definition-anchored. Two schema follow-ups captured as ideas:
+[[memory-volatility-field]], [[memory-applies-to-field]].

@@ -41,8 +41,19 @@ relative to this skill's base directory (the plugin root is two levels up from
    - `templates/decisions-log.md` → `<data_root>/project-tracking/decisions-log.md`
    - `templates/resolved.md` → `<data_root>/project-tracking/resolved.md`
 
-3a. **Scaffold memory.** Create `<data_root>/memory/` and copy `templates/memory/MEMORY.md` →
-    `<data_root>/memory/MEMORY.md`.
+3a. **Scaffold memory - guard against an existing store.** An empty index that contradicts a store
+    already in use is an active hazard: it invites a future session to start a second store. Before
+    creating `<data_root>/memory/`:
+    - If `<data_root>/memory/` already exists, do **not** overwrite it (it may hold facts). Report
+      that it exists and move on.
+    - *(sidecar)* Check for an existing **workspace-tier** store at `<workspace_root>/memory/MEMORY.md`.
+      If present, this repo's shared facts likely already live there. Do **not** stamp a bare empty
+      repo-tier index that competes with it. Instead write `<data_root>/memory/MEMORY.md` with a short
+      **pointer** header - one line stating that shared facts live in the workspace tier
+      (`_meta/memory/`) and this repo-tier index holds only repo-specific facts - then the type
+      sections below it. Prefer the pointer over an empty stub.
+    - Otherwise (no existing store), copy `templates/memory/MEMORY.md` →
+      `<data_root>/memory/MEMORY.md`.
 
 3b. **Stamp the portable layer.** Run the shared stamper so the base is self-describing and
     vendor-neutral. `${CLAUDE_PLUGIN_ROOT}` is this plugin's root.

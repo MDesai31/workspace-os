@@ -82,6 +82,12 @@ Types:
 No `decision` type — decisions live in `decisions-log.md`. **Never write secrets** (keys,
 tokens, `.env` values) into memory — repos may be public.
 
+Cite evidence with a `` `path::symbol` `` anchor (preferred - it survives line-number drift) or
+`path:NNN` with the symbol named in backticks nearby, and prefer a full relative path over a bare
+filename so the check can resolve it. `/memory-lint` verifies citations against the source
+(`memory_graph.py --check-citations`) and flags one whose symbol moved or vanished; it also guards
+the memory/tracking boundary (`--check-tracking`, see `conventions/project-tracking.md`).
+
 The canonical vendor-neutral statement of this schema and its maintenance procedure is the
 portable operator's manual template (`templates/memory/README.md`), stamped into each base by
 `/project-init` and `/make-portable`; this convention file is the plugin-internal source and

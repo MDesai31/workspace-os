@@ -43,6 +43,37 @@ duplicate `name:`/basenames, and typed-edge coverage (`[[supersedes::target]]` p
 `conventions/memory.md`). Any BROKEN LINK, unindexed file, or dangling entry is a FAIL.
 (`--check` is the CI/pre-commit form of the same gate.)
 
+## Step 1b - citation freshness and the memory/tracking boundary
+
+Two further deterministic gates. Run both; report their findings alongside Step 1.
+
+**Citation freshness** - verify `file:NNN` and `` `path::symbol` `` citations against the source
+they point at:
+
+    python3 "${CLAUDE_PLUGIN_ROOT}/scripts/memory_graph.py" --check-citations \
+      --root "<data_root>/memory" --src-root "$(git rev-parse --show-toplevel)"
+
+`--src-root` is the code the facts cite - the repo root in both modes (in sidecar mode the
+`_meta/<repo>/memory` facts cite that same repo's code). It reports **STALE** (a line citation
+whose line is outside the cited symbol's definition block, or a `` `path::symbol` `` anchor whose
+symbol no longer exists - a FAIL, exit 1) and, non-fatally, **AMBIGUOUS** (a bare basename matching
+several files - add a path prefix), **UNRESOLVABLE** (file not found under src-root), and
+**UNANCHORED** (a line citation with no adjacent backticked symbol to check). The last three are not
+failures; they mark citations that need a path prefix or a symbol anchor to become checkable. Prefer
+the rot-proof `` `path::symbol` `` anchor form when adding citations. When linting the **workspace
+tier** (`_meta/memory/`), whose facts may cite code across several repos, expect AMBIGUOUS under a
+single `--src-root`; that is normal - add a path prefix in the citation, or point `--src-root` at the
+one repo you are checking.
+
+**Boundary drift** - keep measured evidence and long detail out of tracking record bodies:
+
+    python3 "${CLAUDE_PLUGIN_ROOT}/scripts/memory_graph.py" --check-tracking \
+      --tracking-root "<data_root>/project-tracking"
+
+Flags any `A-`/`D-` record whose body exceeds `--max-record-lines` (default 40) or embeds a
+`**MEASURED**` block; both belong in a memory fact (`conventions/project-tracking.md` § the
+memory/tracking boundary). Exit 1 on findings.
+
 ## Step 2 — model checks (what the script can't judge)
 
 1. **Frontmatter** — each fact file has valid frontmatter with `name`, `description`, and
