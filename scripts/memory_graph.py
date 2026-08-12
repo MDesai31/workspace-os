@@ -73,6 +73,14 @@ FRONTMATTER_NAME = re.compile(r"^name:\s*(.+?)\s*$", re.MULTILINE)
 FRONTMATTER_DESC = re.compile(r"^description:\s*(.+?)\s*$", re.MULTILINE)
 RECORD_HEADING = re.compile(r"^###\s+([AD]-\d{8}-[A-Za-z0-9-]+)", re.MULTILINE)
 
+# Citation lint: a `path.ext:NNN` line-number citation, a backticked `path::symbol` anchor,
+# and a bare backticked identifier used as the adjacency signal for a line citation.
+CITATION = re.compile(r"([\w./-]+\.[A-Za-z][A-Za-z0-9]*):(\d+)")
+ANCHOR = re.compile(r"`([\w./-]+)::([A-Za-z_][A-Za-z0-9_]*)`")
+BACKTICK_SYMBOL = re.compile(r"`([A-Za-z_][A-Za-z0-9_]*)`")
+# Tracking-boundary lint: the bolded MEASURED evidence marker.
+MEASURED = re.compile(r"\*\*MEASURED\*\*")
+
 INDEX_NAME = "MEMORY.md"
 
 
@@ -362,6 +370,193 @@ def print_backlinks(data, node):
         print(f"    {src} ({etype})")
 
 
+def _resolve_src(path_str, src_root):
+    """Resolve a cited path under src_root. Returns (status, value):
+      ("ok", Path)          an exact relative path, or a unique basename match
+      ("ambiguous", [Path]) a bare basename matching more than one file (disambiguate first)
+      ("missing", None)     no match under src_root
+    An exact relative path always wins, so a fully-pathed citation is never ambiguous."""
+    p = src_root / path_str
+    if p.is_file():
+        return ("ok", p)
+    base = Path(path_str).name
+    matches = [m for m in sorted(src_root.rglob(base)) if m.is_file()]
+    if len(matches) == 1:
+        return ("ok", matches[0])
+    if len(matches) > 1:
+        return ("ambiguous", matches)
+    return ("missing", None)
+
+
+def _symbol_block(lines, symbol):
+    """Return the (start, end) 1-indexed line range of SYMBOL's definition block, or None.
+
+    A block runs from the symbol's definition line to just before the next top-level
+    (column-0) definition, or EOF. Only definition-shaped occurrences anchor a block, so a
+    citation to any line INSIDE a long function reads as correct, not stale -- this is the
+    discriminator that keeps the lint from firing on every in-body line citation.
+    """
+    esc = re.escape(symbol)
+    def_pat = re.compile(
+        rf"^\s*(?:export\s+)?(?:async\s+)?(?:def|class|function)\s+{esc}\b"
+        rf"|^\s*(?:export\s+)?(?:const|let|var)\s+{esc}\b"
+    )
+    topdef = re.compile(
+        r"^(?:export\s+)?(?:async\s+)?(?:def|class|function|const|let|var)\s+\w"
+    )
+    def_line = None
+    topdefs = []
+    for i, line in enumerate(lines, 1):
+        if topdef.match(line):
+            topdefs.append(i)
+        if def_line is None and def_pat.match(line):
+            def_line = i
+    if def_line is None:
+        return None
+    end = len(lines)
+    for t in topdefs:
+        if t > def_line:
+            end = t - 1
+            break
+    return (def_line, end)
+
+
+def check_citations(root, src_root):
+    """Verify `path:NNN` and `path::symbol` citations in memory facts against the real source.
+
+    Returns (stale, unresolvable, unanchored), each a list of (fact_filename, detail):
+      STALE        a line citation whose NNN is outside the adjacent symbol's block, or a
+                   `path::symbol` anchor whose symbol no longer exists (fail gate).
+      UNRESOLVABLE the cited file is absent under src_root (non-fatal; it may live elsewhere).
+      UNANCHORED   a line citation with no adjacent backticked symbol to check against.
+    """
+    stale, unresolvable, unanchored, ambiguous = [], [], [], []
+    for f in sorted(root.rglob("*.md")):
+        if f.name == INDEX_NAME:
+            continue
+        fact = f.name
+        lines = f.read_text(encoding="utf-8", errors="ignore").splitlines()
+        sym_by_line = defaultdict(list)
+        for i, line in enumerate(lines, 1):
+            for m in BACKTICK_SYMBOL.finditer(line):
+                sym_by_line[i].append(m.group(1))
+
+        # 1) `path::symbol` anchors -> existence check (no line math; the rot-proof form).
+        for line in lines:
+            for m in ANCHOR.finditer(line):
+                path_str, symbol = m.group(1), m.group(2)
+                status, val = _resolve_src(path_str, src_root)
+                if status == "missing":
+                    unresolvable.append((fact, f"`{path_str}::{symbol}` (file not found under src-root)"))
+                elif status == "ambiguous":
+                    ambiguous.append((fact, f"`{path_str}::{symbol}` ({len(val)} files match; add a path prefix)"))
+                elif not re.search(rf"\b{re.escape(symbol)}\b",
+                                   val.read_text(encoding="utf-8", errors="ignore")):
+                    stale.append((fact, f"`{path_str}::{symbol}` but symbol not found in {val.name}"))
+
+        # 2) `path.ext:NNN` line citations -> block containment against an adjacent DEFINED symbol.
+        # Only a backticked token that is actually defined in the resolved file is a checkable
+        # symbol; a nearby import/exception/literal is not, so it degrades to UNANCHORED, never
+        # STALE. This keeps STALE high-precision on real facts, where prose backticks many tokens.
+        for i, line in enumerate(lines, 1):
+            for m in CITATION.finditer(line):
+                path_str, nnn = m.group(1), int(m.group(2))
+                candidates = []
+                for dist in (0, 1, 2):
+                    for j in ([i] if dist == 0 else [i - dist, i + dist]):
+                        for sym in sym_by_line.get(j, []):
+                            if sym not in candidates:
+                                candidates.append(sym)
+                if not candidates:
+                    unanchored.append((fact, f"{path_str}:{nnn} (no adjacent `symbol`)"))
+                    continue
+                status, val = _resolve_src(path_str, src_root)
+                if status == "missing":
+                    unresolvable.append((fact, f"{path_str}:{nnn} (file not found under src-root)"))
+                    continue
+                if status == "ambiguous":
+                    ambiguous.append((fact, f"{path_str}:{nnn} ({len(val)} files match; add a path prefix)"))
+                    continue
+                src = val
+                src_lines = src.read_text(encoding="utf-8", errors="ignore").splitlines()
+                blocks = [(sym, _symbol_block(src_lines, sym)) for sym in candidates]
+                blocks = [(sym, b) for sym, b in blocks if b is not None]
+                if not blocks:
+                    unanchored.append((fact, f"{path_str}:{nnn} (no defined symbol adjacent to check)"))
+                    continue
+                if any(start <= nnn <= end for _sym, (start, end) in blocks):
+                    continue  # citation lands inside a cited symbol's block -> correct
+                sym, (start, end) = blocks[0]
+                stale.append((fact, f"{path_str}:{nnn} cites `{sym}` whose block is lines {start}-{end}"))
+    return stale, unresolvable, unanchored, ambiguous
+
+
+def print_citations(stale, unresolvable, unanchored, ambiguous, root, src_root):
+    print(f"CITATION LINT  (root={Path(root).as_posix()}, src-root={Path(src_root).as_posix()})")
+    print(f"  stale: {len(stale)}   ambiguous: {len(ambiguous)}   "
+          f"unresolvable: {len(unresolvable)}   unanchored: {len(unanchored)}")
+    for label, items in (("STALE", stale), ("AMBIGUOUS", ambiguous),
+                         ("UNRESOLVABLE", unresolvable), ("UNANCHORED", unanchored)):
+        if items:
+            print(f"{label} ({len(items)}):")
+            for fact, detail in items:
+                print(f"  {fact}: {detail}")
+    if not stale:
+        print("citations: clean (no stale citations)")
+
+
+def _iter_records(text):
+    """Yield (record_id, body_lines) for each `### A-/D-` record; any heading closes a record."""
+    cur_id, body = None, []
+    for line in text.splitlines():
+        if re.match(r"^#{1,6}\s", line):
+            if cur_id:
+                yield cur_id, body
+            cur_id, body = None, []
+            hm = RECORD_HEADING.match(line)
+            if hm:
+                cur_id = hm.group(1)
+        elif cur_id is not None:
+            body.append(line)
+    if cur_id:
+        yield cur_id, body
+
+
+def check_tracking(tracking_root, max_lines):
+    """Flag A-/D- tracking records whose body exceeds max_lines or carries a **MEASURED**
+    block -- long detail and measured evidence belong in memory/, not a tracking record body
+    (conventions/project-tracking.md). Returns a list of (record_id, reason). Missing dir =
+    no violations (fail open)."""
+    violations = []
+    if not tracking_root.is_dir():
+        return violations
+    for f in sorted(tracking_root.rglob("*.md")):
+        text = f.read_text(encoding="utf-8", errors="ignore")
+        for rec_id, body in _iter_records(text):
+            # Strip inline code so a record that merely MENTIONS `**MEASURED**` in prose is not
+            # flagged -- only a real evidence block counts (mirrors the wikilink example handling).
+            if MEASURED.search(INLINE_CODE.sub("", "\n".join(body))):
+                violations.append((rec_id, "contains a **MEASURED** block (measured evidence belongs in a memory fact)"))
+            trimmed = list(body)
+            while trimmed and not trimmed[0].strip():
+                trimmed.pop(0)
+            while trimmed and not trimmed[-1].strip():
+                trimmed.pop()
+            if len(trimmed) > max_lines:
+                violations.append((rec_id, f"body is {len(trimmed)} lines > {max_lines} (long detail belongs in memory/, not the record body)"))
+    return violations
+
+
+def print_tracking(violations, tracking_root, max_lines):
+    print(f"TRACKING BOUNDARY LINT  (tracking-root={Path(tracking_root).as_posix()}, "
+          f"max-record-lines={max_lines})")
+    print(f"  violations: {len(violations)}")
+    for rec_id, reason in violations:
+        print(f"  {rec_id}: {reason}")
+    if not violations:
+        print("tracking: clean (records within the memory/tracking boundary)")
+
+
 def write_json(data, a, path):
     nodes = [
         {"id": n, "file": data["present"][n].as_posix(), "degree": a["deg"].get(n, 0)}
@@ -411,12 +606,42 @@ def main():
     ap.add_argument("--backlinks", metavar="NODE",
                     help="print LINKS OUT and BACKLINKS for NODE from the wikilink graph; "
                          "read-only, exit 0 even if NODE is unknown")
+    ap.add_argument("--check-citations", action="store_true",
+                    help="verify `path:NNN` / `path::symbol` citations against a source tree "
+                         "(requires --src-root); exit 1 on any stale citation")
+    ap.add_argument("--src-root", metavar="DIR",
+                    help="source tree that citations resolve against (required with "
+                         "--check-citations)")
+    ap.add_argument("--check-tracking", action="store_true",
+                    help="flag A-/D- tracking records that exceed --max-record-lines or carry a "
+                         "**MEASURED** block (the memory/tracking boundary); exit 1 on findings")
+    ap.add_argument("--max-record-lines", type=int, default=40, metavar="N",
+                    help="record-body line ceiling for --check-tracking (default 40)")
     args = ap.parse_args()
+
+    # Tracking-boundary lint scans the tracking tree, not the memory root -- handle before the
+    # memory-root existence gate so it works in a tracking-only tree.
+    if args.check_tracking:
+        violations = check_tracking(Path(args.tracking_root), args.max_record_lines)
+        print_tracking(violations, args.tracking_root, args.max_record_lines)
+        return 1 if violations else 0
 
     root = Path(args.root)
     if not root.exists():
         print(f"error: root not found: {root}", file=sys.stderr)
         return 2
+
+    if args.check_citations:
+        if not args.src_root:
+            print("error: --check-citations requires --src-root", file=sys.stderr)
+            return 2
+        src_root = Path(args.src_root)
+        if not src_root.is_dir():
+            print(f"error: src-root not found: {src_root}", file=sys.stderr)
+            return 2
+        stale, unresolvable, unanchored, ambiguous = check_citations(root, src_root)
+        print_citations(stale, unresolvable, unanchored, ambiguous, root, src_root)
+        return 1 if stale else 0
 
     records = harvest_records(Path(args.tracking_root))
     for lr in args.link_root:

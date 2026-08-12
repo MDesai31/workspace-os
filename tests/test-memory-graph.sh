@@ -84,6 +84,59 @@ check "backlinks shows BACKLINK source" "$ec" "0" "$out" "fact-b (related)"
 out="$(python3 "$SCRIPT" --backlinks no-such-fact --root "$CLEAN/docs/memory" 2>&1)"; ec=$?
 check "backlinks unknown node = no crash, exit 0" "$ec" "0" "$out" "no such fact"
 
+# --- citation lint: block-containment, symbol anchors, unresolvable/unanchored ---
+CIT="$HERE/fixtures/memory-citations"
+out="$(python3 "$SCRIPT" --check-citations --root "$CIT/docs/memory" --src-root "$CIT" 2>&1)"; ec=$?
+check "citation lint fails on stale citations" "$ec" "1" "$out" ""
+check "stale line-number citation is named" "$ec" "1" "$out" "fact-stale-line"
+check "vanished symbol anchor is named" "$ec" "1" "$out" "fact-anchor-gone"
+check "unresolvable citation reported (not stale)" "$ec" "1" "$out" "fact-unresolvable"
+check "unanchored citation reported (not stale)" "$ec" "1" "$out" "fact-unanchored"
+# false-positive guard: a correct citation to a line INSIDE the symbol block must never be named
+case "$out" in *fact-good-inblock*) echo "FAIL: in-block citation wrongly flagged"; fail=$((fail+1));;
+  *) echo "PASS: in-block citation not flagged"; pass=$((pass+1));; esac
+# a symbol-anchor whose symbol still exists must never be named
+case "$out" in *fact-anchor-present*) echo "FAIL: live symbol anchor wrongly flagged"; fail=$((fail+1));;
+  *) echo "PASS: live symbol anchor not flagged"; pass=$((pass+1));; esac
+# real-base regression: a nearby backticked NON-definition token (an import/exception/literal)
+# must not make a valid line citation STALE -- only true symbol defs are checkable. Exactly two
+# genuine stales remain (fact-stale-line, fact-anchor-gone).
+check "nearby non-definition token is not stale" "$ec" "1" "$out" "stale: 2"
+# real-base regression: a bare basename matching multiple files is AMBIGUOUS, not STALE
+# (duplicate basenames are ubiquitous; an arbitrary pick would false-positive).
+check "ambiguous basename is reported" "$ec" "1" "$out" "AMBIGUOUS"
+check "ambiguous fact is named, not stale" "$ec" "1" "$out" "fact-ambiguous"
+
+# no citations anywhere = clean, exit 0
+out="$(python3 "$SCRIPT" --check-citations --root "$CLEAN/docs/memory" --src-root "$CLEAN" 2>&1)"; ec=$?
+check "no citations = clean, exit 0" "$ec" "0" "$out" ""
+
+# --src-root is required for the citation lint
+out="$(python3 "$SCRIPT" --check-citations --root "$CIT/docs/memory" 2>&1)"; ec=$?
+check "citation lint without --src-root errors (exit 2)" "$ec" "2" "$out" "src-root"
+
+# --- tracking boundary lint: oversized bodies + MEASURED blocks ---
+TB="$HERE/fixtures/tracking-boundary"
+out="$(python3 "$SCRIPT" --check-tracking --tracking-root "$TB/docs/project-tracking" 2>&1)"; ec=$?
+check "tracking boundary lint fails on violations" "$ec" "1" "$out" ""
+check "oversized record is named" "$ec" "1" "$out" "A-20260102-huge"
+check "MEASURED-block record is named" "$ec" "1" "$out" "A-20260103-measured"
+case "$out" in *A-20260101-small*) echo "FAIL: well-scoped record wrongly flagged"; fail=$((fail+1));;
+  *) echo "PASS: well-scoped record not flagged"; pass=$((pass+1));; esac
+# a record that only MENTIONS the marker in inline code must not be flagged (dogfood regression)
+case "$out" in *A-20260104-mention*) echo "FAIL: prose mention of the marker wrongly flagged"; fail=$((fail+1));;
+  *) echo "PASS: prose mention of the marker not flagged"; pass=$((pass+1));; esac
+
+# --max-record-lines raises the size threshold; MEASURED stays independent of size
+out="$(python3 "$SCRIPT" --check-tracking --tracking-root "$TB/docs/project-tracking" --max-record-lines 100 2>&1)"; ec=$?
+check "raised threshold still catches MEASURED" "$ec" "1" "$out" "A-20260103-measured"
+case "$out" in *A-20260102-huge*) echo "FAIL: oversized record flagged despite raised threshold"; fail=$((fail+1));;
+  *) echo "PASS: raised threshold clears the oversized record"; pass=$((pass+1));; esac
+
+# clean tracking tree = exit 0
+out="$(python3 "$SCRIPT" --check-tracking --tracking-root "$CLEAN/docs/project-tracking" 2>&1)"; ec=$?
+check "clean tracking = exit 0" "$ec" "0" "$out" ""
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

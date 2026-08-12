@@ -120,6 +120,22 @@ decisions-log.md stays the reasoning layer on top and never duplicates run data.
 - To start, future-us needs: <key files / the open question / the dependency to clear>
 ```
 
+## The memory/tracking boundary
+
+A tracking record says **what to do** (or what was decided); memory (`docs/memory/`) says **what is
+true**. A record body should stay lean - the goal, the status, the decision, and a `[[wikilink]]` to
+the durable facts - not a growing dump of measured evidence.
+
+- **Measured evidence belongs in a memory fact, not a record body.** A block of pinned numbers
+  (benchmark results, row counts, profiling output) is durable knowledge: put it in `docs/memory/`
+  and `[[wikilink]]` it from the record. Do not embed a `**MEASURED**` evidence block in an `A-`/`D-`
+  body.
+- **Keep bodies short.** As a guideline a record body stays under ~40 lines; past that, the detail
+  has usually become knowledge that wants a memory fact.
+
+`memory_graph.py --check-tracking` (the `/memory-lint` boundary gate) flags records that exceed the
+line ceiling (`--max-record-lines`, default 40) or carry a `**MEASURED**` block.
+
 ## Lifecycle
 
 - `/project-log action` → record lands `open` in `action-items.md`.

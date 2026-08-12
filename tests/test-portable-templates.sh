@@ -17,6 +17,8 @@ has "$MAN" "name:"; assert "manual: schema frontmatter" $?
 hasre "$MAN" "domain \| convention \| reference|domain, convention"; assert "manual: type vocabulary" $?
 has "$MAN" "AGENTS.md"; assert "manual: boundary names AGENTS.md" $?
 has "$MAN" "memory_graph.py --check"; assert "manual: validator command" $?
+has "$MAN" "--check-citations"; assert "manual: citation-freshness check documented" $?
+has "$MAN" "--check-tracking"; assert "manual: boundary-drift check documented" $?
 has "$MAN" "[[supersedes::"; assert "manual: typed wikilink grammar" $?
 has "$MAN" "broken wikilink"; assert "manual: validator checks in prose" $?
 has "$MAN" "source-verified"; assert "manual: provenance tiers" $?
