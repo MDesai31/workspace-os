@@ -242,3 +242,19 @@ Extended `scripts/memory_graph.py` with two read-only query modes reusing `scan(
 - Commit: 553d88b, 853a3b9, a42a589, e9825e3 (branch feature/ingest-gotcha; squash-merged to main as 6d0c93c via PR #19)
 
 Added a `gotcha:`/`stale-prior:` branch to `/ingest`: it reuses the existing boundary test and routes a stale-prior to a confirmed imperative bullet in a managed `## Stale priors (training vs reality)` CLAUDE.md section (in-repo only) or a `docs/memory/` fact with the gotcha body shape. The CLAUDE.md write is a deterministic, idempotent, add-only helper `scripts/claude-md-upsert.sh` (plain-bash tests in `tests/test-claude-md-upsert.sh`), confirm-before-write in the skill. Sidecar mode falls back to tell-and-stop. Non-gotcha `/ingest` unchanged. Flavor documented in `conventions/memory.md` § Recurring flavors. Spec: `docs/specs/2026-07-27-ingest-gotcha-design.md`. Plan: `docs/plans/2026-07-27-ingest-gotcha.md`. Decision: D-20260727-ingest-gotcha-claudemd. Ships the note-templates half of `memory-backlinks-search` (property-views remain). Final-review fixes (e9825e3): the section-present append path now keeps a trailing `@import` last, and the in-repo CLAUDE.md write path now runs the secret scan the Global Constraints required (the plan's Task-3 text had omitted it).
+
+### A-20260730-portable-memory-base - portable (vendor-neutral) memory base (v0.16.0)
+- Workstream: memory
+- Status: done
+- Created: 2026-07-30
+- Completed: 2026-07-30
+- Commit: 01f80bb, 409e5b7, ad756d1, 0ecf24c, 75dee74, 797d38c (branch feature/portable-memory-base)
+
+Made every memory base workspace-os produces self-describing and vendor-neutral: a de-skilled
+operator's manual (`templates/memory/README.md`) + vendored `memory_graph.py` + a thin `AGENTS.md`
+entry point + a `CLAUDE.md` bridge, stamped by a shared tested helper `scripts/stamp-portable-layer.sh`.
+`/project-init` stamps it (both modes) and `/make-portable` retrofits existing bases. `AGENTS.md` is
+now the canonical always-loaded home; the `/ingest gotcha:` write retargets there (D-20260730-agents-md-canonical).
+Skills/hooks/plugin stay Claude-only. Spec: `docs/specs/2026-07-30-portable-memory-base-design.md`.
+Plan: `docs/plans/2026-07-30-portable-memory-base.md`. Ships the survival half of `[[vendor-neutral-runtime]]`;
+multi-vendor USE (MCP) remains.

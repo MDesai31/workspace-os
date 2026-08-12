@@ -156,3 +156,16 @@ Full design: `docs/specs/2026-07-19-memory-search-design.md`. Plan: `docs/plans/
 - Spawns: none
 
 Full design: `docs/specs/2026-07-27-ingest-gotcha-design.md`. Plan: `docs/plans/2026-07-27-ingest-gotcha.md`.
+
+### D-20260730-agents-md-canonical - AGENTS.md is the canonical always-loaded instruction file; CLAUDE.md bridges to it
+- Workstream: memory
+- Created: 2026-07-30
+- Rationale: portability to a non-Claude successor requires costly-first facts to live where any agent
+  reads them. `AGENTS.md` is the cross-vendor always-loaded convention, so it becomes canonical and
+  `CLAUDE.md` is reduced to a bridge that imports it (`@AGENTS.md` + `@docs/memory/MEMORY.md`). This
+  extends D-20260727-ingest-gotcha-claudemd: the costly-first home moves from `CLAUDE.md` to the
+  vendor-neutral `AGENTS.md` (which `CLAUDE.md` now imports), and the `/ingest gotcha:` write retargets
+  there in in-repo mode. Sidecar mode is unaffected (repo tree untouched; costly-first stays manual).
+- Spawns: none
+
+Full design: `docs/specs/2026-07-30-portable-memory-base-design.md`. Plan: `docs/plans/2026-07-30-portable-memory-base.md`.
