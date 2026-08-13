@@ -276,3 +276,16 @@ lints wired into `/memory-lint` and documented in the portable operator's manual
 read-only against the real `_meta` base: zero false-positive stales. Heuristic:
 D-20260812-citation-lint-definition-anchored. Two schema follow-ups captured as ideas:
 [[memory-volatility-field]], [[memory-applies-to-field]].
+
+### A-20260812-proactive-capture-cadence - proactive, batched capture via model-invocable skills + a cadence hook (v0.18.0)
+- Workstream: meta
+- Status: done
+- Created: 2026-08-12
+- Completed: 2026-08-13
+- Commit: pending (branch feature/proactive-capture-cadence; SHA filled at merge)
+
+Made `project-log`, `ingest`, `memory-lint`, `memory-search` model-invocable and added a scoped
+SessionStart hook `hooks/capture-cadence.sh` that injects a proactive, batch-at-boundaries capture
+cadence only in workspace-os repos. `project-log`/`ingest` descriptions reworded to invite proactive
+use. Heavy/one-time skills stay manual. Decision: D-20260812-proactive-capture-cadence. Spec:
+`docs/specs/2026-08-12-proactive-capture-cadence-design.md`.

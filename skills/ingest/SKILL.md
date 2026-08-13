@@ -1,8 +1,7 @@
 ---
 name: ingest
-description: Capture a durable project fact into this repo's shared memory. Use when the user states a non-obvious fact about THIS codebase worth keeping — architecture rationale, a domain rule, a gotcha to look up later (not an always-needed instruction), or a reference pointer. Writes a fact file under docs/memory/ and updates the index.
+description: Capture a durable project fact into this repo's shared memory. Use whenever a non-obvious, durable fact about THIS codebase arises (architecture rationale, a domain rule, a gotcha to look up later, a reference pointer) - proactively, not only when asked. Accumulate candidates and propose them as a batch at a stopping point; on confirmation, write a fact file under docs/memory/ and update the index.
 user-invocable: true
-disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 argument-hint: "<the fact to remember>  (e.g. \"we use Auth.js v5 beta because X\")"
 ---
@@ -20,6 +19,11 @@ boundary test, the index format, and the retrieval model all live in this plugin
 `<data_root>/memory/`; if that directory is missing, stop and say so (run `/project-init`
 first). Announce the resolved mode in your report. In sidecar mode never write inside the
 repo's working tree.
+
+**Pre-confirmed batch writes.** If this ingest was already approved by the user as part of a batch
+capture proposal (the workspace-os capture cadence), the confirmations below are a final
+exact-content check, not a fresh gate: show the exact bullet/fact and its target path, then proceed
+without re-asking.
 
 ## Steps
 

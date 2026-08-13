@@ -195,3 +195,19 @@ Ships in v0.17.0 (A-20260812-memory-hygiene-lints).
 - Spawns: none
 
 Ships in v0.17.0 (A-20260812-memory-hygiene-lints).
+
+### D-20260812-proactive-capture-cadence - capture + read-only skills go model-invocable; a SessionStart hook drives proactive, batched capture
+- Workstream: meta
+- Created: 2026-08-12
+- Rationale: 11 of 12 skills carried `disable-model-invocation`, so Claude captured records inline
+  ("roundabout"), bypassing each skill's ritual (template, boundary test, secret-scan, idempotency).
+  The capture skills (`project-log`, `ingest`) and read-only skills (`memory-lint`, `memory-search`)
+  become model-invocable so Claude runs the real ritual; a scoped SessionStart hook
+  (`hooks/capture-cadence.sh`) injects a capture cadence (note proactively, propose as a batch at a
+  stopping point, write on confirmation) only in repos that have workspace-os data. Heavy/one-time
+  skills (`project-init`, `workspace-init`, `make-portable`, `memory-adopt`, `tracking-adopt`,
+  `memory-sync`, `continuity`) stay manual. Supersedes the blanket `disable-model-invocation` default
+  for the four flipped skills.
+- Spawns: none
+
+Design: `docs/specs/2026-08-12-proactive-capture-cadence-design.md`. Plan: `docs/plans/2026-08-12-proactive-capture-cadence.md`.

@@ -65,6 +65,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Intended start: after the core skills see real use
 - Why/context: keep the journal honest without manual discipline.
 - **Shipped (2026-07-05, partial):** the CI/pre-commit link-guard mechanism exists — `scripts/memory_graph.py --check` fails on broken wikilinks / index-parity drift (vendored from keystone; see `resolved.md` A-20260705-memory-graph-vendor). Remaining: wiring `--check` into *target repos'* CI/pre-commit (a `/project-init` or `/guardrails` concern), and the `Stop` hook nudge.
+- **Shipped (2026-08-13, the capture nudge):** a scoped SessionStart hook (`hooks/capture-cadence.sh`) injects a proactive, batch-at-boundaries capture cadence in workspace-os repos, paired with making the capture skills model-invocable. See `resolved.md` A-20260812-proactive-capture-cadence. Remaining: the `Stop`-hook variant and target-repo CI wiring of the `--check` gate.
 - To start, future-us needs: a `Stop` hook nudging "log what you decided this session," and target-repo wiring for the `--check` gate.
 
 ### provenance-guard — IP-boundary / cross-repo leakage guard  (brainstorm 2026-06-28)
@@ -207,3 +208,10 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Intended start: next time the memory frontmatter schema is touched
 - Why/context: use-audit feedback (2026-08-12): the rare genuinely branch-specific fact is already handled well by naming the split INSIDE a shared file (`scheduling-checkout-roles-original-vs-uat.md` does exactly this, and reads better than two divergent copies would). For the remaining cases, an optional `applies-to: <branch|repo>` frontmatter field covers the real need at a fraction of the cost of a per-branch directory, and keeps ONE index. Small, additive, non-breaking (absent = applies to the whole repo). Prefer this over any directory-per-branch scheme.
 - To start, future-us needs: add optional `applies-to:` to `conventions/memory.md` frontmatter (default = repo), and decide whether `/memory-lint` surfaces it; no index change. Relates to [[SP2-memory]], [[memory-volatility-field]].
+
+### portable-layer-refresh - let /make-portable update an already-stamped base  (feedback 2026-08-13)
+- Workstream: memory
+- Priority: mid
+- Intended start: when a stamped base needs a shipped validator/manual update (e.g. the v0.17.0 citation + boundary lints)
+- Why/context: `scripts/stamp-portable-layer.sh` is add-only (`copy_if_absent`), so re-running `/make-portable` on a base already stamped at an older version SKIPS the vendored `memory_graph.py` and the operator's manual - the base cannot pick up new lint modes. A base stamped at v0.16.0 therefore cannot run `--check-citations`/`--check-tracking` from its own copy. Add an opt-in `--refresh` (or `--force-vendored`) flag that re-copies the plugin-owned files (the validator, the operator's manual) while still never touching facts or the index. Surfaced by A-20260812-memory-hygiene-lints.
+- To start, future-us needs: a `--refresh` flag on `stamp-portable-layer.sh` scoped to plugin-owned files (never facts/index), wired through `/make-portable`, plus a test that a refresh updates the vendored validator but leaves facts md5-unchanged. Relates to [[vendor-neutral-runtime]].

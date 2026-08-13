@@ -2,7 +2,6 @@
 name: memory-lint
 description: Check this repo's docs/memory/ for index/file drift, invalid frontmatter, slug mismatches, and broken wikilinks. Use after editing memory by hand, before committing memory changes, or when memory recall seems stale.
 user-invocable: true
-disable-model-invocation: true
 allowed-tools: Read, Edit, Bash, Glob, Grep
 ---
 

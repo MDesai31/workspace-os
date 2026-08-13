@@ -2,7 +2,6 @@
 name: memory-search
 description: Search this repo's memory for a fact by keyword, or show what links to/from a fact (backlinks). Use for recall over docs/memory - find a fact, see its neighbors - not for editing memory.
 user-invocable: true
-disable-model-invocation: true
 allowed-tools: Bash, Read
 ---
 
