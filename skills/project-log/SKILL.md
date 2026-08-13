@@ -1,8 +1,7 @@
 ---
 name: project-log
-description: Log a project action item, decision, or mark one done. Use when the user wants to record work to do, a choice they made and why, or to complete/close an item in the repo's project tracking. The general-purpose tracking entry point.
+description: Log a project action item, decision, or mark one done, in the repo's project tracking. Use whenever a decision (a choice + why), an action to do, or a completed item arises - proactively, not only when asked. Accumulate candidates and propose them as a batch at a natural stopping point rather than interrupting mid-task. The general-purpose tracking entry point.
 user-invocable: true
-disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 argument-hint: "[action|decision|model-decision|done] <workstream> <details>   (e.g. action data/pipeline \"fix the X gap\")"
 ---
