@@ -20,6 +20,11 @@ boundary test, the index format, and the retrieval model all live in this plugin
 first). Announce the resolved mode in your report. In sidecar mode never write inside the
 repo's working tree.
 
+**Pre-confirmed batch writes.** If this ingest was already approved by the user as part of a batch
+capture proposal (the workspace-os capture cadence), the confirmations below are a final
+exact-content check, not a fresh gate: show the exact bullet/fact and its target path, then proceed
+without re-asking.
+
 ## Steps
 
 0. **Gotcha trigger (stale-prior flavor).** If the argument begins with `gotcha:` or `stale-prior:`
