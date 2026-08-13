@@ -11,7 +11,8 @@
     "SessionStart": [
       {
         "hooks": [
-          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/sidecar-memory-context.sh\"" }
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/sidecar-memory-context.sh\"" },
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/capture-cadence.sh\"" }
         ]
       }
     ],
