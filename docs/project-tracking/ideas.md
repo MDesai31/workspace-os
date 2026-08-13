@@ -65,6 +65,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Intended start: after the core skills see real use
 - Why/context: keep the journal honest without manual discipline.
 - **Shipped (2026-07-05, partial):** the CI/pre-commit link-guard mechanism exists — `scripts/memory_graph.py --check` fails on broken wikilinks / index-parity drift (vendored from keystone; see `resolved.md` A-20260705-memory-graph-vendor). Remaining: wiring `--check` into *target repos'* CI/pre-commit (a `/project-init` or `/guardrails` concern), and the `Stop` hook nudge.
+- **Shipped (2026-08-13, the capture nudge):** a scoped SessionStart hook (`hooks/capture-cadence.sh`) injects a proactive, batch-at-boundaries capture cadence in workspace-os repos, paired with making the capture skills model-invocable. See `resolved.md` A-20260812-proactive-capture-cadence. Remaining: the `Stop`-hook variant and target-repo CI wiring of the `--check` gate.
 - To start, future-us needs: a `Stop` hook nudging "log what you decided this session," and target-repo wiring for the `--check` gate.
 
 ### provenance-guard — IP-boundary / cross-repo leakage guard  (brainstorm 2026-06-28)
