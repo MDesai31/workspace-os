@@ -264,7 +264,7 @@ multi-vendor USE (MCP) remains.
 - Status: done
 - Created: 2026-08-12
 - Completed: 2026-08-12
-- Commit: pending (built on main after v0.16.0; SHA filled at commit)
+- Commit: 2f27803 (PR #21, merged to main)
 
 From use-audit feedback on the memory base. Three quick wins: `memory_graph.py --check-citations`
 (definition-anchored block containment + `path::symbol` anchors; bare-basename collisions reported
@@ -282,7 +282,7 @@ D-20260812-citation-lint-definition-anchored. Two schema follow-ups captured as 
 - Status: done
 - Created: 2026-08-12
 - Completed: 2026-08-13
-- Commit: pending (branch feature/proactive-capture-cadence; SHA filled at merge)
+- Commit: a8ac1d5 (PR #22, merged to main)
 
 Made `project-log`, `ingest`, `memory-lint`, `memory-search` model-invocable and added a scoped
 SessionStart hook `hooks/capture-cadence.sh` that injects a proactive, batch-at-boundaries capture
