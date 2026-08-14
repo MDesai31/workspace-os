@@ -45,6 +45,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Priority: mid
 - Intended start: incremental, alongside real use
 - Why/context: SP1 ships action/decision/done + plan; the full set adds visibility and capture modes.
+- **Shipped (v0.19.0, 2026-08-14):** `/project-status` (report + brief + workstream/priority filters) — first sub-slice; keystone's registry/set-mode deliberately dropped (per-repo tracking has no project registry). See `resolved.md` A-20260712-project-status. Decision: D-20260712-project-status-design. Remaining: `/work-journal`, extra `/project-log` modes (`discovery`, `meeting-notes`, `release-notes`), `/project-status` portfolio mode (blocked on [[portfolio-registry]]).
 - To start, future-us needs: `/project-status` (summarize open items by workstream), `/work-journal` (what I did this session), and extra `/project-log` modes — `discovery` (→ a `work-log.md`), `meeting-notes`, `release-notes` (→ `RELEASES.md`/CHANGELOG).
 - Borrow (comparison 2026-06-28): give `/project-status` Notion-style **database views** — filter/sort open items by workstream / status / priority.
 - Borrow (keystone 2026-07-05): keystone ships `/project-status`, `/work-journal`, `/meeting-notes`, `/release-notes` + a `release_draft.py` (MIT). Adapt that prose instead of writing it; per D-20260705-keystone-reposition this idea is borrow-first (priority stays mid only because the *adaptation* to our schema is still real work).

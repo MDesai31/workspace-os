@@ -289,3 +289,17 @@ SessionStart hook `hooks/capture-cadence.sh` that injects a proactive, batch-at-
 cadence only in workspace-os repos. `project-log`/`ingest` descriptions reworded to invite proactive
 use. Heavy/one-time skills stay manual. Decision: D-20260812-proactive-capture-cadence. Spec:
 `docs/specs/2026-08-12-proactive-capture-cadence-design.md`.
+
+### A-20260712-project-status — build /project-status per spec
+- Workstream: skills
+- Status: done
+- Created: 2026-07-12
+- Completed: 2026-08-14
+- Commit: 0ea15fe + 8becee2 (branch project-status; PR pending)
+
+Shipped `/project-status` per docs/specs/2026-07-12-project-status-design.md: read-only
+report/brief status view over `<data_root>/project-tracking/` with workstream/priority
+filters, sidecar-aware via resolve-data-root.sh, model invocation enabled ("what's next"
+triggers). Keystone's report/brief shapes borrowed (MIT); its registry data model dropped.
+First sub-slice of tracking-skills-roundout. Plugin v0.19.0 (spec targeted v0.13.0; five
+releases landed between spec and build). Spawned by D-20260712-project-status-design.
