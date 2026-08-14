@@ -211,6 +211,7 @@ Ships in v0.17.0 (A-20260812-memory-hygiene-lints).
 - Spawns: none
 
 Design: `docs/specs/2026-08-12-proactive-capture-cadence-design.md`. Plan: `docs/plans/2026-08-12-proactive-capture-cadence.md`.
+
 ### D-20260712-project-status-design — /project-status as read-only prose skill on per-repo tracking files
 - Workstream: skills
 - Created: 2026-07-12
