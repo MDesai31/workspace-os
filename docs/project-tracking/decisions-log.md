@@ -11,6 +11,8 @@ ID. Never rewrite history — only add. Records use the decision template from t
 
 Full design: `docs/specs/2026-06-26-sp2-memory-design.md`. Plan: `docs/plans/2026-06-26-sp2-memory.md`.
 
+Closes `SP2-memory` (idea COMPLETE: SP2a + SP2b shipped; resolved.md A-20260626-sp2a-memory-core, A-20260626-sp2b-memory-roundout).
+
 ### D-20260626-ingest-skill-name — capture skill is `/ingest`, not `/remember` (collision)
 - Workstream: skills
 - Created: 2026-06-26
@@ -81,6 +83,8 @@ Closes `adoption-import` sub-slices (c) + (d). Spec: `docs/specs/2026-06-28-memo
 
 Full design: `docs/specs/2026-07-01-guardrail-engine-design.md`. Plan: `docs/plans/2026-07-01-guardrail-engine.md`.
 
+Closes `provenance-guard` (idea COMPLETE: the `ip_class` tag + tripwire rules pack ship via this engine, and the standalone `security-patterns.yaml` route was dropped here — the hook-vs-plugin delivery question this idea was waiting on).
+
 ### D-20260705-keystone-reposition — reposition workspace-os as the enforcement/adoption layer; borrow-first on keystone overlap
 - Workstream: meta
 - Created: 2026-07-05
@@ -97,6 +101,8 @@ Ideas reconciled the same day: SP3-finish-task + SP4-meta-onboarding + tracking-
 - Spawns: A-20260705-decision-status
 - Rationale: the decisions log's core invariant is append-only ("never rewrite history"), so superseded state cannot be a Status-line edit. Instead: `Status: accepted` is written once at creation and never touched; supersession = a NEW decision carrying `Supersedes: [[supersedes::D-old]]` plus exactly one line appended to the old record (`- Superseded-by: [[superseded_by::D-new]]`), and the read rule "Superseded-by wins over Status" makes live-vs-dead readable per record without edits. Predicates reuse memory's typed-wikilink vocabulary (D-20260705-keystone-reposition's typed-edge ship) — one vocabulary across tracking and memory, not two.
 
+Closes `decision-status` (idea COMPLETE: the link half and the status half both shipped, v0.8.0).
+
 ### D-20260705-continuity-home-root — CONTINUITY.md lives at the repo root, as a human doc, pointer-only from CLAUDE.md
 - Workstream: workflow
 - Created: 2026-07-05
@@ -104,6 +110,8 @@ Ideas reconciled the same day: SP3-finish-task + SP4-meta-onboarding + tracking-
 - Consequences: /continuity scaffolds at root; the CLAUDE.md line is a pointer, not an @import (the doc must not load every session — it's for a human stranger, not the model)
 - Spawns: A-20260705-continuity-runbook
 - Rationale: a bus-factor runbook's single job is to be found by someone who doesn't know the repo — that argues for README-sibling visibility over docs/ tidiness (the idea had flagged root-vs-docs as the open decision). Kept out of the always-loaded context: unlike memory, its audience is a human during an incident, and its content (hosts, cadences, owner names) is dead weight in every model session. Template generalizes the westgate CONTINUITY.md *shape* only (five sections + TODO(owner) convention — patterns, no proprietary content, per the standing reference-repo rule), plus the 2026-06-28 borrow notes: DVC deps→outs framing and a Backstage-style Owner column on the obligations table.
+
+Closes `continuity-runbook` (idea COMPLETE: `templates/CONTINUITY.md` + `/continuity`, v0.9.0).
 
 ### D-20260706-model-log-run-layer — model decisions stay in project-log; the run layer is tracker-first with an in-repo ledger fallback
 - Workstream: schema
@@ -141,6 +149,8 @@ Full design: `docs/specs/2026-07-11-tracking-adopt-git-design.md`.
 
 Full design: `docs/specs/2026-07-13-lint-hook-design.md`. Plan: `docs/plans/2026-07-13-lint-hook.md`.
 
+Closes `hook-starter-library` (idea COMPLETE: final sub-slice, the PostToolUse advisory-lint template).
+
 ### D-20260723-memory-search-scope - /memory-search matches name+description only, off the derived graph; property-views deferred
 - Workstream: memory
 - Created: 2026-07-23
@@ -156,6 +166,8 @@ Full design: `docs/specs/2026-07-19-memory-search-design.md`. Plan: `docs/plans/
 - Spawns: none
 
 Full design: `docs/specs/2026-07-27-ingest-gotcha-design.md`. Plan: `docs/plans/2026-07-27-ingest-gotcha.md`.
+
+Closes `stale-priors-memory` (idea COMPLETE: the stale-prior/gotcha flavor landed in `conventions/memory.md` § Recurring flavors, which was that idea's entire stated need).
 
 ### D-20260730-agents-md-canonical - AGENTS.md is the canonical always-loaded instruction file; CLAUDE.md bridges to it
 - Workstream: memory
@@ -243,3 +255,6 @@ Spec: docs/specs/2026-07-12-project-status-design.md. First sub-slice of trackin
 - Spawns: A-20260817-portable-layer-refresh
 
 Idea: portable-layer-refresh (ideas.md), surfaced by A-20260812-memory-hygiene-lints.
+
+Closes `portable-layer-refresh` (idea COMPLETE, v0.20.0).
+
