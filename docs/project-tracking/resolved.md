@@ -309,7 +309,7 @@ releases landed between spec and build). Spawned by D-20260712-project-status-de
 - Status: done
 - Created: 2026-08-17
 - Completed: 2026-08-17
-- Commit: 2279636 (branch feature/portable-layer-refresh; PR pending)
+- Commit: 2279636 (branch feature/portable-layer-refresh; PR #24, merge SHA pending)
 
 Shipped `--refresh` on `scripts/stamp-portable-layer.sh`, wired through as `/make-portable
 refresh` with a confirm gate. Re-copies the vendored `memory_graph.py` and the operator's manual
