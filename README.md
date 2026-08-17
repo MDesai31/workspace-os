@@ -34,7 +34,7 @@ machine gets the upgrade.
 - **`/memory-search`** - search `docs/memory/` facts by keyword (name + description), or list backlinks for a fact; read-only.
 - **`/memory-sync`** — migrate a fact from your `~/.claude` auto-memory into a repo's `docs/memory/`.
 - **`/memory-adopt`** — adopt a repo's existing docs (README, design notes, CLAUDE.md reference content) into `docs/memory/` (opt-in, propose→confirm→apply).
-- **`/make-portable`** - add the portable vendor-neutral layer (operator's manual, vendored `memory_graph.py`, `AGENTS.md` + `CLAUDE.md` bridge) to an already-initialized memory base; add-only and idempotent.
+- **`/make-portable`** - add the portable vendor-neutral layer (operator's manual, vendored `memory_graph.py`, `AGENTS.md` + `CLAUDE.md` bridge) to an already-initialized memory base; add-only and idempotent. `/make-portable refresh` re-copies the plugin-owned manual + validator (confirm-gated) so a base stamped at an older version picks up new validator modes; `AGENTS.md`, facts, and the index are never refreshed.
 - **`/tracking-adopt`** — adopt a repo's existing roadmaps and TODO docs into `docs/project-tracking/` (routes roadmap entries → ideas, recorded decisions → decisions-log, open TODOs → action-items); the `git` mode mines merged history into resolved.md (one record per merged unit, real commit SHAs, SHA-deduped).
 - **`/continuity`** — scaffold/review a repo-root `CONTINUITY.md` bus-factor runbook: auto-inventories scheduled jobs (systemd/cron/CI), one deps→outs row per obligation with a Detection column, access *pointers* (never secrets), re-verify budgets, `TODO(owner)` gaps.
 - **`/workspace-init`** — mark a workspace for sidecar mode — data layer in a local-only `_meta/` repo, enterprise repos untouched.
