@@ -243,6 +243,8 @@ Extended `scripts/memory_graph.py` with two read-only query modes reusing `scan(
 
 Added a `gotcha:`/`stale-prior:` branch to `/ingest`: it reuses the existing boundary test and routes a stale-prior to a confirmed imperative bullet in a managed `## Stale priors (training vs reality)` CLAUDE.md section (in-repo only) or a `docs/memory/` fact with the gotcha body shape. The CLAUDE.md write is a deterministic, idempotent, add-only helper `scripts/claude-md-upsert.sh` (plain-bash tests in `tests/test-claude-md-upsert.sh`), confirm-before-write in the skill. Sidecar mode falls back to tell-and-stop. Non-gotcha `/ingest` unchanged. Flavor documented in `conventions/memory.md` § Recurring flavors. Spec: `docs/specs/2026-07-27-ingest-gotcha-design.md`. Plan: `docs/plans/2026-07-27-ingest-gotcha.md`. Decision: D-20260727-ingest-gotcha-claudemd. Ships the note-templates half of `memory-backlinks-search` (property-views remain). Final-review fixes (e9825e3): the section-present append path now keeps a trailing `@import` last, and the in-repo CLAUDE.md write path now runs the secret scan the Global Constraints required (the plan's Task-3 text had omitted it).
 
+Closes the `stale-priors-memory` idea: its stated need (add the stale-prior flavor to `conventions/memory.md`) is satisfied by § Recurring flavors.
+
 ### A-20260730-portable-memory-base - portable (vendor-neutral) memory base (v0.16.0)
 - Workstream: memory
 - Status: done
