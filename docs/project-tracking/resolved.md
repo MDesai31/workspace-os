@@ -303,3 +303,23 @@ filters, sidecar-aware via resolve-data-root.sh, model invocation enabled ("what
 triggers). Keystone's report/brief shapes borrowed (MIT); its registry data model dropped.
 First sub-slice of tracking-skills-roundout. Plugin v0.19.0 (spec targeted v0.13.0; five
 releases landed between spec and build). Spawned by D-20260712-project-status-design.
+
+### A-20260817-portable-layer-refresh — opt-in --refresh on the portable-layer stamper (v0.20.0)
+- Workstream: memory
+- Status: done
+- Created: 2026-08-17
+- Completed: 2026-08-17
+- Commit: 2279636 (branch feature/portable-layer-refresh; PR #24, merge SHA pending)
+
+Shipped `--refresh` on `scripts/stamp-portable-layer.sh`, wired through as `/make-portable
+refresh` with a confirm gate. Re-copies the vendored `memory_graph.py` and the operator's manual
+so a base stamped at an older version can pick up new validator modes; `AGENTS.md` reports
+`skipped`, facts and the index are never written. `copy_if_absent` became `stamp_file` with a
+`refreshable` parameter; status vocabulary grew to created/exists/refreshed/current/skipped. The
+add-only default is byte-identical, so `/project-init` is unaffected. Tests 20 → 36 (incl. facts
+and index md5-unchanged across a refresh); full suite 185 pass; validate-plugin clean.
+Decision: D-20260817-portable-refresh-scope.
+
+Note: the motivating example was not reproducible locally. `Codebase\_meta` has no portable layer
+at all (no `tools/memory_graph.py`, no `conventions/memory-base-guide.md`), so it needs plain
+`/make-portable`, not `refresh`. No genuinely stale base was available to test against.

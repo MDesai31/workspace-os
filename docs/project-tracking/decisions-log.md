@@ -221,3 +221,25 @@ Design: `docs/specs/2026-08-12-proactive-capture-cadence-design.md`. Plan: `docs
 - Spawns: A-20260712-project-status
 
 Spec: docs/specs/2026-07-12-project-status-design.md. First sub-slice of tracking-skills-roundout.
+
+### D-20260817-portable-refresh-scope — --refresh covers plugin-owned files only, never AGENTS.md
+- Workstream: memory
+- Created: 2026-08-17
+- Status: accepted
+- Rationale: the stamper writes four things and they are not equally safe to re-copy. The vendored
+  memory_graph.py and the operator's manual are plugin-owned and version together (the manual
+  documents the validator's lint modes), so --refresh re-copies both. AGENTS.md carries
+  user-authored content under the managed `## Stale priors` heading, so it is never overwritten;
+  the CLAUDE.md bridge is already additive and needs nothing. A finer "refresh only if unmodified"
+  rule was rejected as unimplementable: nothing records which shipped version a base was stamped
+  from, so an edited file and an older file are indistinguishable. Overwrite is acceptable because
+  every base is under git (in-repo, or the sidecar's local-only auto-committed repo), so git is the
+  undo. Opt-in, because the add-only default is what makes /project-init re-runnable.
+- Consequences: /make-portable gains the first overwriting operation in the skill, hence its first
+  confirm gate. The gate classifies three ways (absent / differs / identical) rather than two: a
+  plain cmp reports an absent file as a difference and would warn about overwriting a file that
+  does not exist. Refresh withholds overwrites, not the initial stamp, so an absent AGENTS.md is
+  still created.
+- Spawns: A-20260817-portable-layer-refresh
+
+Idea: portable-layer-refresh (ideas.md), surfaced by A-20260812-memory-hygiene-lints.

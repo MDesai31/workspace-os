@@ -59,4 +59,56 @@ bash "$S" --manual-dest "$TMP/x/README.md" --graph-dest "$TMP/x/g.py" --manual-t
 # case 7: bad args -> exit 2
 bash "$S" --manual-dest "$TMP/y/README.md" >/dev/null 2>&1; [ "$?" = 2 ]; assert "badargs: exit 2" $?
 
+# case 8: --refresh replaces a stale vendored validator with the shipped one
+d8="$TMP/repo8"; mkdir -p "$d8/docs/memory"; printf 'STALE_VALIDATOR\n' > "$TMP/fake_graph.py"
+bash "$S" --manual-dest "$d8/docs/memory/README.md" --graph-dest "$d8/docs/tools/memory_graph.py" \
+  --graph-src "$TMP/fake_graph.py" >/dev/null
+grep -qF "STALE_VALIDATOR" "$d8/docs/tools/memory_graph.py"; assert "refresh-setup: stale validator stamped" $?
+out="$(bash "$S" --manual-dest "$d8/docs/memory/README.md" --graph-dest "$d8/docs/tools/memory_graph.py" --refresh)"
+! grep -qF "STALE_VALIDATOR" "$d8/docs/tools/memory_graph.py"; assert "refresh: stale validator replaced" $?
+cmp -s "$GSRC" "$d8/docs/tools/memory_graph.py"; assert "refresh: validator matches shipped" $?
+echo "$out" | grep -qF "graph: refreshed"; assert "refresh: graph reports refreshed" $?
+
+# case 9: --refresh overwrites a modified manual (plugin-owned prose)
+d9="$TMP/repo9"; mkdir -p "$d9/docs/memory"; printf 'HAND_EDITED\n' > "$d9/docs/memory/README.md"
+out="$(bash "$S" --manual-dest "$d9/docs/memory/README.md" --graph-dest "$d9/docs/tools/memory_graph.py" --refresh)"
+! grep -qF "HAND_EDITED" "$d9/docs/memory/README.md"; assert "refresh: modified manual overwritten" $?
+echo "$out" | grep -qF "manual: refreshed"; assert "refresh: manual reports refreshed" $?
+
+# case 10: --refresh never touches AGENTS.md (user-owned stale-priors content)
+d10="$TMP/repo10"; mkdir -p "$d10/docs/memory"; printf 'MY_STALE_PRIORS\n' > "$d10/AGENTS.md"
+out="$(bash "$S" --manual-dest "$d10/docs/memory/README.md" --graph-dest "$d10/docs/tools/memory_graph.py" \
+  --agents "$d10/AGENTS.md" --refresh)"
+grep -qF "MY_STALE_PRIORS" "$d10/AGENTS.md"; assert "refresh: AGENTS.md content preserved" $?
+echo "$out" | grep -qF "agents: skipped"; assert "refresh: agents reports skipped" $?
+
+# case 11: facts and the index are md5-unchanged across a refresh
+d11="$TMP/repo11"; mkdir -p "$d11/docs/memory"
+printf -- '---\nname: a-fact\n---\n\nbody text\n' > "$d11/docs/memory/a-fact.md"
+printf '# Memory Index\n\n- [A fact](a-fact.md) - hook\n' > "$d11/docs/memory/MEMORY.md"
+before="$(md5sum "$d11/docs/memory/a-fact.md" "$d11/docs/memory/MEMORY.md")"
+bash "$S" --manual-dest "$d11/docs/memory/README.md" --graph-dest "$d11/docs/tools/memory_graph.py" --refresh >/dev/null
+[ "$before" = "$(md5sum "$d11/docs/memory/a-fact.md" "$d11/docs/memory/MEMORY.md")" ]
+assert "refresh: facts and index md5-unchanged" $?
+
+# case 12: --refresh on a fresh base reports created, not refreshed
+d12="$TMP/repo12"; mkdir -p "$d12/docs/memory"
+out="$(bash "$S" --manual-dest "$d12/docs/memory/README.md" --graph-dest "$d12/docs/tools/memory_graph.py" --refresh)"
+echo "$out" | grep -qF "manual: created"; assert "refresh-fresh: manual reports created" $?
+echo "$out" | grep -qF "graph: created"; assert "refresh-fresh: graph reports created" $?
+
+# case 13: --refresh when already identical reports current and leaves content in place
+out="$(bash "$S" --manual-dest "$d12/docs/memory/README.md" --graph-dest "$d12/docs/tools/memory_graph.py" --refresh)"
+echo "$out" | grep -qF "manual: current"; assert "refresh-identical: manual reports current" $?
+echo "$out" | grep -qF "graph: current"; assert "refresh-identical: graph reports current" $?
+cmp -s "$GSRC" "$d12/docs/tools/memory_graph.py"; assert "refresh-identical: validator still matches shipped" $?
+
+# case 14: without --refresh an existing plugin-owned file is still left alone (add-only default)
+d14="$TMP/repo14"; mkdir -p "$d14/docs/memory"; printf 'STALE_VALIDATOR\n' > "$TMP/fake_graph2.py"
+bash "$S" --manual-dest "$d14/docs/memory/README.md" --graph-dest "$d14/docs/tools/memory_graph.py" \
+  --graph-src "$TMP/fake_graph2.py" >/dev/null
+out="$(bash "$S" --manual-dest "$d14/docs/memory/README.md" --graph-dest "$d14/docs/tools/memory_graph.py")"
+grep -qF "STALE_VALIDATOR" "$d14/docs/tools/memory_graph.py"; assert "no-refresh: stale validator left alone" $?
+echo "$out" | grep -qF "graph: exists"; assert "no-refresh: graph reports exists" $?
+
 echo "----"; echo "$pass passed, $fail failed"; [ "$fail" -eq 0 ]

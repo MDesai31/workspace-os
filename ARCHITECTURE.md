@@ -25,6 +25,7 @@
               └─ adds @docs/memory/MEMORY.md to the repo's CLAUDE.md
               (also stamps the portable layer: operator's manual, memory_graph.py, AGENTS.md, CLAUDE.md bridge)
 /make-portable -> retrofits an existing docs/memory/ base with the portable layer   (operator's manual, memory_graph.py, AGENTS.md, CLAUDE.md bridge; add-only, idempotent)
+/make-portable refresh -> re-copies plugin-owned files only (manual + memory_graph.py; confirm-gated, never AGENTS.md/facts/index)
 /workspace-init ──marks──▶ <workspace>/_meta/ (sidecar git repo, no remote) + workspace.json
 resolve-data-root.sh ──answers──▶ mode + data_root   (run FIRST by every skill/hook)
 sidecar-memory-context.sh ──SessionStart──▶ injects _meta memory (workspace tier, then repo tier)
