@@ -258,3 +258,26 @@ Idea: portable-layer-refresh (ideas.md), surfaced by A-20260812-memory-hygiene-l
 
 Closes `portable-layer-refresh` (idea COMPLETE, v0.20.0).
 
+### D-20260819-idea-completion-exit — a fully shipped idea is deleted from ideas.md, never archived in it
+- Workstream: schema
+- Created: 2026-08-19
+- Status: accepted
+- Rationale: the Lifecycle section documented only one exit from `ideas.md` (an idea goes active and
+  graduates to an action) and was silent on completion, so the only documented-adjacent move for a
+  shipped idea was to append a Shipped line and leave the record in place. Seven accumulated that
+  way. The cost is not cosmetic: a parked record keeps its `Priority:` line, so `/project-status`
+  counted 6 `high` ideas when only 2 were live work. `ideas.md` is a queue, not an archive: the
+  terminal home for completed work is the `D-` record (reasoning) plus the `A-` record in
+  `resolved.md` (completion), which is where a reader already looks. An archive section inside
+  `ideas.md` was considered and rejected: it invents a tier the lifecycle does not have, and the
+  same staleness would just accumulate one heading lower. Deletion is safe because `ideas.md` is
+  the one tracking file that permits removal (`decisions-log.md` and `resolved.md` are append-only)
+  and because git holds the removed prose.
+- Consequences: closing an idea is now a 4-step ordered procedure rather than a one-line edit, and
+  step 4 (repointing inbound `[[wikilinks]]`) is easy to forget since tracking wikilinks are
+  human-contract and no lint catches a dangling one. A `/project-log shipped <idea>` mode would
+  automate it; not built.
+- Spawns: none
+
+Applied retroactively to 7 ideas in PR #25 before this rule was written down.
+

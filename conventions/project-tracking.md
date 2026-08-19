@@ -148,8 +148,17 @@ line ceiling (`--max-record-lines`, default 40) or carry a `**MEASURED**` block.
 - `/project-log decision` → record appended to `decisions-log.md`. Append-only. When it
   supersedes a prior decision, the old record also gets its one `Superseded-by:` line appended
   (see "Decision status & supersession").
-- `/project-plan` → idea appended to `ideas.md`. When an idea goes active, it graduates to an
-  action in `action-items.md` (and can be removed from `ideas.md`).
+- `/project-plan` → idea appended to `ideas.md`. `ideas.md` is a **queue, not an archive**: an idea
+  leaves it as soon as it stops being pending work, by one of two exits.
+  - **Goes active** → graduates to an action in `action-items.md`, and is removed from `ideas.md`.
+  - **Ships completely** → closed out in this order: (1) append a `Closes <idea>` line to the
+    decision record that carries its reasoning, (2) ensure the `A-` record in `resolved.md` names
+    the idea it closed, (3) remove the record from `ideas.md`, (4) repoint any `[[wikilinks]]` to
+    it from surviving ideas into `<name> (shipped)` prose.
+
+  A **partially** shipped idea stays put, carrying a Shipped line and naming the sub-slices that
+  remain. Never leave a *fully* shipped idea in place: its `Priority:` line keeps counting toward
+  the open backlog, so `/project-status` over-reports that tier.
 
 ## Adopting existing docs (`/tracking-adopt`)
 
