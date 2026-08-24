@@ -281,3 +281,31 @@ Closes `portable-layer-refresh` (idea COMPLETE, v0.20.0).
 
 Applied retroactively to 7 ideas in PR #25 before this rule was written down.
 
+### D-20260819-memory-provenance-fields — verified-against (checkable) over a volatility enum (asserted)
+- Workstream: schema
+- Created: 2026-08-19
+- Status: accepted
+- Rationale: the `memory-volatility-field` idea offered a fork — a categorical
+  `volatility: stable|measured|pinned`, a concrete `verified-against: <sha> <date>`, or both. The
+  enum is **rejected**: it is hand-maintained metadata nothing can validate, the same shape as the
+  `Priority:` lines that went stale on four shipped ideas and made `/project-status` over-report
+  (PR #25 cleaned the data, PR #26 the cause). It would drift *silently*, since staleness is
+  invisible by definition. `verified-against` is different in kind because it is checkable: it turns
+  "should I re-verify this?" into a computation over `git diff <sha>..HEAD`. The counter-argument is
+  real and recorded — not every fact cites code, so the field says nothing about durable domain
+  knowledge — but absence already carries that meaning: a fact with no `verified-against` is one
+  nobody anchored to code, the same population the enum would have labelled `stable`.
+- Consequences: `--check-citations` now shells out to git, so it must degrade (never error) on
+  non-git source trees, unknown shas, and malformed fields; all three are pinned by tests. The new
+  UNVERIFIED-SINCE bucket is advisory and must never change the exit code, or one upstream commit
+  would turn every base's CI red. `applies-to` takes a required `branch:`/`repo:` prefix because the
+  idea record's bare `<branch|repo>` could not distinguish a branch named `main` from a repo of the
+  same name.
+- Spawns: A-20260819-memory-provenance-fields
+
+Spec: `docs/specs/2026-08-19-memory-provenance-fields-design.md`. Plan:
+`docs/plans/2026-08-19-memory-provenance-fields.md`.
+
+Closes `memory-volatility-field` (idea COMPLETE, v0.21.0) and `memory-applies-to-field`
+(idea COMPLETE, v0.21.0).
+

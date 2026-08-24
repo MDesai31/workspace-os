@@ -69,6 +69,8 @@ Same shape as `~/.claude` auto-memory, so `/memory-sync` can translate 1:1.
 name: <kebab-slug>            # matches the filename stem
 description: <one-line summary used for relevance at recall>
 type: domain | convention | reference
+verified-against: <sha> <YYYY-MM-DD>     # optional
+applies-to: branch:<name> | repo:<name>  # optional
 ---
 
 <the fact. Link related facts/decisions with [[wikilink]].>
@@ -78,6 +80,19 @@ Types:
 - `domain` — architecture, codebase structure, domain model/knowledge.
 - `convention` — how-we-do-it-in-this-repo (process/style specific to the repo).
 - `reference` — pointers to external resources (URLs, dashboards, docs).
+
+Two optional provenance fields, both absent by default:
+
+- `verified-against: <sha> <YYYY-MM-DD>` — the commit this fact's claims were last confirmed
+  against, plus the date. The sha is the **source repo being cited**, NOT the memory repo — in
+  sidecar mode those are different git repos. `/memory-lint` uses it to report UNVERIFIED-SINCE:
+  the citation still resolves, but the cited code has moved since anyone confirmed the claim.
+  Advisory only; it never fails the lint.
+- `applies-to: branch:<name>` or `applies-to: repo:<name>` — scopes a fact that is true only on one
+  branch or in one repo. The `branch:`/`repo:` prefix is required (a bare `main` is ambiguous
+  between a branch and a repo name). **Absent means the fact applies to the whole repo, all
+  branches**, which is the normal case. Prefer naming a split inside one shared fact over two
+  divergent copies; reach for this field only for the residue.
 
 No `decision` type — decisions live in `decisions-log.md`. **Never write secrets** (keys,
 tokens, `.env` values) into memory — repos may be public.

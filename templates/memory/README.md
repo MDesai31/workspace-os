@@ -16,6 +16,8 @@ Each fact is one file, `<slug>.md`, where `<slug>` is short-kebab-case:
 name: <slug>            # MUST equal the filename stem
 description: <one-line summary used to judge relevance at recall>
 type: domain | convention | reference
+verified-against: <sha> <YYYY-MM-DD>     # optional
+applies-to: branch:<name> | repo:<name>  # optional
 ---
 
 <the fact. Cite evidence (file:line). Link related facts/records with [[wikilink]].>
@@ -24,6 +26,17 @@ type: domain | convention | reference
 Types: `domain` (architecture, structure, domain model), `convention` (how-we-do-it-here),
 `reference` (pointers to external resources). Decisions (a choice + why) do NOT go here; they belong
 in the project-tracking decisions log.
+
+Optional provenance fields:
+
+- `verified-against: <sha> <YYYY-MM-DD>`: the commit of the **code repository this fact cites**
+  (not this memory repo) at which the fact was last confirmed, plus the date. Update it whenever
+  you re-read the cited code and confirm the fact still holds. `memory_graph.py --check-citations`
+  reports facts whose cited files changed after that commit as UNVERIFIED-SINCE. Advisory: it never
+  fails the check.
+- `applies-to: branch:<name>` or `applies-to: repo:<name>`: use only when a fact is true on one
+  branch or in one repo but not others. The prefix is required. Omit the field entirely for the
+  normal case (true everywhere in this repo).
 
 ## Where a fact belongs (the boundary rule)
 

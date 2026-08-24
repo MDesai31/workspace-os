@@ -137,6 +137,137 @@ case "$out" in *A-20260102-huge*) echo "FAIL: oversized record flagged despite r
 out="$(python3 "$SCRIPT" --check-tracking --tracking-root "$CLEAN/docs/project-tracking" 2>&1)"; ec=$?
 check "clean tracking = exit 0" "$ec" "0" "$out" ""
 
+# --- applies-to: parsed and surfaced, never a gate ---
+SCOPED="$HERE/fixtures/memory-scoped"
+out="$(python3 "$SCRIPT" --root "$SCOPED/docs/memory" --tracking-root "$SCOPED/none" 2>&1)"; ec=$?
+check "applies-to is reported" "$ec" "0" "$out" "branch:develop"
+# the report prints norm stems (hyphens folded to underscores) like every other section
+check "applies-to names the scoped fact" "$ec" "0" "$out" "fact_scoped"
+out="$(python3 "$SCRIPT" --check --root "$SCOPED/docs/memory" --tracking-root "$SCOPED/none" 2>&1)"; ec=$?
+check "applies-to does not fail --check" "$ec" "0" "$out" ""
+
+# --- verified-against: UNVERIFIED-SINCE when cited code moved after the recorded sha ---
+GT="$(mktemp -d)"; mkdir -p "$GT/docs/memory" "$GT/src"
+cat > "$GT/src/opt.py" <<'EOF'
+def prune_prepare_inputs(rows):
+    return rows
+EOF
+git -C "$GT" init -q
+git -C "$GT" config user.email t@t.t; git -C "$GT" config user.name t
+git -C "$GT" add -A >/dev/null; git -C "$GT" commit -qm one
+OLD_SHA="$(git -C "$GT" rev-parse --short HEAD)"
+cat > "$GT/src/opt.py" <<'EOF'
+def prune_prepare_inputs(rows, limit):
+    return rows[:limit]
+EOF
+git -C "$GT" add -A >/dev/null; git -C "$GT" commit -qm two
+NEW_SHA="$(git -C "$GT" rev-parse --short HEAD)"
+
+write_fact() {  # $1=sha
+  cat > "$GT/docs/memory/fact-verified.md" <<EOF
+---
+name: fact-verified
+description: cites a symbol that still resolves
+type: domain
+verified-against: $1 2026-08-19
+---
+
+Entry point: \`src/opt.py::prune_prepare_inputs\`.
+EOF
+  printf '# Memory Index\n\n## domain\n- [fact-verified](fact-verified.md) - x\n' \
+    > "$GT/docs/memory/MEMORY.md"
+}
+
+write_fact "$OLD_SHA"
+out="$(python3 "$SCRIPT" --check-citations --root "$GT/docs/memory" --src-root "$GT" 2>&1)"; ec=$?
+check "stale sha reports UNVERIFIED-SINCE" "$ec" "0" "$out" "UNVERIFIED-SINCE"
+check "unverified fact is named" "$ec" "0" "$out" "fact-verified"
+check "UNVERIFIED-SINCE does not fail the lint" "$ec" "0" "$out" "citations: clean"
+
+write_fact "$NEW_SHA"
+out="$(python3 "$SCRIPT" --check-citations --root "$GT/docs/memory" --src-root "$GT" 2>&1)"; ec=$?
+case "$out" in *UNVERIFIED-SINCE*) echo "FAIL: current sha wrongly flagged"; fail=$((fail+1));;
+  *) echo "PASS: current sha not flagged"; pass=$((pass+1));; esac
+rm -rf "$GT"
+
+# --- frontmatter bounding: a fact that QUOTES the schema in its body yields no phantom field.
+# _frontmatter() must stop at the real close delimiter even when the body contains a `---` rule.
+PH="$(mktemp -d)"; mkdir -p "$PH/docs/memory" "$PH/src"
+printf 'def f():\n    return 1\n' > "$PH/src/opt.py"
+cat > "$PH/docs/memory/fact-quotes-schema.md" <<'EOF'
+---
+name: fact-quotes-schema
+description: documents the schema in its body
+type: convention
+---
+
+The schema looks like this:
+
+---
+
+    verified-against: deadbeef 2026-01-01
+    applies-to: branch:phantom
+
+Entry: `src/opt.py::f`.
+EOF
+printf '# Memory Index\n\n## convention\n- [fact-quotes-schema](fact-quotes-schema.md) - y\n' \
+  > "$PH/docs/memory/MEMORY.md"
+out="$(python3 "$SCRIPT" --root "$PH/docs/memory" --tracking-root "$PH/none" 2>&1)"; ec=$?
+case "$out" in *branch:phantom*) echo "FAIL: body-quoted applies-to parsed as a field"; fail=$((fail+1));;
+  *) echo "PASS: body-quoted applies-to is not a field"; pass=$((pass+1));; esac
+out="$(python3 "$SCRIPT" --check-citations --root "$PH/docs/memory" --src-root "$PH" 2>&1)"; ec=$?
+case "$out" in *deadbeef*) echo "FAIL: body-quoted verified-against parsed as a field"; fail=$((fail+1));;
+  *) echo "PASS: body-quoted verified-against is not a field"; pass=$((pass+1));; esac
+rm -rf "$PH"
+
+# --- verified-against degradation: never an error, always exit 0 ---
+NG="$(mktemp -d)"; mkdir -p "$NG/docs/memory" "$NG/src"
+printf 'def f():\n    return 1\n' > "$NG/src/opt.py"
+mkfact() {  # $1=verified-against line body
+  cat > "$NG/docs/memory/fact-x.md" <<EOF
+---
+name: fact-x
+description: degradation case
+type: domain
+verified-against: $1
+---
+
+Entry: \`src/opt.py::f\`.
+EOF
+  printf '# Memory Index\n\n## domain\n- [fact-x](fact-x.md) - x\n' > "$NG/docs/memory/MEMORY.md"
+}
+
+mkfact "abc1234 2026-08-19"
+out="$(python3 "$SCRIPT" --check-citations --root "$NG/docs/memory" --src-root "$NG" 2>&1)"; ec=$?
+check "non-git src-root degrades, exit 0" "$ec" "0" "$out" "not a git repo"
+
+git -C "$NG" init -q; git -C "$NG" config user.email t@t.t; git -C "$NG" config user.name t
+git -C "$NG" add -A >/dev/null; git -C "$NG" commit -qm one
+mkfact "deadbee 2026-08-19"
+git -C "$NG" add -A >/dev/null; git -C "$NG" commit -qm two
+out="$(python3 "$SCRIPT" --check-citations --root "$NG/docs/memory" --src-root "$NG" 2>&1)"; ec=$?
+check "unknown sha degrades, exit 0" "$ec" "0" "$out" "not in src-root repo"
+
+mkfact "not-a-sha whenever"
+git -C "$NG" add -A >/dev/null; git -C "$NG" commit -qm three
+out="$(python3 "$SCRIPT" --check-citations --root "$NG/docs/memory" --src-root "$NG" 2>&1)"; ec=$?
+check "malformed field ignored, exit 0" "$ec" "0" "$out" "citations: clean"
+case "$out" in *UNVERIFIED-SINCE*) echo "FAIL: malformed field produced a finding"; fail=$((fail+1));;
+  *) echo "PASS: malformed field silently ignored"; pass=$((pass+1));; esac
+rm -rf "$NG"
+
+# --- provenance fields: the two schema statements must agree ---
+CONV="$HERE/../conventions/memory.md"
+MANUAL="$HERE/../templates/memory/README.md"
+for field in "verified-against" "applies-to"; do
+  c=$(grep -c -- "$field" "$CONV"); m=$(grep -c -- "$field" "$MANUAL")
+  if [ "$c" -gt 0 ] && [ "$m" -gt 0 ]; then
+    echo "PASS: $field documented in both schema statements"; pass=$((pass+1))
+  else
+    echo "FAIL: $field missing (conventions:$c manual:$m)"; fail=$((fail+1))
+  fi
+done
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
