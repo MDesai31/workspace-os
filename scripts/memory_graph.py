@@ -71,6 +71,7 @@ FENCE = re.compile(r"```.*?```", re.DOTALL)
 INLINE_CODE = re.compile(r"`[^`]*`")
 FRONTMATTER_NAME = re.compile(r"^name:\s*(.+?)\s*$", re.MULTILINE)
 FRONTMATTER_DESC = re.compile(r"^description:\s*(.+?)\s*$", re.MULTILINE)
+FRONTMATTER_APPLIES = re.compile(r"^applies-to:\s*(branch|repo):(\S.*?)\s*$", re.MULTILINE)
 RECORD_HEADING = re.compile(r"^###\s+([AD]-\d{8}-[A-Za-z0-9-]+)", re.MULTILINE)
 
 # Citation lint: a `path.ext:NNN` line-number citation, a backticked `path::symbol` anchor,
@@ -92,6 +93,18 @@ def norm(s: str) -> str:
 def strip_code(text: str) -> str:
     """Remove fenced blocks and inline code so example links in prose do not count."""
     return INLINE_CODE.sub("", FENCE.sub("", text))
+
+
+def _frontmatter(text: str) -> str:
+    """Return the leading `---` frontmatter block, or "" when the file has none.
+
+    Parsed as a block rather than with a fixed character window: a long description can push
+    later fields past any fixed slice, and the provenance fields sit below `type:`.
+    """
+    if not text.startswith("---"):
+        return ""
+    end = text.find("\n---", 3)
+    return text[:end] if end != -1 else ""
 
 
 def parse_wikilink(raw: str):
@@ -131,6 +144,7 @@ def scan(root: Path):
     basenames = defaultdict(list)  # file basename -> [paths]
     wiki_edges = []  # (src, type, dst, raw, file, lineno)
     descriptions = {}  # norm stem -> frontmatter description: (one line, may be "")
+    applies_to = {}  # norm stem -> "branch:<name>" / "repo:<name>" (only for scoped facts)
     index_edges = set()  # (src, dst)  markdown-link hub->leaf
     index_targets = set()  # norm stems of every .md the index links to (resolved or not)
 
@@ -148,6 +162,9 @@ def scan(root: Path):
             names[norm(m.group(1))].append(str(f))
         dm = FRONTMATTER_DESC.search(text[:400])
         descriptions[s] = dm.group(1).strip() if dm else ""
+        am = FRONTMATTER_APPLIES.search(_frontmatter(text))
+        if am:
+            applies_to[s] = f"{am.group(1)}:{am.group(2)}"
         # wikilinks, with ACCURATE line numbers: walk the original lines and skip fenced
         # code blocks + inline code spans (so example links in prose are not counted, and
         # collapsing fences does not shift the reported line numbers).
@@ -176,6 +193,7 @@ def scan(root: Path):
         "files": files,
         "present": present,
         "descriptions": descriptions,
+        "applies_to": applies_to,
         "raw_targets": raw_targets,
         "names": names,
         "basenames": basenames,
@@ -309,6 +327,12 @@ def print_report(data, a, root):
     p(f"\nHUBS (top by wikilink degree):")
     for dg, n in a["hubs"]:
         p(f"  {dg:>2}  {n}")
+
+    scoped = data.get("applies_to", {})
+    if scoped:
+        p(f"\nSCOPED FACTS ({len(scoped)})  -- facts narrowed by applies-to:")
+        for stem, scope in sorted(scoped.items()):
+            p(f"  {stem}: {scope}")
     p("")
 
 

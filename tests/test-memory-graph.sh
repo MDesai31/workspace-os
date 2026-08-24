@@ -137,6 +137,15 @@ case "$out" in *A-20260102-huge*) echo "FAIL: oversized record flagged despite r
 out="$(python3 "$SCRIPT" --check-tracking --tracking-root "$CLEAN/docs/project-tracking" 2>&1)"; ec=$?
 check "clean tracking = exit 0" "$ec" "0" "$out" ""
 
+# --- applies-to: parsed and surfaced, never a gate ---
+SCOPED="$HERE/fixtures/memory-scoped"
+out="$(python3 "$SCRIPT" --root "$SCOPED/docs/memory" --tracking-root "$SCOPED/none" 2>&1)"; ec=$?
+check "applies-to is reported" "$ec" "0" "$out" "branch:develop"
+# the report prints norm stems (hyphens folded to underscores) like every other section
+check "applies-to names the scoped fact" "$ec" "0" "$out" "fact_scoped"
+out="$(python3 "$SCRIPT" --check --root "$SCOPED/docs/memory" --tracking-root "$SCOPED/none" 2>&1)"; ec=$?
+check "applies-to does not fail --check" "$ec" "0" "$out" ""
+
 # --- provenance fields: the two schema statements must agree ---
 CONV="$HERE/../conventions/memory.md"
 MANUAL="$HERE/../templates/memory/README.md"
