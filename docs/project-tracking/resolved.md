@@ -297,7 +297,7 @@ use. Heavy/one-time skills stay manual. Decision: D-20260812-proactive-capture-c
 - Status: done
 - Created: 2026-07-12
 - Completed: 2026-08-14
-- Commit: 0ea15fe + 8becee2 (branch project-status; PR pending)
+- Commit: 3f06e8c (PR #23, merged to main)
 
 Shipped `/project-status` per docs/specs/2026-07-12-project-status-design.md: read-only
 report/brief status view over `<data_root>/project-tracking/` with workstream/priority
@@ -331,7 +331,7 @@ at all (no `tools/memory_graph.py`, no `conventions/memory-base-guide.md`), so i
 - Status: done
 - Created: 2026-08-19
 - Completed: 2026-08-24
-- Commit: f606347, 329305f, 551373a, 2ac90f4, 25df50e (branch feature/memory-provenance-fields)
+- Commit: 3adde70 (PR #27, merged to main)
 
 Two optional additive fact fields, absent = today's behaviour byte-identical. `verified-against:
 <sha> <date>` records the **source** repo's commit a fact was last confirmed at, consumed as a
