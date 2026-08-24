@@ -190,6 +190,42 @@ case "$out" in *UNVERIFIED-SINCE*) echo "FAIL: current sha wrongly flagged"; fai
   *) echo "PASS: current sha not flagged"; pass=$((pass+1));; esac
 rm -rf "$GT"
 
+# --- verified-against degradation: never an error, always exit 0 ---
+NG="$(mktemp -d)"; mkdir -p "$NG/docs/memory" "$NG/src"
+printf 'def f():\n    return 1\n' > "$NG/src/opt.py"
+mkfact() {  # $1=verified-against line body
+  cat > "$NG/docs/memory/fact-x.md" <<EOF
+---
+name: fact-x
+description: degradation case
+type: domain
+verified-against: $1
+---
+
+Entry: \`src/opt.py::f\`.
+EOF
+  printf '# Memory Index\n\n## domain\n- [fact-x](fact-x.md) - x\n' > "$NG/docs/memory/MEMORY.md"
+}
+
+mkfact "abc1234 2026-08-19"
+out="$(python3 "$SCRIPT" --check-citations --root "$NG/docs/memory" --src-root "$NG" 2>&1)"; ec=$?
+check "non-git src-root degrades, exit 0" "$ec" "0" "$out" "not a git repo"
+
+git -C "$NG" init -q; git -C "$NG" config user.email t@t.t; git -C "$NG" config user.name t
+git -C "$NG" add -A >/dev/null; git -C "$NG" commit -qm one
+mkfact "deadbee 2026-08-19"
+git -C "$NG" add -A >/dev/null; git -C "$NG" commit -qm two
+out="$(python3 "$SCRIPT" --check-citations --root "$NG/docs/memory" --src-root "$NG" 2>&1)"; ec=$?
+check "unknown sha degrades, exit 0" "$ec" "0" "$out" "not in src-root repo"
+
+mkfact "not-a-sha whenever"
+git -C "$NG" add -A >/dev/null; git -C "$NG" commit -qm three
+out="$(python3 "$SCRIPT" --check-citations --root "$NG/docs/memory" --src-root "$NG" 2>&1)"; ec=$?
+check "malformed field ignored, exit 0" "$ec" "0" "$out" "citations: clean"
+case "$out" in *UNVERIFIED-SINCE*) echo "FAIL: malformed field produced a finding"; fail=$((fail+1));;
+  *) echo "PASS: malformed field silently ignored"; pass=$((pass+1));; esac
+rm -rf "$NG"
+
 # --- provenance fields: the two schema statements must agree ---
 CONV="$HERE/../conventions/memory.md"
 MANUAL="$HERE/../templates/memory/README.md"
