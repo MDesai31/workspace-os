@@ -190,6 +190,36 @@ case "$out" in *UNVERIFIED-SINCE*) echo "FAIL: current sha wrongly flagged"; fai
   *) echo "PASS: current sha not flagged"; pass=$((pass+1));; esac
 rm -rf "$GT"
 
+# --- frontmatter bounding: a fact that QUOTES the schema in its body yields no phantom field.
+# _frontmatter() must stop at the real close delimiter even when the body contains a `---` rule.
+PH="$(mktemp -d)"; mkdir -p "$PH/docs/memory" "$PH/src"
+printf 'def f():\n    return 1\n' > "$PH/src/opt.py"
+cat > "$PH/docs/memory/fact-quotes-schema.md" <<'EOF'
+---
+name: fact-quotes-schema
+description: documents the schema in its body
+type: convention
+---
+
+The schema looks like this:
+
+---
+
+    verified-against: deadbeef 2026-01-01
+    applies-to: branch:phantom
+
+Entry: `src/opt.py::f`.
+EOF
+printf '# Memory Index\n\n## convention\n- [fact-quotes-schema](fact-quotes-schema.md) - y\n' \
+  > "$PH/docs/memory/MEMORY.md"
+out="$(python3 "$SCRIPT" --root "$PH/docs/memory" --tracking-root "$PH/none" 2>&1)"; ec=$?
+case "$out" in *branch:phantom*) echo "FAIL: body-quoted applies-to parsed as a field"; fail=$((fail+1));;
+  *) echo "PASS: body-quoted applies-to is not a field"; pass=$((pass+1));; esac
+out="$(python3 "$SCRIPT" --check-citations --root "$PH/docs/memory" --src-root "$PH" 2>&1)"; ec=$?
+case "$out" in *deadbeef*) echo "FAIL: body-quoted verified-against parsed as a field"; fail=$((fail+1));;
+  *) echo "PASS: body-quoted verified-against is not a field"; pass=$((pass+1));; esac
+rm -rf "$PH"
+
 # --- verified-against degradation: never an error, always exit 0 ---
 NG="$(mktemp -d)"; mkdir -p "$NG/docs/memory" "$NG/src"
 printf 'def f():\n    return 1\n' > "$NG/src/opt.py"

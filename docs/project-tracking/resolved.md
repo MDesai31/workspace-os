@@ -342,7 +342,10 @@ the gap the existing lint is structurally blind to (it validates the anchor, not
 `memory-volatility-field` and `memory-applies-to-field`. Decision:
 D-20260819-memory-provenance-fields.
 
-Tests 185 → 198 across nine harnesses, including all three degradation paths pinned to exit 0.
+Tests 185 → 200 across nine harnesses: all three degradation paths pinned to exit 0, and a guard
+that a fact *quoting* the schema in its body (past a `---` rule) yields no phantom field. Verified
+end-to-end that `/make-portable refresh` propagates the revised manual to a base stamped before this
+change, which is the delivery path the spec depends on.
 Two implementation constraints the spec missed, both caught while reading code: `git diff
 --name-only` prints repo-root-relative paths (rejoined onto the repo root, since `--src-root` may be
 a subdirectory where raw output silently never matches), and the freshness test builds a git repo at
