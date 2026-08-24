@@ -325,3 +325,26 @@ Decision: D-20260817-portable-refresh-scope.
 Note: the motivating example was not reproducible locally. `Codebase\_meta` has no portable layer
 at all (no `tools/memory_graph.py`, no `conventions/memory-base-guide.md`), so it needs plain
 `/make-portable`, not `refresh`. No genuinely stale base was available to test against.
+
+### A-20260819-memory-provenance-fields — verified-against + applies-to frontmatter fields (v0.21.0)
+- Workstream: schema
+- Status: done
+- Created: 2026-08-19
+- Completed: 2026-08-24
+- Commit: f606347, 329305f, 551373a, 2ac90f4, 25df50e (branch feature/memory-provenance-fields)
+
+Two optional additive fact fields, absent = today's behaviour byte-identical. `verified-against:
+<sha> <date>` records the **source** repo's commit a fact was last confirmed at, consumed as a
+fourth, advisory **UNVERIFIED-SINCE** bucket in `--check-citations`: the citation still resolves but
+a cited file changed after that sha, so nobody has confirmed the claim since the code moved. That is
+the gap the existing lint is structurally blind to (it validates the anchor, not the claim).
+`applies-to: branch:<name>|repo:<name>` scopes a fact; reported, never gated. Closes both
+`memory-volatility-field` and `memory-applies-to-field`. Decision:
+D-20260819-memory-provenance-fields.
+
+Tests 185 → 198 across nine harnesses, including all three degradation paths pinned to exit 0.
+Two implementation constraints the spec missed, both caught while reading code: `git diff
+--name-only` prints repo-root-relative paths (rejoined onto the repo root, since `--src-root` may be
+a subdirectory where raw output silently never matches), and the freshness test builds a git repo at
+test time because a nested `.git` cannot live in a static fixture. One plan prediction was wrong:
+the report prints norm stems (`fact_scoped`), not the literal filename.
