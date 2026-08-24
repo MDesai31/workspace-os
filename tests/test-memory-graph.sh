@@ -146,6 +146,50 @@ check "applies-to names the scoped fact" "$ec" "0" "$out" "fact_scoped"
 out="$(python3 "$SCRIPT" --check --root "$SCOPED/docs/memory" --tracking-root "$SCOPED/none" 2>&1)"; ec=$?
 check "applies-to does not fail --check" "$ec" "0" "$out" ""
 
+# --- verified-against: UNVERIFIED-SINCE when cited code moved after the recorded sha ---
+GT="$(mktemp -d)"; mkdir -p "$GT/docs/memory" "$GT/src"
+cat > "$GT/src/opt.py" <<'EOF'
+def prune_prepare_inputs(rows):
+    return rows
+EOF
+git -C "$GT" init -q
+git -C "$GT" config user.email t@t.t; git -C "$GT" config user.name t
+git -C "$GT" add -A >/dev/null; git -C "$GT" commit -qm one
+OLD_SHA="$(git -C "$GT" rev-parse --short HEAD)"
+cat > "$GT/src/opt.py" <<'EOF'
+def prune_prepare_inputs(rows, limit):
+    return rows[:limit]
+EOF
+git -C "$GT" add -A >/dev/null; git -C "$GT" commit -qm two
+NEW_SHA="$(git -C "$GT" rev-parse --short HEAD)"
+
+write_fact() {  # $1=sha
+  cat > "$GT/docs/memory/fact-verified.md" <<EOF
+---
+name: fact-verified
+description: cites a symbol that still resolves
+type: domain
+verified-against: $1 2026-08-19
+---
+
+Entry point: \`src/opt.py::prune_prepare_inputs\`.
+EOF
+  printf '# Memory Index\n\n## domain\n- [fact-verified](fact-verified.md) - x\n' \
+    > "$GT/docs/memory/MEMORY.md"
+}
+
+write_fact "$OLD_SHA"
+out="$(python3 "$SCRIPT" --check-citations --root "$GT/docs/memory" --src-root "$GT" 2>&1)"; ec=$?
+check "stale sha reports UNVERIFIED-SINCE" "$ec" "0" "$out" "UNVERIFIED-SINCE"
+check "unverified fact is named" "$ec" "0" "$out" "fact-verified"
+check "UNVERIFIED-SINCE does not fail the lint" "$ec" "0" "$out" "citations: clean"
+
+write_fact "$NEW_SHA"
+out="$(python3 "$SCRIPT" --check-citations --root "$GT/docs/memory" --src-root "$GT" 2>&1)"; ec=$?
+case "$out" in *UNVERIFIED-SINCE*) echo "FAIL: current sha wrongly flagged"; fail=$((fail+1));;
+  *) echo "PASS: current sha not flagged"; pass=$((pass+1));; esac
+rm -rf "$GT"
+
 # --- provenance fields: the two schema statements must agree ---
 CONV="$HERE/../conventions/memory.md"
 MANUAL="$HERE/../templates/memory/README.md"

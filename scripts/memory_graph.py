@@ -61,6 +61,7 @@ Usage:
 import argparse
 import json
 import re
+import subprocess
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -72,6 +73,8 @@ INLINE_CODE = re.compile(r"`[^`]*`")
 FRONTMATTER_NAME = re.compile(r"^name:\s*(.+?)\s*$", re.MULTILINE)
 FRONTMATTER_DESC = re.compile(r"^description:\s*(.+?)\s*$", re.MULTILINE)
 FRONTMATTER_APPLIES = re.compile(r"^applies-to:\s*(branch|repo):(\S.*?)\s*$", re.MULTILINE)
+FRONTMATTER_VERIFIED = re.compile(
+    r"^verified-against:\s*([0-9a-fA-F]{7,40})\s+(\d{4}-\d{2}-\d{2})\s*$", re.MULTILINE)
 RECORD_HEADING = re.compile(r"^###\s+([AD]-\d{8}-[A-Za-z0-9-]+)", re.MULTILINE)
 
 # Citation lint: a `path.ext:NNN` line-number citation, a backticked `path::symbol` anchor,
@@ -445,6 +448,35 @@ def _symbol_block(lines, symbol):
     return (def_line, end)
 
 
+def _git_repo_root(src_root):
+    """Absolute repo root for src_root, or None when it is not a git worktree."""
+    try:
+        r = subprocess.run(["git", "-C", str(src_root), "rev-parse", "--show-toplevel"],
+                           capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return Path(r.stdout.strip()) if r.returncode == 0 and r.stdout.strip() else None
+
+
+def _changed_since(src_root, repo_root, sha, paths):
+    """Absolute paths among `paths` that changed between sha and HEAD.
+
+    Returns None when the question is unanswerable (unknown sha, git failure). `git diff
+    --name-only` prints REPO-ROOT-relative paths, so results are rejoined onto repo_root before
+    being returned -- src_root may be a subdirectory and raw output would never match.
+    """
+    try:
+        r = subprocess.run(
+            ["git", "-C", str(src_root), "diff", "--name-only", f"{sha}..HEAD", "--", *paths],
+            capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if r.returncode != 0:
+        return None
+    return {(repo_root / line.strip()).resolve()
+            for line in r.stdout.splitlines() if line.strip()}
+
+
 def check_citations(root, src_root):
     """Verify `path:NNN` and `path::symbol` citations in memory facts against the real source.
 
@@ -453,13 +485,22 @@ def check_citations(root, src_root):
                    `path::symbol` anchor whose symbol no longer exists (fail gate).
       UNRESOLVABLE the cited file is absent under src_root (non-fatal; it may live elsewhere).
       UNANCHORED   a line citation with no adjacent backticked symbol to check against.
+      UNVERIFIED-SINCE  the fact carries `verified-against: <sha> <date>` and a cited file changed
+                   after that sha, so nobody has confirmed the claim since the code moved
+                   (advisory; never a fail gate).
     """
-    stale, unresolvable, unanchored, ambiguous = [], [], [], []
+    stale, unresolvable, unanchored, ambiguous, unverified = [], [], [], [], []
+    cited_paths = defaultdict(set)  # fact filename -> {absolute resolved Path}
+    fact_sha = {}                   # fact filename -> sha from verified-against
     for f in sorted(root.rglob("*.md")):
         if f.name == INDEX_NAME:
             continue
         fact = f.name
-        lines = f.read_text(encoding="utf-8", errors="ignore").splitlines()
+        text = f.read_text(encoding="utf-8", errors="ignore")
+        lines = text.splitlines()
+        vm = FRONTMATTER_VERIFIED.search(_frontmatter(text))
+        if vm:
+            fact_sha[fact] = vm.group(1)
         sym_by_line = defaultdict(list)
         for i, line in enumerate(lines, 1):
             for m in BACKTICK_SYMBOL.finditer(line):
@@ -470,6 +511,8 @@ def check_citations(root, src_root):
             for m in ANCHOR.finditer(line):
                 path_str, symbol = m.group(1), m.group(2)
                 status, val = _resolve_src(path_str, src_root)
+                if status == "ok":
+                    cited_paths[fact].add(val.resolve())
                 if status == "missing":
                     unresolvable.append((fact, f"`{path_str}::{symbol}` (file not found under src-root)"))
                 elif status == "ambiguous":
@@ -495,6 +538,8 @@ def check_citations(root, src_root):
                     unanchored.append((fact, f"{path_str}:{nnn} (no adjacent `symbol`)"))
                     continue
                 status, val = _resolve_src(path_str, src_root)
+                if status == "ok":
+                    cited_paths[fact].add(val.resolve())
                 if status == "missing":
                     unresolvable.append((fact, f"{path_str}:{nnn} (file not found under src-root)"))
                     continue
@@ -512,15 +557,45 @@ def check_citations(root, src_root):
                     continue  # citation lands inside a cited symbol's block -> correct
                 sym, (start, end) = blocks[0]
                 stale.append((fact, f"{path_str}:{nnn} cites `{sym}` whose block is lines {start}-{end}"))
-    return stale, unresolvable, unanchored, ambiguous
+
+    # Freshness: batch one `git diff` per DISTINCT sha (after a bulk /ingest most facts share
+    # one), then attribute the changed paths back to each fact. Advisory throughout -- every
+    # unanswerable case degrades to a note, never an error and never a fail gate.
+    if fact_sha:
+        repo_root = _git_repo_root(src_root)
+        if repo_root is None:
+            for fact in sorted(fact_sha):
+                unverified.append((fact, "freshness unverifiable (src-root is not a git repo)"))
+        else:
+            by_sha = defaultdict(list)
+            for fact, sha in fact_sha.items():
+                by_sha[sha].append(fact)
+            for sha, facts in sorted(by_sha.items()):
+                paths = sorted({str(p) for fct in facts for p in cited_paths.get(fct, ())})
+                if not paths:
+                    continue
+                changed = _changed_since(src_root, repo_root, sha, paths)
+                if changed is None:
+                    for fct in sorted(facts):
+                        unverified.append(
+                            (fct, f"freshness unverifiable (sha {sha} not in src-root repo)"))
+                    continue
+                for fct in sorted(facts):
+                    hits = sorted(p.name for p in cited_paths.get(fct, ()) if p in changed)
+                    if hits:
+                        unverified.append(
+                            (fct, f"verified at {sha}; changed since: {', '.join(hits)}"))
+    return stale, unresolvable, unanchored, ambiguous, unverified
 
 
-def print_citations(stale, unresolvable, unanchored, ambiguous, root, src_root):
+def print_citations(stale, unresolvable, unanchored, ambiguous, unverified, root, src_root):
     print(f"CITATION LINT  (root={Path(root).as_posix()}, src-root={Path(src_root).as_posix()})")
     print(f"  stale: {len(stale)}   ambiguous: {len(ambiguous)}   "
-          f"unresolvable: {len(unresolvable)}   unanchored: {len(unanchored)}")
+          f"unresolvable: {len(unresolvable)}   unanchored: {len(unanchored)}   "
+          f"unverified: {len(unverified)}")
     for label, items in (("STALE", stale), ("AMBIGUOUS", ambiguous),
-                         ("UNRESOLVABLE", unresolvable), ("UNANCHORED", unanchored)):
+                         ("UNRESOLVABLE", unresolvable), ("UNANCHORED", unanchored),
+                         ("UNVERIFIED-SINCE", unverified)):
         if items:
             print(f"{label} ({len(items)}):")
             for fact, detail in items:
@@ -663,8 +738,8 @@ def main():
         if not src_root.is_dir():
             print(f"error: src-root not found: {src_root}", file=sys.stderr)
             return 2
-        stale, unresolvable, unanchored, ambiguous = check_citations(root, src_root)
-        print_citations(stale, unresolvable, unanchored, ambiguous, root, src_root)
+        stale, unresolvable, unanchored, ambiguous, unverified = check_citations(root, src_root)
+        print_citations(stale, unresolvable, unanchored, ambiguous, unverified, root, src_root)
         return 1 if stale else 0
 
     records = harvest_records(Path(args.tracking_root))
