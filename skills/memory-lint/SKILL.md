@@ -58,7 +58,14 @@ whose line is outside the cited symbol's definition block, or a `` `path::symbol
 symbol no longer exists - a FAIL, exit 1) and, non-fatally, **AMBIGUOUS** (a bare basename matching
 several files - add a path prefix), **UNRESOLVABLE** (file not found under src-root), and
 **UNANCHORED** (a line citation with no adjacent backticked symbol to check). The last three are not
-failures; they mark citations that need a path prefix or a symbol anchor to become checkable. Prefer
+failures; they mark citations that need a path prefix or a symbol anchor to become checkable.
+
+**UNVERIFIED-SINCE** (also non-fatal) is the freshness bucket: the fact carries
+`verified-against: <sha> <date>`, its citation still resolves, but a cited file changed after that
+sha — nobody has confirmed the claim since the code moved. Re-read the cited code; if the fact still
+holds, update the sha and date. Facts without the field are never reported, and the bucket never
+fails the lint. It degrades to a one-line "unverifiable" note when src-root is not a git repo or the
+recorded sha is unknown there. Prefer
 the rot-proof `` `path::symbol` `` anchor form when adding citations. When linting the **workspace
 tier** (`_meta/memory/`), whose facts may cite code across several repos, expect AMBIGUOUS under a
 single `--src-root`; that is normal - add a path prefix in the citation, or point `--src-root` at the

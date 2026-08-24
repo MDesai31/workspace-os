@@ -73,6 +73,13 @@ without re-asking.
 6. **Write the fact file** `<data_root or chosen tier>/memory/<slug>.md` using the fact schema
    from conventions (frontmatter `name`/`description`/`type` + body; link related facts/decisions
    with `[[wikilink]]`).
+   **Stamp `verified-against` when the fact cites code.** If the body carries a `path:NNN` or
+   `` `path::symbol` `` citation AND the source tree is a git repo, add
+   `verified-against: <short-sha> <today>`, the sha from `git -C <src-root> rev-parse --short HEAD`
+   — the **source** repo being cited, not the memory repo (in sidecar mode they differ). Show it in
+   the proposal like any other field. Omit the field entirely when the fact cites no code or the
+   source tree is not a git repo; never invent a sha. Never auto-stamp `applies-to` — it is
+   authored deliberately or not at all.
 7. **Update the index** — append `- [<name>](<slug>.md) — <hook>` under the matching type
    section in `<data_root or chosen tier>/memory/MEMORY.md` (replace a `_No facts yet._`
    placeholder if present).
