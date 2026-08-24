@@ -137,6 +137,18 @@ case "$out" in *A-20260102-huge*) echo "FAIL: oversized record flagged despite r
 out="$(python3 "$SCRIPT" --check-tracking --tracking-root "$CLEAN/docs/project-tracking" 2>&1)"; ec=$?
 check "clean tracking = exit 0" "$ec" "0" "$out" ""
 
+# --- provenance fields: the two schema statements must agree ---
+CONV="$HERE/../conventions/memory.md"
+MANUAL="$HERE/../templates/memory/README.md"
+for field in "verified-against" "applies-to"; do
+  c=$(grep -c -- "$field" "$CONV"); m=$(grep -c -- "$field" "$MANUAL")
+  if [ "$c" -gt 0 ] && [ "$m" -gt 0 ]; then
+    echo "PASS: $field documented in both schema statements"; pass=$((pass+1))
+  else
+    echo "FAIL: $field missing (conventions:$c manual:$m)"; fail=$((fail+1))
+  fi
+done
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
