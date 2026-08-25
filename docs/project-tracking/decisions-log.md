@@ -322,3 +322,13 @@ Considered and rejected: emitting hookify `.local.md` rules (loses repo-shared r
 engine's whole point); guardrails.json-only with no routing (recreates the ergonomics gap for
 hazards the engine genuinely cannot express). Spec:
 `docs/specs/2026-08-24-guardrail-conversational-authoring-design.md` § Decision.
+
+### D-20260824-playbook-surface-before-default — playbooks surface via deny-once by default; per-playbook opt-out to after-injection
+- Workstream: skills
+- Created: 2026-08-24
+- Status: accepted
+- Rationale: verified against the Claude Code hooks docs (2026-08-24): PreToolUse command hooks CANNOT inject model context non-blockingly — additionalContext is honored there only on "ask" escalations; PostToolUse injects unconditionally but only after the call ran. The audit's plea is literally "read before, not after they fail," and one blocked call + read + retry costs far less than the measured unguided-first-call failure (~484k tokens). So `surface: before` (deny-once, marker-then-deny so the retry passes) is the default, with `surface: after` (PostToolUse injection) as the per-playbook opt-out for advisory procedures.
+- Consequences: playbook surfacing depends on hook registration order not at all (parallel hooks); a `before` playbook costs exactly one denied call per session.
+- Spawns: A-20260824-procedure-playbooks
+
+Considered and rejected: always-after (first call always unguided — the exact measured failure); UserPromptSubmit injection (prompt-scoped, not tool-scoped — fires on user turns, not at the moment of the matching call); always-before (no soft option for advisory-grade procedures).
