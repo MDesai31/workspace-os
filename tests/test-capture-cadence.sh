@@ -16,6 +16,7 @@ contains "in-repo with tracking data emits cadence" "$out" "capture cadence"
 contains "cadence names /project-log" "$out" "/project-log"
 contains "cadence names /ingest" "$out" "/ingest"
 contains "cadence names /guardrails" "$out" "/guardrails"
+contains "cadence names /playbook" "$out" "/playbook"
 
 # in-repo with memory/ only -> still emits
 R4="$TMP/memory-only"; mkdir -p "$R4/docs/memory"; git -C "$R4" init -q
