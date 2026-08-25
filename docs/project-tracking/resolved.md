@@ -380,3 +380,21 @@ repo tier. Kills the 10 permanently-reported false-positive "broken links" the E
 at the UDX workspace tier — the noise that trains you to ignore lint output. `/memory-lint`
 workspace-tier instructions now pass one `--tracking-root` per `<workspace_root>/*/project-tracking`
 via glob. Remaining halves of the idea stay open: `propagated-to:` schema line, `/branch-matrix`.
+
+### A-20260824-dispatch-ledger — local-only subagent dispatch ledger + summary
+- Workstream: meta
+- Status: done
+- Created: 2026-08-24
+- Completed: 2026-08-24
+- Commit: (PR pending)
+
+Promotes the dispatch-ledger idea (EC2 audit 2026-08-24; the ~484k-token re-derivation).
+Ships `hooks/dispatch-ledger.sh` (PostToolUse on `Task|Agent`: one JSONL entry per dispatch —
+agent, desc≤120, prompt/response sizes, est_tokens, opportunistic harness tokens/duration —
+fail-open everywhere, no prompt/response text ever stored) writing to
+`~/.claude/workspace-os/dispatch-ledger.jsonl` (user-global: outside every repo by
+construction, satisfying the never-ships-to-an-employer-repo constraint without per-mode
+paths — the location decision, folded here rather than a D- record), plus
+`scripts/dispatch-ledger-summary.sh` (fail-loud read-back: totals, per-agent, top-N,
+--repo filter, torn lines skipped+counted). Spec:
+`docs/specs/2026-08-24-dispatch-ledger-design.md`.
