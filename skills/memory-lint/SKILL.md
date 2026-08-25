@@ -31,8 +31,15 @@ wikilinks resolve (conventions/memory.md § two-tier memory):
       --tracking-root "<data_root>/project-tracking" \
       --link-root "<workspace_root>/memory"
 
-To lint the workspace tier itself, run again with `--root "<workspace_root>/memory"` and
-`--link-root` pointing at each repo's `_meta/<repo>/memory`.
+To lint the workspace tier itself, run again with `--root "<workspace_root>/memory"`,
+`--link-root` pointing at each repo's `_meta/<repo>/memory`, and — because workspace-tier facts
+may reference `A-`/`D-` records in any repo tier — one `--tracking-root` per repo tier
+(the flag is repeatable; a glob supplies them):
+
+    python3 "${CLAUDE_PLUGIN_ROOT}/scripts/memory_graph.py" \
+      --root "<workspace_root>/memory" \
+      $(for d in "<workspace_root>"/*/project-tracking; do printf -- '--tracking-root %q ' "$d"; done) \
+      $(for d in "<workspace_root>"/*/memory; do printf -- '--link-root %q ' "$d"; done)
 
 It mechanically covers **index ↔ file parity** (unindexed files, dangling `MEMORY.md` entries)
 and **wikilink resolution** (against fact files *and* `A-`/`D-` records in

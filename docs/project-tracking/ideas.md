@@ -254,10 +254,12 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
   "fixed, pushed, deployed... Not yet applied to develop-scheduling" because `open`/`done` cannot say
   "landed in two of four checkouts." Distinct from portfolio-registry (many projects) and from
   memory-applies-to-field (labelling one fact's scope).
-- To start, future-us needs: cross-tier `A-`/`D-` link resolution in `memory_graph.py`, a
-  `propagated-to:` line on the record schema, and a `/branch-matrix` view answering "which checkouts
-  still need this fix." The link-resolution half is the cheapest and kills the false positives on
-  its own.
+- **Shipped (v0.22.1, 2026-08-24, the link-resolution half):** `--tracking-root` repeatable in
+  `memory_graph.py` (union harvest, aggregated `--check-tracking`); `/memory-lint` workspace-tier
+  pass now feeds one per repo tier. See `resolved.md` A-20260824-multi-tracking-root. Kills the 10
+  false positives on its own.
+- To start remaining halves, future-us needs: a `propagated-to:` line on the record schema, and a
+  `/branch-matrix` view answering "which checkouts still need this fix."
 
 ### finding-record-class — a record type for findings and questions, which close on evidence  (EC2 audit 2026-08-24)
 - Workstream: schema

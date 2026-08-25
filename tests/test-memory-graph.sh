@@ -268,6 +268,50 @@ for field in "verified-against" "applies-to"; do
   fi
 done
 
+# --- multi --tracking-root: workspace-tier links resolve across repo tiers ---
+MT="$(mktemp -d)"; trap 'rm -rf "$MT"' EXIT
+mkdir -p "$MT/memory" "$MT/repo-a/project-tracking" "$MT/repo-b/project-tracking"
+cat > "$MT/memory/MEMORY.md" <<'EOF'
+# Memory Index
+
+## Domain
+- [Cross fact](cross-fact.md) — links records in two repo tiers
+EOF
+cat > "$MT/memory/cross-fact.md" <<'EOF'
+---
+name: cross-fact
+description: workspace-tier fact linking records in two different repo tiers
+type: domain
+---
+
+Work tracked in [[A-20260101-repo-a-action]] and decided in [[D-20260102-repo-b-decision]].
+EOF
+printf '### A-20260101-repo-a-action — do the thing\n- Status: open\n' \
+  > "$MT/repo-a/project-tracking/action-items.md"
+printf '### D-20260102-repo-b-decision — decide the thing\n- Status: accepted\n' \
+  > "$MT/repo-b/project-tracking/decisions-log.md"
+
+out="$(python3 "$SCRIPT" --check --root "$MT/memory" \
+      --tracking-root "$MT/repo-a/project-tracking" \
+      --tracking-root "$MT/repo-b/project-tracking" 2>&1)"; ec=$?
+check "two tracking roots resolve both tiers" "$ec" "0" "$out" ""
+
+out="$(python3 "$SCRIPT" --check --root "$MT/memory" \
+      --tracking-root "$MT/repo-a/project-tracking" 2>&1)"; ec=$?
+check "single root: other tier's record still BROKEN" "$ec" "1" "$out" "d_20260102_repo_b_decision"
+
+out="$(python3 "$SCRIPT" --check --root "$MT/memory" 2>&1)"; ec=$?
+check "no flag keeps the old default (both broken)" "$ec" "1" "$out" "a_20260101_repo_a_action"
+
+# --- multi --tracking-root: boundary lint aggregates across roots ---
+printf '### A-20260103-fat-record — too big\n%s\n' \
+  "$(for i in $(seq 1 45); do echo "- line $i"; done)" \
+  > "$MT/repo-b/project-tracking/action-items.md"
+out="$(python3 "$SCRIPT" --check-tracking \
+      --tracking-root "$MT/repo-a/project-tracking" \
+      --tracking-root "$MT/repo-b/project-tracking" 2>&1)"; ec=$?
+check "check-tracking flags a violation in the second root" "$ec" "1" "$out" "A-20260103-fat-record"
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

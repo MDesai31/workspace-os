@@ -366,3 +366,17 @@ fail-loud, atomic, jq-dialect regex validation, sidecar-aware), the `/guardrails
 capture-cadence nudge line, and `tests/test-guardrails-upsert.sh` (37 cases, incl. an engine
 round-trip proving a script-written sidecar rule denies through the real hook). Decision:
 D-20260824-guardrails-canonical-hookify-misfits. Spec + plan: docs/specs+plans 2026-08-24.
+
+### A-20260824-multi-tracking-root — cross-tier A-/D- link resolution in memory_graph.py
+- Workstream: schema
+- Status: done
+- Created: 2026-08-24
+- Completed: 2026-08-24
+- Commit: (PR pending — link-resolution half of one-project-many-checkouts)
+
+`--tracking-root` is now repeatable (union harvest; `--check-tracking` aggregates across roots;
+default unchanged when omitted), so workspace-tier facts resolve `A-`/`D-` records living in any
+repo tier. Kills the 10 permanently-reported false-positive "broken links" the EC2 audit measured
+at the UDX workspace tier — the noise that trains you to ignore lint output. `/memory-lint`
+workspace-tier instructions now pass one `--tracking-root` per `<workspace_root>/*/project-tracking`
+via glob. Remaining halves of the idea stay open: `propagated-to:` schema line, `/branch-matrix`.
