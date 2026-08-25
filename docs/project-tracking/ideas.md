@@ -199,6 +199,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Workstream: meta
 - Priority: high
 - Intended start: standalone; it is the cheaper half of [[probe-first-dispatch-gate]] and useful alone
+- **Shipped (v0.23.0, 2026-08-24):** capture hook + summary script; ledger at `~/.claude/workspace-os/dispatch-ledger.jsonl`. See `resolved.md` A-20260824-dispatch-ledger. Token counts: opportunistic harness fields + always-recorded `est_tokens` (chars/4) — the "obtainable or estimated" question resolved as both.
 - Why/context: **MEASURED: two dispatches burned ~484k tokens re-deriving a CSV the pipeline had
   already written**, which a 0.25s `run_diff.sh` probe would have surfaced. The lesson currently
   lives as hand-written prose in a CLAUDE.md, so it holds only while the model chooses to obey it,
@@ -216,6 +217,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Workstream: workflow
 - Priority: mid
 - Intended start: after [[dispatch-ledger]] and [[stateful-guardrail-predicates]] both exist
+- **Note (2026-08-24):** the [[dispatch-ledger]] prerequisite now exists (v0.23.0); still gated on [[stateful-guardrail-predicates]].
 - Why/context: the payoff half of the ~484k-token lesson above. A registry of (question class to
   deterministic probe) pairs, plus a PreToolUse hook on `Task` that blocks a matching dispatch when
   its probe has not run this session and injects the probe's output instead. Note `hooks.json`
