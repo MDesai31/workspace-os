@@ -108,4 +108,38 @@ CFG="$TMP/rl/bad.json"; printf 'not json' > "$CFG"
 run list
 expect "list on malformed config errors" 1 "does not parse"
 
+# --- data-root routing (no GUARDRAIL_CONFIG) ---
+HOOK="$HERE/../hooks/guardrail.sh"
+
+# in-repo mode -> <git root>/.claude/guardrails.json
+R="$TMP/plain-repo"; mkdir -p "$R"; git -C "$R" init -q
+out="$(cd "$R" && bash "$UPSERT" add --type bash --name t --match 'zzz' --action warn --reason r 2>&1)"; ec=$?
+expect "in-repo add resolves to .claude/" 0 "/.claude/guardrails.json"
+[ -f "$R/.claude/guardrails.json" ] && { echo "PASS: in-repo file created"; pass=$((pass+1)); } \
+  || { echo "FAIL: in-repo file missing"; fail=$((fail+1)); }
+
+# sidecar mode -> <ws>/_meta/<repo>/guardrails.json, repo tree untouched
+WS="$TMP/ws"; mkdir -p "$WS/_meta" "$WS/repo-a"
+printf '{"workspace-os":"sidecar","workspace":"test"}\n' > "$WS/_meta/workspace.json"
+git -C "$WS/repo-a" init -q
+out="$(cd "$WS/repo-a" && bash "$UPSERT" add --type bash --name no-enterprise-push \
+      --match 'git +push +enterprise' --action deny --reason "never push enterprise" 2>&1)"; ec=$?
+expect "sidecar add reports sidecar mode" 0 "[mode: sidecar]"
+[ -f "$WS/_meta/repo-a/guardrails.json" ] && { echo "PASS: sidecar file at _meta/repo-a/"; pass=$((pass+1)); } \
+  || { echo "FAIL: sidecar file missing (out=[$out])"; fail=$((fail+1)); }
+[ ! -e "$WS/repo-a/.claude/guardrails.json" ] && { echo "PASS: repo tree untouched in sidecar mode"; pass=$((pass+1)); } \
+  || { echo "FAIL: sidecar add wrote into the repo tree"; fail=$((fail+1)); }
+
+# engine round-trip: the real hook denies based on the rule we just wrote
+json='{"tool_name":"Bash","tool_input":{"command":"git  push enterprise main"}}'
+hout="$(cd "$WS/repo-a" && printf '%s' "$json" | GUARDRAIL_CONFIG="" bash "$HOOK" 2>&1)"; hec=$?
+[ "$hec" = 2 ] && { echo "PASS: engine round-trip denies"; pass=$((pass+1)); } \
+  || { echo "FAIL: engine round-trip (ec=$hec out=[$hout])"; fail=$((fail+1)); }
+case "$hout" in *"never push enterprise"*) echo "PASS: engine surfaces our reason"; pass=$((pass+1));; \
+  *) echo "FAIL: reason not surfaced (out=[$hout])"; fail=$((fail+1));; esac
+
+# sidecar list resolves the same path
+out="$(cd "$WS/repo-a" && bash "$UPSERT" list 2>&1)"; ec=$?
+expect "sidecar list finds the config" 0 "_meta/repo-a/guardrails.json"
+
 echo "----"; echo "$pass passed, $fail failed"; [ "$fail" -eq 0 ]
