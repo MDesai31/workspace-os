@@ -372,7 +372,7 @@ D-20260824-guardrails-canonical-hookify-misfits. Spec + plan: docs/specs+plans 2
 - Status: done
 - Created: 2026-08-24
 - Completed: 2026-08-24
-- Commit: (PR pending — link-resolution half of one-project-many-checkouts)
+- Commit: f5972a6 (PR #30, merged to main, v0.22.1 — link-resolution half of one-project-many-checkouts)
 
 `--tracking-root` is now repeatable (union harvest; `--check-tracking` aggregates across roots;
 default unchanged when omitted), so workspace-tier facts resolve `A-`/`D-` records living in any
