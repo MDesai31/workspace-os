@@ -1,94 +1,84 @@
 # workspace-os
 
 A portable personal **project operating system** — a Claude Code plugin you install once per
-machine and carry job-to-job. It provides command-driven project **tracking** *and* a per-repo shared **memory** layer across
-your separate project repos: log actions and decisions, capture future ideas, bootstrap a repo in
-one command, and build a version-controlled knowledge base that travels with each repo.
+machine and carry job-to-job.
 
-The engine travels with you; the **data lives in each project's own repo**
-(`<repo>/docs/project-tracking/` and `<repo>/docs/memory/`), version-controlled with that
-project's code.
+The mental model is one split: the **engine** (this plugin — skills, hooks, conventions,
+templates) is installed once per machine and updated centrally; the **data** it manages lives in
+each project's own repo (`<repo>/docs/project-tracking/`, `<repo>/docs/memory/`,
+`<repo>/docs/playbooks/`), version-controlled with that project's code so it travels with the
+repo, not the machine. For enterprise repos where nothing may be committed in-tree, a **sidecar
+mode** keeps the same data layer in a local-only `_meta/` folder instead — see
+[GUIDE.md](GUIDE.md#setting-up-an-enterprise-workspace-sidecar-mode).
+
+**New here? Read [GUIDE.md](GUIDE.md)** — the runbook: setup walkthroughs, the daily workflow,
+what each automatic hook does, and troubleshooting.
+
+## Prerequisites
+
+- [Claude Code](https://docs.claude.com/en/docs/claude-code) (the skills and hooks run inside it)
+- `git`, `jq`, and `python3` on PATH (the hooks are bash+jq; the memory validator is python3)
 
 ## Install
 
-On any machine:
+In any Claude Code session:
 
 ```
 /plugin marketplace add MDesai31/workspace-os
 /plugin install workspace-os
 ```
 
-Improve the engine → `git push` to this repo → reinstall/update, and every project on every
-machine gets the upgrade.
+Then restart Claude Code once (hooks load at session start).
 
-## Skills
+## Five-minute quickstart
 
-- **`/project-init`** - bootstrap a repo: stamp `docs/project-tracking/` + `.gitattributes` + the portable memory layer (operator's manual, vendored `memory_graph.py`, `AGENTS.md`, `CLAUDE.md` bridge), seed the repo's workstream tags.
-- **`/project-log`** — `action` / `decision` / `model-decision` / `done`: append typed, ID'd records; completing an action moves it to the resolved record. `model-decision` is the DS variant (dataset vintage, validation protocol, headline metric + a run pointer — an MLflow/W&B run ID, or the `templates/MODEL_LOG.md` in-repo build ledger when no tracker exists; champion/challenger via the supersession protocol).
-- **`/project-plan`** — capture a *future* intent (the why + rough timing) without starting it.
-- **`/project-status`** — read-only status view: open actions by workstream, ideas by priority, recent decisions/resolved; `brief` mode gives a prioritized "what should I work on next" (filter by workstream or `high`/`mid`/`low`).
-- **`/ingest`** — capture a durable project fact into `docs/memory/` + update the index; `gotcha:`/`stale-prior:` routes a stale-prior to a confirmed CLAUDE.md bullet (in-repo only) or a `docs/memory/` fact.
-- **`/memory-lint`** — check `docs/memory/` integrity: a deterministic graph pass
-  (`scripts/memory_graph.py` — broken wikilinks, index parity, orphans, typed-edge coverage;
-  `--check` for CI/pre-commit) plus model checks (frontmatter, slug match).
-- **`/memory-search`** - search `docs/memory/` facts by keyword (name + description), or list backlinks for a fact; read-only.
-- **`/guardrails`** — author a guardrail rule by describing the hazard: propose → dry-run through the real engine (fire + no-fire evidence) → confirm → apply via `scripts/guardrails-upsert.sh`; `list`/`remove` included. Misfit hazards (stop/prompt events, personal scope) are handed off to hookify; state-dependent ones are named as future work.
-- **`/playbook`** — author a procedure playbook (or adopt an existing how-to doc into one); playbooks auto-surface when a matching Bash command or file edit happens.
-- **`/memory-sync`** — migrate a fact from your `~/.claude` auto-memory into a repo's `docs/memory/`.
-- **`/memory-adopt`** — adopt a repo's existing docs (README, design notes, CLAUDE.md reference content) into `docs/memory/` (opt-in, propose→confirm→apply).
-- **`/make-portable`** - add the portable vendor-neutral layer (operator's manual, vendored `memory_graph.py`, `AGENTS.md` + `CLAUDE.md` bridge) to an already-initialized memory base; add-only and idempotent. `/make-portable refresh` re-copies the plugin-owned manual + validator (confirm-gated) so a base stamped at an older version picks up new validator modes; `AGENTS.md`, facts, and the index are never refreshed.
-- **`/tracking-adopt`** — adopt a repo's existing roadmaps and TODO docs into `docs/project-tracking/` (routes roadmap entries → ideas, recorded decisions → decisions-log, open TODOs → action-items); the `git` mode mines merged history into resolved.md (one record per merged unit, real commit SHAs, SHA-deduped).
-- **`/continuity`** — scaffold/review a repo-root `CONTINUITY.md` bus-factor runbook: auto-inventories scheduled jobs (systemd/cron/CI), one deps→outs row per obligation with a Detection column, access *pointers* (never secrets), re-verify budgets, `TODO(owner)` gaps.
-- **`/workspace-init`** — mark a workspace for sidecar mode — data layer in a local-only `_meta/` repo, enterprise repos untouched.
+In a Claude Code session inside any git repo you own:
 
-## Guardrails
+1. `/project-init` — stamps the tracking + memory scaffold into `docs/` and seeds the repo's
+   workstream tags. Commit what it creates.
+2. `/project-log action` — record the first thing you're working on.
+3. `/ingest` — capture one durable fact about the codebase into `docs/memory/`.
+4. `/project-status brief` — see the whole picture: open actions, ideas, what to do next.
 
-A PreToolUse hook (`hooks/guardrail.sh`) guards Bash and Edit/Write calls. It ships **warn-only
-built-in defaults** — possible secrets in writes, force-push to `main`/`master`, `rm -rf` on
-root-like paths — plus **high-confidence secret denies** (private-key blocks, `AKIA…`, `sk-…`).
+From then on you mostly don't invoke anything: a session-start nudge has Claude propose
+captures (decisions, facts, hazards, procedures) as you work, batched at natural stopping
+points, and nothing is ever written without your confirmation.
 
-Per-repo rules are declarative: copy `templates/guardrails.json` to `.claude/guardrails.json` and add
-`bash` / `write` rules (`{name, match, action: "deny"|"warn", reason}`; `write` rules match `content`
-or `path` via `field`). `deny` blocks the call; `warn` prints an advisory. The engine fails open when
-no config is present, so it's opt-in per repo. Tag the repo with `ip_class`
-(`personal`/`employer`/`clean-room`) and add tripwire `write` rules for cross-boundary IP leakage.
-Rules no longer need hand-written JSON: `/guardrails` authors, lists, and removes them conversationally.
+## Feature map
 
-## Lint
+| | Surface | One line | More |
+|---|---|---|---|
+| **Set up once (per repo)** | `/project-init` | stamp the tracking + memory scaffold into a repo | [GUIDE](GUIDE.md#setting-up-a-personal-repo) |
+| | `/workspace-init` | mark an enterprise workspace for local-only sidecar data | [GUIDE](GUIDE.md#setting-up-an-enterprise-workspace-sidecar-mode) |
+| **Daily** | `/project-log` | log an action / decision / model-decision; `done` archives | [conventions](conventions/project-tracking.md) |
+| | `/project-plan` | park a future intent without starting it | [conventions](conventions/project-tracking.md) |
+| | `/project-status` | read-only status + `brief` "what should I work on next" | [GUIDE](GUIDE.md#daily-workflow) |
+| | `/ingest` | capture a durable fact (or `gotcha:` a stale prior) into memory | [conventions](conventions/memory.md) |
+| | `/memory-search` | find a fact by keyword, or its backlinks | [GUIDE](GUIDE.md#daily-workflow) |
+| **Occasionally** | `/guardrails` | author a deny/warn rule from a described hazard (dry-run proven) | [GUIDE](GUIDE.md#guardrails) |
+| | `/playbook` | author/adopt a procedure that auto-surfaces at trigger time | [conventions](conventions/playbooks.md) |
+| | `/memory-lint` | memory integrity: link graph, index parity, citation freshness | [GUIDE](GUIDE.md#maintenance-linting-and-updating) |
+| | `/memory-adopt` `/tracking-adopt` | adopt a repo's existing docs / roadmaps / git history | [GUIDE](GUIDE.md#adopting-an-existing-repo) |
+| | `/memory-sync` | migrate a fact from `~/.claude` auto-memory into a repo | [GUIDE](GUIDE.md#occasional-operations) |
+| | `/make-portable` | retrofit the vendor-neutral layer onto an existing memory base | [PORTABILITY_NOTES](PORTABILITY_NOTES.md) |
+| | `/continuity` | scaffold a repo-root bus-factor runbook (CONTINUITY.md) | [GUIDE](GUIDE.md#occasional-operations) |
+| **Automatic (hooks)** | `guardrail.sh` | blocks/warns on hazardous Bash + writes (secrets, force-push, your rules) | [GUIDE](GUIDE.md#guardrails) |
+| | `playbook-surface.sh` | surfaces a matching playbook once per session (before or after the call) | [GUIDE](GUIDE.md#playbook-surfacing) |
+| | `lint.sh` | runs your declared linters on edited files, feeds diagnostics back | [GUIDE](GUIDE.md#advisory-lint) |
+| | `dispatch-ledger.sh` | logs every subagent dispatch (sizes only) to a local-only ledger | [GUIDE](GUIDE.md#dispatch-ledger) |
+| | `capture-cadence.sh` `sidecar-memory-context.sh` | session-start context: capture nudge + sidecar memory index | [GUIDE](GUIDE.md#the-capture-cadence) |
 
-A PostToolUse hook (`hooks/lint.sh`) runs a repo-declared linter on each edited file and feeds any
-diagnostics back to Claude to fix. It ships **no built-in linters** — opt in by copying
-`templates/lint.json` to `.claude/lint.json` and listing `linters` as `{name, match, command}`
-(`match` is a regex on the file path; the engine runs `<command> <file_path>` and injects non-empty
-output). A clean file is silent; the engine fails open when the config or the linter is absent. This
-is the quality-advice counterpart to the security-blocking guardrail — hence a separate config file.
+## Updating
 
-## Dispatch ledger
+Improve the engine → merge to `main` → on each machine: pull this repo, then
+`claude plugin update workspace-os@workspace-os`, then restart Claude Code. Details and
+troubleshooting in [GUIDE.md](GUIDE.md#maintenance-linting-and-updating).
 
-A PostToolUse hook (`hooks/dispatch-ledger.sh`) appends one JSONL line per subagent dispatch —
-agent type, prompt/response sizes, `est_tokens` (chars/4), and harness-reported tokens/duration
-when present — to a **local-only** ledger at `~/.claude/workspace-os/dispatch-ledger.jsonl`
-(outside every repo by construction; prompt/response text is never stored, only sizes and a
-short description). Pure telemetry: fail-open, never blocks. Capture starts on the next session
-after install. Read it back:
+## Going deeper
 
-```
-bash scripts/dispatch-ledger-summary.sh [--repo NAME] [--top N]
-```
-
-## Playbooks
-
-A **procedure** artifact class (`<data_root>/playbooks/`, plus a workspace tier): trigger,
-preconditions, steps, verify, known traps — authored/adopted via **`/playbook`** and
-**surfaced at trigger time** by `hooks/playbook-surface.sh`, once per session per playbook.
-`surface: before` denies the first matching call once ("read <path> first, then retry" — a
-guaranteed read before the call runs); `surface: after` injects the body as context right
-after the first matching call. Conventions: `conventions/playbooks.md`.
-
-## How it works
-
-See [`conventions/project-tracking.md`](conventions/project-tracking.md) (tracking schema, IDs,
-lifecycle) and [`conventions/memory.md`](conventions/memory.md) (memory schema + the
-CLAUDE.md↔memory boundary test) — the single sources of truth the skills follow. Architecture and
-portability details are in [`ARCHITECTURE.md`](ARCHITECTURE.md) and
-[`PORTABILITY_NOTES.md`](PORTABILITY_NOTES.md).
+- [GUIDE.md](GUIDE.md) — the runbook (setup, daily use, hooks, troubleshooting)
+- [ARCHITECTURE.md](ARCHITECTURE.md) — the engine/data split and how the pieces relate
+- [PORTABILITY_NOTES.md](PORTABILITY_NOTES.md) — the vendor-neutral layer
+- `conventions/` — the single sources of truth the skills follow:
+  [project-tracking](conventions/project-tracking.md) · [memory](conventions/memory.md) ·
+  [playbooks](conventions/playbooks.md) · [data-root](conventions/data-root.md)
