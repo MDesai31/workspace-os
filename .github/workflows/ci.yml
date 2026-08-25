@@ -21,3 +21,4 @@ jobs:
       - run: bash tests/test-claude-md-upsert.sh
       - run: bash tests/test-portable-templates.sh
       - run: bash tests/test-stamp-portable-layer.sh
+      - run: bash tests/test-guardrails-upsert.sh

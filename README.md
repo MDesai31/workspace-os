@@ -32,6 +32,7 @@ machine gets the upgrade.
   (`scripts/memory_graph.py` — broken wikilinks, index parity, orphans, typed-edge coverage;
   `--check` for CI/pre-commit) plus model checks (frontmatter, slug match).
 - **`/memory-search`** - search `docs/memory/` facts by keyword (name + description), or list backlinks for a fact; read-only.
+- **`/guardrails`** — author a guardrail rule by describing the hazard: propose → dry-run through the real engine (fire + no-fire evidence) → confirm → apply via `scripts/guardrails-upsert.sh`; `list`/`remove` included. Misfit hazards (stop/prompt events, personal scope) are handed off to hookify; state-dependent ones are named as future work.
 - **`/memory-sync`** — migrate a fact from your `~/.claude` auto-memory into a repo's `docs/memory/`.
 - **`/memory-adopt`** — adopt a repo's existing docs (README, design notes, CLAUDE.md reference content) into `docs/memory/` (opt-in, propose→confirm→apply).
 - **`/make-portable`** - add the portable vendor-neutral layer (operator's manual, vendored `memory_graph.py`, `AGENTS.md` + `CLAUDE.md` bridge) to an already-initialized memory base; add-only and idempotent. `/make-portable refresh` re-copies the plugin-owned manual + validator (confirm-gated) so a base stamped at an older version picks up new validator modes; `AGENTS.md`, facts, and the index are never refreshed.
@@ -50,6 +51,7 @@ Per-repo rules are declarative: copy `templates/guardrails.json` to `.claude/gua
 or `path` via `field`). `deny` blocks the call; `warn` prints an advisory. The engine fails open when
 no config is present, so it's opt-in per repo. Tag the repo with `ip_class`
 (`personal`/`employer`/`clean-room`) and add tripwire `write` rules for cross-boundary IP leakage.
+Rules no longer need hand-written JSON: `/guardrails` authors, lists, and removes them conversationally.
 
 ## Lint
 
