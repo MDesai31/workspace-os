@@ -72,6 +72,34 @@ out="$(printf '{"tool_name":"Task"}' | DISPATCH_LEDGER="$LEDGER" bash "$HOOK" 2>
 out="$(printf '%s' "$payload" | DISPATCH_LEDGER=/proc/nonexistent/dir/l.jsonl bash "$HOOK" 2>&1)"; ec=$?
 [ "$ec" = 0 ] && [ -z "$out" ] && ok "unwritable ledger: silent exit 0" || bad "unwritable ledger: silent exit 0" "ec=$ec"
 
+# --- summary ---
+SL="$TMP/sum.jsonl"
+cat > "$SL" <<'EOF'
+{"ts":"2026-08-24T01:00:00Z","session_id":"s","cwd":"/a","repo":"proj-x","agent":"Explore","desc":"cheap scan","prompt_chars":40,"response_chars":40,"est_tokens":20,"tokens":null,"duration_ms":null,"is_error":null}
+{"ts":"2026-08-24T02:00:00Z","session_id":"s","cwd":"/a","repo":"proj-x","agent":"claude","desc":"big rebuild","prompt_chars":400000,"response_chars":400000,"est_tokens":200000,"tokens":190000,"duration_ms":90000,"is_error":null}
+this line is torn and not json
+{"ts":"2026-08-24T03:00:00Z","session_id":"s","cwd":"/b","repo":"proj-y","agent":"claude","desc":"other repo","prompt_chars":80,"response_chars":80,"est_tokens":40,"tokens":null,"duration_ms":null,"is_error":null}
+EOF
+
+out="$(DISPATCH_LEDGER="$SL" bash "$SUMMARY" 2>&1)"; ec=$?
+[ "$ec" = 0 ] && ok "summary exits 0" || bad "summary exits 0" "ec=$ec out=[$out]"
+case "$out" in *"entries: 3"*) ok "summary counts entries";; *) bad "summary counts entries" "out=[$out]";; esac
+case "$out" in *"est_tokens total: 200060"*) ok "summary totals est_tokens";; *) bad "summary totals est_tokens" "out=[$out]";; esac
+case "$out" in *"1 unparseable line(s) skipped"*) ok "torn line skipped and counted";; *) bad "torn line skipped and counted" "out=[$out]";; esac
+first_top="$(printf '%s\n' "$out" | sed -n '/top .* by est_tokens:/{n;p;}')"
+case "$first_top" in *"big rebuild"*) ok "top list ordered by est_tokens";; *) bad "top list ordered by est_tokens" "line=[$first_top]";; esac
+
+out="$(DISPATCH_LEDGER="$SL" bash "$SUMMARY" --repo proj-y 2>&1)"; ec=$?
+case "$out" in *"entries: 1"*) ok "--repo filters entries";; *) bad "--repo filters entries" "out=[$out]";; esac
+case "$out" in *"big rebuild"*) bad "--repo excludes other repos";; *) ok "--repo excludes other repos";; esac
+
+out="$(DISPATCH_LEDGER="$TMP/absent.jsonl" bash "$SUMMARY" 2>&1)"; ec=$?
+[ "$ec" = 0 ] && ok "missing ledger is a note, exit 0" || bad "missing ledger is a note, exit 0" "ec=$ec"
+case "$out" in *"no dispatch ledger yet"*) ok "missing ledger note text";; *) bad "missing ledger note text" "out=[$out]";; esac
+
+out="$(DISPATCH_LEDGER="$SL" bash "$SUMMARY" --top nope 2>&1)"; ec=$?
+[ "$ec" = 1 ] && ok "bad --top fails loud" || bad "bad --top fails loud" "ec=$ec"
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
