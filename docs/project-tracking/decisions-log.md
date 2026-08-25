@@ -309,3 +309,16 @@ Spec: `docs/specs/2026-08-19-memory-provenance-fields-design.md`. Plan:
 Closes `memory-volatility-field` (idea COMPLETE, v0.21.0) and `memory-applies-to-field`
 (idea COMPLETE, v0.21.0).
 
+
+### D-20260824-guardrails-canonical-hookify-misfits — guardrails.json stays canonical; hookify gets the misfits
+- Workstream: workflow
+- Created: 2026-08-24
+- Status: accepted
+- Rationale: hookify rules are gitignored and personal — they protect one machine, not the repo. The engine's differentiator is rules that travel with the repo (shared, hard deny semantics, ip_class tripwires, sidecar-aware); the 2026-08 audit showed it lost on authoring ergonomics only. So /guardrails authors guardrails.json, and routes misfit hazards (stop/prompt events, explicitly personal scope) to hookify rather than absorbing it or conceding to it.
+- Consequences: state-dependent hazards stay out of scope — that is the stateful-guardrail-predicates idea, gated behind this slice by design.
+- Spawns: A-20260824-guardrail-conversational-authoring
+
+Considered and rejected: emitting hookify `.local.md` rules (loses repo-shared rules — the
+engine's whole point); guardrails.json-only with no routing (recreates the ergonomics gap for
+hazards the engine genuinely cannot express). Spec:
+`docs/specs/2026-08-24-guardrail-conversational-authoring-design.md` § Decision.
