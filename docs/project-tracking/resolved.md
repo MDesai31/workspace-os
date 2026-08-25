@@ -420,7 +420,7 @@ Decision: D-20260824-playbook-surface-before-default. Spec:
 - Status: done
 - Created: 2026-08-24
 - Completed: 2026-08-24
-- Commit: (PR pending)
+- Commit: 5129bed (PR #33, merged to main, v0.24.1)
 
 README rewritten as a front door (mental model, prerequisites, install, five-minute
 quickstart, a when-do-I-use-it feature map); new root-level GUIDE.md runbook (personal-repo
