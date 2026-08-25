@@ -23,3 +23,4 @@ jobs:
       - run: bash tests/test-stamp-portable-layer.sh
       - run: bash tests/test-guardrails-upsert.sh
       - run: bash tests/test-dispatch-ledger.sh
+      - run: bash tests/test-playbook-surface.sh

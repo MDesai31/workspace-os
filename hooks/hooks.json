@@ -6,6 +6,12 @@
         "hooks": [
           { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/guardrail.sh\"" }
         ]
+      },
+      {
+        "matcher": "Bash|Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/playbook-surface.sh\"" }
+        ]
       }
     ],
     "SessionStart": [
@@ -27,6 +33,12 @@
         "matcher": "Task|Agent",
         "hooks": [
           { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/dispatch-ledger.sh\"" }
+        ]
+      },
+      {
+        "matcher": "Bash|Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/playbook-surface.sh\"" }
         ]
       }
     ]

@@ -33,6 +33,7 @@ machine gets the upgrade.
   `--check` for CI/pre-commit) plus model checks (frontmatter, slug match).
 - **`/memory-search`** - search `docs/memory/` facts by keyword (name + description), or list backlinks for a fact; read-only.
 - **`/guardrails`** — author a guardrail rule by describing the hazard: propose → dry-run through the real engine (fire + no-fire evidence) → confirm → apply via `scripts/guardrails-upsert.sh`; `list`/`remove` included. Misfit hazards (stop/prompt events, personal scope) are handed off to hookify; state-dependent ones are named as future work.
+- **`/playbook`** — author a procedure playbook (or adopt an existing how-to doc into one); playbooks auto-surface when a matching Bash command or file edit happens.
 - **`/memory-sync`** — migrate a fact from your `~/.claude` auto-memory into a repo's `docs/memory/`.
 - **`/memory-adopt`** — adopt a repo's existing docs (README, design notes, CLAUDE.md reference content) into `docs/memory/` (opt-in, propose→confirm→apply).
 - **`/make-portable`** - add the portable vendor-neutral layer (operator's manual, vendored `memory_graph.py`, `AGENTS.md` + `CLAUDE.md` bridge) to an already-initialized memory base; add-only and idempotent. `/make-portable refresh` re-copies the plugin-owned manual + validator (confirm-gated) so a base stamped at an older version picks up new validator modes; `AGENTS.md`, facts, and the index are never refreshed.
@@ -74,6 +75,15 @@ after install. Read it back:
 ```
 bash scripts/dispatch-ledger-summary.sh [--repo NAME] [--top N]
 ```
+
+## Playbooks
+
+A **procedure** artifact class (`<data_root>/playbooks/`, plus a workspace tier): trigger,
+preconditions, steps, verify, known traps — authored/adopted via **`/playbook`** and
+**surfaced at trigger time** by `hooks/playbook-surface.sh`, once per session per playbook.
+`surface: before` denies the first matching call once ("read <path> first, then retry" — a
+guaranteed read before the call runs); `surface: after` injects the body as context right
+after the first matching call. Conventions: `conventions/playbooks.md`.
 
 ## How it works
 
