@@ -62,6 +62,19 @@ diagnostics back to Claude to fix. It ships **no built-in linters** — opt in b
 output). A clean file is silent; the engine fails open when the config or the linter is absent. This
 is the quality-advice counterpart to the security-blocking guardrail — hence a separate config file.
 
+## Dispatch ledger
+
+A PostToolUse hook (`hooks/dispatch-ledger.sh`) appends one JSONL line per subagent dispatch —
+agent type, prompt/response sizes, `est_tokens` (chars/4), and harness-reported tokens/duration
+when present — to a **local-only** ledger at `~/.claude/workspace-os/dispatch-ledger.jsonl`
+(outside every repo by construction; prompt/response text is never stored, only sizes and a
+short description). Pure telemetry: fail-open, never blocks. Capture starts on the next session
+after install. Read it back:
+
+```
+bash scripts/dispatch-ledger-summary.sh [--repo NAME] [--top N]
+```
+
 ## How it works
 
 See [`conventions/project-tracking.md`](conventions/project-tracking.md) (tracking schema, IDs,
