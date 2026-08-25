@@ -161,6 +161,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Workstream: workflow
 - Priority: high
 - Intended start: before any further guardrail-engine feature work
+- **In progress (2026-08-24):** promoted to A-20260824-guardrail-conversational-authoring; decision D-20260824-guardrails-canonical-hookify-misfits; spec + plan in docs/specs+plans (2026-08-24).
 - Why/context: **MEASURED: zero `guardrails.json` files exist in either real workspace** (the UDX
   `_meta` workspace on EC2 and the Windows checkout), despite both carrying exactly the hazards the
   engine was built for: an employer IP boundary and a never-push enterprise remote. What actually
@@ -305,3 +306,10 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
   re-execution is ever automatic (running arbitrary stored shell on a lint pass is a real hazard, so
   it likely must be explicit and confirm-gated), and a way to record the expected result to diff
   against.
+
+### lint-conversational-authoring — decide lint.json's future (author, fold, or retire)  (EC2 audit 2026-08-24)
+- Workstream: workflow
+- Priority: mid
+- Intended start: after /guardrails has real-use evidence
+- Why/context: the advisory lint hook scored 1/10 in the EC2 audit — the same hand-authored-JSON disease as guardrails (zero `.claude/lint.json` in any real workspace). But the right fix may differ: capture the QUESTION (conversational authoring like /guardrails, fold linting into the guardrail engine, or retire the hook) rather than presuppose a build. D-20260824-guardrails-canonical-hookify-misfits settles the guardrail half only.
+- To start, future-us needs: /guardrails adoption evidence (did conversational authoring actually light up the dark surface?), then a short decision spec across the three options.
