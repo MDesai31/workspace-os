@@ -398,3 +398,19 @@ paths — the location decision, folded here rather than a D- record), plus
 `scripts/dispatch-ledger-summary.sh` (fail-loud read-back: totals, per-agent, top-N,
 --repo filter, torn lines skipped+counted). Spec:
 `docs/specs/2026-08-24-dispatch-ledger-design.md`.
+
+### A-20260824-procedure-playbooks — playbook artifact class + trigger-time surfacing + /playbook
+- Workstream: skills
+- Status: done
+- Created: 2026-08-24
+- Completed: 2026-08-24
+- Commit: (PR pending)
+
+Promotes the procedure-playbooks idea (EC2 audit 2026-08-24: 1,063 hand-rolled lines in
+`_meta/conventions/` with hope-based routing). Ships `conventions/playbooks.md` +
+`templates/playbook.md` (flat frontmatter: name/description/trigger-bash/trigger-path/surface),
+`hooks/playbook-surface.sh` (PreToolUse+PostToolUse on Bash|Edit|Write; before=deny-once with
+read-then-retry, after=additionalContext injection; once per session per playbook, fail-open),
+and the `/playbook` skill (author/adopt/list, propose-confirm, model-invocable + cadence line).
+Decision: D-20260824-playbook-surface-before-default. Spec:
+`docs/specs/2026-08-24-procedure-playbooks-design.md`.

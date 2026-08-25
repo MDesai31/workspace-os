@@ -232,6 +232,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Workstream: skills
 - Priority: high
 - Intended start: next artifact-class slice
+- **Shipped (v0.24.0, 2026-08-24):** shape (`conventions/playbooks.md` + template) + trigger-time surfacing hook (before=deny-once / after=inject, per-playbook, default before — D-20260824-playbook-surface-before-default) + `/playbook` author/adopt/list. See `resolved.md` A-20260824-procedure-playbooks. Remaining follow-ups: `/project-init` stamps `playbooks/`, a `/memory-lint` playbook pass; UDX's five docs adopt via `/playbook adopt` on that machine.
 - Why/context: **MEASURED: 1,063 lines across five files in `_meta/conventions/`** (Snowflake
   querying, notebook editing, git-across-checkouts, run triage) are hand-rolled because the plugin
   has no artifact class for them. Memory is one-fact-per-file and a `type: convention` fact cannot
