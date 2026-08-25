@@ -39,7 +39,8 @@ Modes:
   --root DIR         memory root (default: docs/memory).
   --tracking-root DIR  where A-/D- record headings are harvested from so
                      [[D-YYYYMMDD-slug]] links resolve (default: docs/project-tracking;
-                     missing dir = no records, no error).
+                     missing dir = no records, no error). Repeatable: pass one per tier
+                     so workspace-tier facts resolve records across repo tiers.
   --json PATH        also write the graph (nodes + typed edges + degree) as JSON.
   --mermaid PATH     also write a Mermaid graph of the wikilink edges.
   --check            print only problems; exit 1 on any BROKEN LINK, unindexed file,
@@ -687,9 +688,10 @@ def main():
     ap = argparse.ArgumentParser(description="Derive and lint the docs/memory knowledge-graph.")
     ap.add_argument("--root", default="docs/memory",
                     help="memory root to scan (default: docs/memory)")
-    ap.add_argument("--tracking-root", default="docs/project-tracking",
-                    help="dir harvested for A-/D- record link targets "
-                         "(default: docs/project-tracking; missing = no records)")
+    ap.add_argument("--tracking-root", action="append", default=[],
+                    help="dir harvested for A-/D- record link targets; repeatable — pass one "
+                         "per tier so workspace-tier links resolve across repo tiers "
+                         "(default: docs/project-tracking; missing dir = no records)")
     ap.add_argument("--link-root", action="append", default=[],
                     help="additional memory dir(s) whose file stems resolve [[wikilinks]] "
                          "(e.g. the sidecar workspace tier); scanned for names only, "
@@ -717,12 +719,15 @@ def main():
     ap.add_argument("--max-record-lines", type=int, default=40, metavar="N",
                     help="record-body line ceiling for --check-tracking (default 40)")
     args = ap.parse_args()
+    tracking_roots = args.tracking_root or ["docs/project-tracking"]
 
     # Tracking-boundary lint scans the tracking tree, not the memory root -- handle before the
     # memory-root existence gate so it works in a tracking-only tree.
     if args.check_tracking:
-        violations = check_tracking(Path(args.tracking_root), args.max_record_lines)
-        print_tracking(violations, args.tracking_root, args.max_record_lines)
+        violations = []
+        for tr in tracking_roots:
+            violations.extend(check_tracking(Path(tr), args.max_record_lines))
+        print_tracking(violations, ", ".join(tracking_roots), args.max_record_lines)
         return 1 if violations else 0
 
     root = Path(args.root)
@@ -742,7 +747,9 @@ def main():
         print_citations(stale, unresolvable, unanchored, ambiguous, unverified, root, src_root)
         return 1 if stale else 0
 
-    records = harvest_records(Path(args.tracking_root))
+    records = set()
+    for tr in tracking_roots:
+        records |= harvest_records(Path(tr))
     for lr in args.link_root:
         lrp = Path(lr)
         if lrp.is_dir():
