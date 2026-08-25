@@ -1,6 +1,6 @@
 {
   "name": "workspace-os",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "description": "Portable project OS: command-driven tracking (project-init/log/plan) + per-repo shared memory (ingest/memory-lint/memory-search/memory-sync/memory-adopt/tracking-adopt) + sidecar workspace mode (workspace-init) + a PreToolUse guardrail engine (declarative per-repo deny/warn rules, authored conversationally via /guardrails) + a local-only dispatch ledger + trigger-surfaced procedure playbooks (/playbook) across your repos.",
   "author": { "name": "MDesai31" }
 }

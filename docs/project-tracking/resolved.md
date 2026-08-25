@@ -414,3 +414,18 @@ read-then-retry, after=additionalContext injection; once per session per playboo
 and the `/playbook` skill (author/adopt/list, propose-confirm, model-invocable + cadence line).
 Decision: D-20260824-playbook-surface-before-default. Spec:
 `docs/specs/2026-08-24-procedure-playbooks-design.md`.
+
+### A-20260824-readme-guide-runbook — new-user README + GUIDE.md runbook + doc-freshness gate
+- Workstream: packaging
+- Status: done
+- Created: 2026-08-24
+- Completed: 2026-08-24
+- Commit: (PR pending)
+
+README rewritten as a front door (mental model, prerequisites, install, five-minute
+quickstart, a when-do-I-use-it feature map); new root-level GUIDE.md runbook (personal-repo
+setup, sidecar workspace setup, daily workflow, the capture cadence, what each automatic hook
+does and what firing looks like, adoption, occasional ops, updating, troubleshooting table).
+`scripts/validate-plugin.py` gained a doc-freshness gate: every skill and hook must be
+mentioned in README.md or GUIDE.md or validation fails — a new surface cannot ship
+undocumented (negative-tested). Driven by the feature count reaching 15 skills + 6 hooks.
