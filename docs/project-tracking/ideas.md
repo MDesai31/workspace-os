@@ -156,3 +156,152 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - To start, future-us needs: a decision on whether re-stamping is per-fact confirm or a batch, and
   whether `/memory-lint` (read-only today for the citation pass) should gain a write path at all.
   Relates to memory-provenance-fields (shipped).
+
+### guardrail-conversational-authoring — let guardrail rules be authored by conversation, not hand-written JSON  (EC2 audit 2026-08-24)
+- Workstream: workflow
+- Priority: high
+- Intended start: before any further guardrail-engine feature work
+- Why/context: **MEASURED: zero `guardrails.json` files exist in either real workspace** (the UDX
+  `_meta` workspace on EC2 and the Windows checkout), despite both carrying exactly the hazards the
+  engine was built for: an employer IP boundary and a never-push enterprise remote. What actually
+  enforces those hazards is three *hookify* rules (`block-bundle-ship`, `block-enterprise-push`,
+  `warn-em-dashes`). The engine did not lose on capability, it lost on authoring ergonomics:
+  hookify rules are written by asking for one mid-task, `guardrails.json` must be hand-written
+  against a schema. The broader pattern from the same audit: every workspace-os surface that runs
+  automatically or via one command scored 6-9/10 in real use; every surface needing a hand-authored
+  JSON config scored 1-3 (guardrails 2, lint 1). A working day never has a quiet moment to write
+  schema. This is the prerequisite for [[stateful-guardrail-predicates]] and any other rule-language
+  work: enriching a language nobody authors in compounds the drag.
+- To start, future-us needs: a `/guardrails` skill that proposes a rule from a described hazard
+  (propose-confirm-apply, like every other capture skill), and a decision on whether to keep
+  competing with hookify or to emit hookify-compatible rules. Relates to hook-starter-library
+  (shipped), keystone-module-guardrails.
+
+### stateful-guardrail-predicates — guardrail rules that test state, not just match text  (EC2 audit 2026-08-24)
+- Workstream: workflow
+- Priority: mid
+- Intended start: AFTER [[guardrail-conversational-authoring]], not before
+- Why/context: the engine matches regex over command/content/path text only (`hooks/guardrail.sh`),
+  so a rule cannot depend on machine or repo state. Add `"predicate": "<shell command>"` alongside
+  `match`, deciding on exit status. That expresses hazards this work has hit and handled with
+  one-off rules or prose: free disk below a threshold before running a generating script (`/home`
+  at 95%+), writes while the checkout sits on the wrong branch (folder names deliberately do not
+  match branch names), and "the cheap probe has not run yet" (the mechanism
+  [[probe-first-dispatch-gate]] needs). Deliberately ranked BELOW the authoring path: the audit that
+  proposed this also proved the rule file has zero adoption, and a richer language for a file nobody
+  writes changes nothing.
+- To start, future-us needs: predicate execution semantics (timeout, non-zero = trigger?, fail-open
+  on error to match the engine's existing contract), and a decision on whether predicates run on
+  every matching tool call or are cached per session.
+
+### dispatch-ledger — log every subagent dispatch so cost rules can be derived, not guessed  (EC2 audit 2026-08-24)
+- Workstream: meta
+- Priority: high
+- Intended start: standalone; it is the cheaper half of [[probe-first-dispatch-gate]] and useful alone
+- Why/context: **MEASURED: two dispatches burned ~484k tokens re-deriving a CSV the pipeline had
+  already written**, which a 0.25s `run_diff.sh` probe would have surfaced. The lesson currently
+  lives as hand-written prose in a CLAUDE.md, so it holds only while the model chooses to obey it,
+  and it was written only after the cost was paid. A ledger (agent, prompt size, duration, tokens,
+  outcome) makes that class of rule derivable from data instead of hindsight. It is also the missing
+  substrate under [[agent-self-improvement]], which assumes a per-agent observation log exists but
+  never says where the observations come from. Note the audit's own closing point: every number in
+  it came from running an ad hoc probe, none of it was visible from the plugin's own reporting.
+- To start, future-us needs: a PostToolUse (or Stop) hook on `Task`, a ledger location that is
+  local-only and never ships to an employer repo, and a decision on whether token counts are
+  obtainable from the harness or must be estimated. Relates to agent-self-improvement,
+  integrity-auditor.
+
+### probe-first-dispatch-gate — block an expensive dispatch until its cheap probe has run  (EC2 audit 2026-08-24)
+- Workstream: workflow
+- Priority: mid
+- Intended start: after [[dispatch-ledger]] and [[stateful-guardrail-predicates]] both exist
+- Why/context: the payoff half of the ~484k-token lesson above. A registry of (question class to
+  deterministic probe) pairs, plus a PreToolUse hook on `Task` that blocks a matching dispatch when
+  its probe has not run this session and injects the probe's output instead. Note `hooks.json`
+  currently registers PreToolUse on `Bash|Edit|Write` only, so **nothing intercepts a dispatch at
+  all today**; that hook surface is the first prerequisite. Ranked below its two dependencies
+  deliberately: without the ledger the probe registry is guesswork, and without predicates the
+  "has the probe run" test has nowhere to live.
+- To start, future-us needs: the `Task` PreToolUse surface, a probe-registry shape, and a
+  session-scoped record of which probes have run.
+
+### procedure-playbooks — an artifact class for multi-step procedures, surfaced at trigger time  (EC2 audit 2026-08-24)
+- Workstream: skills
+- Priority: high
+- Intended start: next artifact-class slice
+- Why/context: **MEASURED: 1,063 lines across five files in `_meta/conventions/`** (Snowflake
+  querying, notebook editing, git-across-checkouts, run triage) are hand-rolled because the plugin
+  has no artifact class for them. Memory is one-fact-per-file and a `type: convention` fact cannot
+  hold a 300-line procedure; tracking records are work-state, not how-to. The tell that prose
+  routing is failing: the workspace INDEX.md literally pleads "read the relevant one before writing
+  queries, not after they fail." A playbook shape (trigger, preconditions, steps, verify, known
+  traps) plus **trigger-time surfacing** (the Snowflake playbook loads on first `sfq.py` invocation,
+  not by hoping the model recalls it) is the fix. Distinct from memory-backlinks-search's note
+  templates, which are memory *flavors* (the gotcha type), not procedures.
+- To start, future-us needs: the playbook shape, a home (`docs/playbooks/`?), and the surfacing
+  mechanism; a PreToolUse hook matching the trigger seems likelier than always-loaded context.
+
+### one-project-many-checkouts — model several checkouts of ONE repo, and propagation between them  (EC2 audit 2026-08-24)
+- Workstream: schema
+- Priority: high
+- Intended start: next tracking-schema touch
+- Why/context: the four UDX folders are branches of a single repo, but the plugin models each as an
+  independent data root. **MEASURED consequences: (a) 10 "broken links" reported permanently at the
+  workspace tier, all of which resolve to real `A-`/`D-` records in the repo tiers** — noise that
+  trains you to ignore lint output, which is the failure mode that lets real findings hide; (b)
+  propagation state has no schema, so one record's `Status:` fell back to freeform prose reading
+  "fixed, pushed, deployed... Not yet applied to develop-scheduling" because `open`/`done` cannot say
+  "landed in two of four checkouts." Distinct from portfolio-registry (many projects) and from
+  memory-applies-to-field (labelling one fact's scope).
+- To start, future-us needs: cross-tier `A-`/`D-` link resolution in `memory_graph.py`, a
+  `propagated-to:` line on the record schema, and a `/branch-matrix` view answering "which checkouts
+  still need this fix." The link-resolution half is the cheapest and kills the false positives on
+  its own.
+
+### finding-record-class — a record type for findings and questions, which close on evidence  (EC2 audit 2026-08-24)
+- Workstream: schema
+- Priority: mid
+- Intended start: alongside [[one-project-many-checkouts]] (same schema touch)
+- Why/context: `_meta/pending-tracking/open-questions.md` is a hand-maintained parallel register with
+  its own verdict legend (BUG / BEHAVIOR / LATENT / RESOLVED / TEAM) plus a migration banner showing
+  items being hand-copied into action records. That legend is a taxonomy the schema lacks. An `A-`
+  record implies work *you* will do; a BEHAVIOR or TEAM verdict implies a judgment someone else
+  owes, and a question closes when *evidence arrives*, not when work finishes. Forcing those into
+  actions is why the parallel register exists at all. Distinct from tracking-skills-roundout, which
+  proposes journaling modes (`/work-journal`, `discovery`, `meeting-notes`), not a verdict-carrying
+  class.
+- To start, future-us needs: the verdict enum and its close conditions, whether findings live in
+  their own file or as a record kind in `action-items.md`, and a migration path for the existing
+  register.
+
+### deliverable-provenance — bind a published figure to the fact or run that produced it  (EC2 audit 2026-08-24)
+- Workstream: memory
+- Priority: mid
+- Intended start: when a deliverable first goes stale in a way that matters
+- Why/context: `_meta/visuals/` dashboards and `_meta/briefings/` decks go to a VP. There are
+  critical passes over them (an `htmlcheck.py`, a `dashboard-reviewer` agent) but nothing binds a
+  figure on a page to the fact or run that produced it, so when a fact is revised no artifact knows
+  it is now stale. A claim-to-source stamp per figure, plus a lint flagging deliverables whose
+  backing facts changed since publication, is the productive counterpart to the reviewer agent. A
+  second mode (generate explainers only from sourced facts, refusing unsourced claims) serves the
+  teach-back half of the job directly. Note this is the same shape as the shipped `verified-against`
+  field, one layer out: there it binds a fact to code, here it binds a deliverable to a fact.
+- To start, future-us needs: the stamp format (inline comment? sidecar manifest?), and a decision on
+  whether the lint reads rendered HTML or the generator's inputs.
+
+### fact-reverification-runner — store the command that established a fact, then re-run and diff  (EC2 audit 2026-08-24)
+- Workstream: memory
+- Priority: mid
+- Intended start: after UNVERIFIED-SINCE has fired on a real base (same gate as [[memory-restamp-flow]])
+- Why/context: v0.21.0 shipped the *label* half of freshness (`verified-against: <sha> <date>` and
+  the advisory UNVERIFIED-SINCE bucket), which answers "has the cited code moved since anyone
+  confirmed this?" It does not re-confirm anything: the fix is still a human re-read. But many facts
+  in the real base were established by a **deterministic command** (an `sfq.py` query, a
+  `run_diff.sh`, a grep), so re-verification is mechanizable rather than a re-read. Store the
+  establishing command in the fact, re-execute it, diff against the recorded result. This is the
+  third strand of one thread: `verified-against` is the label, [[memory-restamp-flow]] closes the
+  loop by hand, this closes it automatically where a command exists.
+- To start, future-us needs: a frontmatter field for the establishing command, a decision on whether
+  re-execution is ever automatic (running arbitrary stored shell on a lint pass is a real hazard, so
+  it likely must be explicit and confirm-gated), and a way to record the expected result to diff
+  against.
