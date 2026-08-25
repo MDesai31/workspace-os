@@ -8,7 +8,7 @@ follow these and never restate them).
 
 - Full test suite (plain bash + jq, no framework): `for t in tests/test-*.sh; do bash "$t"; done`
 - Plugin manifest check: `python3 scripts/validate-plugin.py`
-- CI (`.github/workflows/ci.yml`) runs only a SUBSET of tests — run the full set locally before a PR.
+- CI (`.github/workflows/ci.yml`) runs the validator plus every `tests/test-*.sh` — keep new test scripts listed there.
 
 ## Workflow
 
