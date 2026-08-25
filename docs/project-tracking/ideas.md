@@ -161,7 +161,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Workstream: workflow
 - Priority: high
 - Intended start: before any further guardrail-engine feature work
-- **In progress (2026-08-24):** promoted to A-20260824-guardrail-conversational-authoring; decision D-20260824-guardrails-canonical-hookify-misfits; spec + plan in docs/specs+plans (2026-08-24).
+- **Shipped (v0.22.0, 2026-08-24):** the /guardrails skill + `scripts/guardrails-upsert.sh` + capture-cadence nudge. See `resolved.md` A-20260824-guardrail-conversational-authoring. Decision: D-20260824-guardrails-canonical-hookify-misfits. Unblocks [[stateful-guardrail-predicates]].
 - Why/context: **MEASURED: zero `guardrails.json` files exist in either real workspace** (the UDX
   `_meta` workspace on EC2 and the Windows checkout), despite both carrying exactly the hazards the
   engine was built for: an employer IP boundary and a never-push enterprise remote. What actually

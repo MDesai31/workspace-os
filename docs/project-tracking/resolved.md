@@ -351,3 +351,18 @@ Two implementation constraints the spec missed, both caught while reading code: 
 a subdirectory where raw output silently never matches), and the freshness test builds a git repo at
 test time because a nested `.git` cannot live in a static fixture. One plan prediction was wrong:
 the report prints norm stems (`fact_scoped`), not the literal filename.
+
+### A-20260824-guardrail-conversational-authoring — /guardrails: conversational guardrail rule authoring
+- Workstream: workflow
+- Status: done
+- Created: 2026-08-24
+- Completed: 2026-08-24
+- Commit: 5c740be (PR #29, merged to main, v0.22.0)
+
+Promoted from the guardrail-conversational-authoring idea (EC2 audit 2026-08-24). Shipped
+`scripts/guardrails-upsert.sh` (deterministic add/remove/list over the resolved guardrails.json —
+fail-loud, atomic, jq-dialect regex validation, sidecar-aware), the `/guardrails` skill
+(elicit → route → draft → dry-run through `hooks/guardrail.sh` → propose-confirm → apply), a
+capture-cadence nudge line, and `tests/test-guardrails-upsert.sh` (37 cases, incl. an engine
+round-trip proving a script-written sidecar rule denies through the real hook). Decision:
+D-20260824-guardrails-canonical-hookify-misfits. Spec + plan: docs/specs+plans 2026-08-24.
