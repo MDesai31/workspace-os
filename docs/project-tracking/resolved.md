@@ -386,7 +386,7 @@ via glob. Remaining halves of the idea stay open: `propagated-to:` schema line, 
 - Status: done
 - Created: 2026-08-24
 - Completed: 2026-08-24
-- Commit: (PR pending)
+- Commit: f52790e (PR #31, merged to main, v0.23.0)
 
 Promotes the dispatch-ledger idea (EC2 audit 2026-08-24; the ~484k-token re-derivation).
 Ships `hooks/dispatch-ledger.sh` (PostToolUse on `Task|Agent`: one JSONL entry per dispatch —
