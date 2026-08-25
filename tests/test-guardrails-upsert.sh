@@ -79,4 +79,33 @@ if ls "$TMP"/a/.claude/guardrails.json.tmp.* >/dev/null 2>&1 || ls "$TMP"/broken
   echo "FAIL: temp debris left behind"; fail=$((fail+1))
 else echo "PASS: no temp debris"; pass=$((pass+1)); fi
 
+# --- remove / list ---
+CFG="$TMP/rl/guardrails.json"
+run add --type bash --name rule-a --match 'aaa' --action deny --reason "A"
+run add --type write --name rule-b --match 'bbb' --action warn --reason "B"
+
+run list
+expect "list shows config header" 0 "config: $CFG"
+expect "list shows a bash row" 0 "rule-a"
+case "$out" in *"rule-b"*) echo "PASS: list shows write row"; pass=$((pass+1));; \
+  *) echo "FAIL: list missing write row (out=[$out])"; fail=$((fail+1));; esac
+
+run remove --type bash --name rule-a
+expect "remove deletes the rule" 0 "removed bash rule 'rule-a'"
+jqcheck "removed from bash array" '.bash | length == 0'
+jqcheck "write array untouched by remove" '.write | length == 1'
+
+run remove --type bash --name rule-a
+expect "remove missing rule errors" 1 "no bash rule named 'rule-a'"
+
+CFG="$TMP/rl/none.json"
+run remove --type bash --name x
+expect "remove with no config errors" 1 "no config at"
+run list
+expect "list with no config is a note, exit 0" 0 "no guardrails config"
+
+CFG="$TMP/rl/bad.json"; printf 'not json' > "$CFG"
+run list
+expect "list on malformed config errors" 1 "does not parse"
+
 echo "----"; echo "$pass passed, $fail failed"; [ "$fail" -eq 0 ]

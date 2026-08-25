@@ -74,6 +74,29 @@ add_rule() {
   echo "added $type rule '$name' ($action) -> $config [mode: $mode]"
 }
 
+remove_rule() {
+  case "$type" in bash|write) ;; *) die "--type must be bash|write" ;; esac
+  [ -n "$name" ] || die "--name is required"
+  [ -f "$config" ] || die "no config at $config"
+  jq -e . "$config" >/dev/null 2>&1 || die "config does not parse: $config"
+  jq -e --arg t "$type" --arg n "$name" '(.[$t] // []) | any(.name == $n)' "$config" >/dev/null 2>&1 \
+    || die "no $type rule named '$name' in $config"
+  atomic_edit --arg t "$type" --arg n "$name" \
+    '.[$t] = ((.[$t] // []) | map(select(.name != $n)))'
+  echo "removed $type rule '$name' from $config"
+}
+
+list_rules() {
+  if [ ! -f "$config" ]; then
+    echo "no guardrails config [mode: $mode] (would live at: $config)"; return
+  fi
+  jq -e . "$config" >/dev/null 2>&1 || die "config does not parse: $config"
+  echo "config: $config [mode: $mode]"
+  jq -r '["bash","write"][] as $t
+         | (.[$t] // [])[]
+         | [$t, .name, .action, (.field // "-"), .match, .reason] | @tsv' "$config"
+}
+
 cmd="${1:-}"; [ $# -gt 0 ] && shift
 type=""; name=""; match=""; action=""; reason=""; field=""
 while [ $# -gt 0 ]; do
@@ -91,5 +114,7 @@ done
 resolve_config
 case "$cmd" in
   add) add_rule ;;
+  remove) remove_rule ;;
+  list) list_rules ;;
   *) usage ;;
 esac
