@@ -404,7 +404,7 @@ paths — the location decision, folded here rather than a D- record), plus
 - Status: done
 - Created: 2026-08-24
 - Completed: 2026-08-24
-- Commit: (PR pending)
+- Commit: 3e37d49 (PR #32, merged to main, v0.24.0)
 
 Promotes the procedure-playbooks idea (EC2 audit 2026-08-24: 1,063 hand-rolled lines in
 `_meta/conventions/` with hope-based routing). Ships `conventions/playbooks.md` +
