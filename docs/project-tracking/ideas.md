@@ -42,6 +42,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - To start, future-us needs: `/project-status` (summarize open items by workstream), `/work-journal` (what I did this session), and extra `/project-log` modes — `discovery` (→ a `work-log.md`), `meeting-notes`, `release-notes` (→ `RELEASES.md`/CHANGELOG).
 - Borrow (comparison 2026-06-28): give `/project-status` Notion-style **database views** — filter/sort open items by workstream / status / priority.
 - Borrow (keystone 2026-07-05): keystone ships `/project-status`, `/work-journal`, `/meeting-notes`, `/release-notes` + a `release_draft.py` (MIT). Adapt that prose instead of writing it; per D-20260705-keystone-reposition this idea is borrow-first (priority stays mid only because the *adaptation* to our schema is still real work).
+- Borrow refresh (keystone v0.2.0, 2026-08-28): engine republished 2026-08-13 (25 skills); `/work-journal`, `/meeting-notes`, `/release-notes` now ship as polished plugin SKILL.md files — the borrow surface for the remaining roundout items is richer than the July snapshot.
 
 ### portfolio-registry — cross-repo Layer 3
 - Workstream: portfolio
@@ -52,6 +53,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Borrow (comparison 2026-06-28): reuse Backstage's catalog **entity model** (owner / lifecycle / system / `dependsOn`) for the `projects.md` schema + a per-repo `catalog-info`-style header — don't invent fields; the header also feeds continuity-runbook (shipped) (owner) and provenance-guard (shipped) (ip-class).
 - Note (keystone 2026-07-05): keystone's `projects.md` registry solves the *single-workspace* case only; our cross-**separate-repo** portfolio problem remains unsolved there — this idea stays differentiated, not overlap. See D-20260705-keystone-reposition.
 - Note (sidecar 2026-07-07): the "where does it live" blocker is answered for the single-workspace case — workspace-level files under `_meta/` root (D-20260707-sidecar-data-layer). Cross-workspace aggregation remains open.
+- Note (keystone v0.2.0, 2026-08-28): still single-workspace only (`projects.md` registry + `manage_projects.py`); the cross-separate-repo problem remains unsolved on both sides — differentiation holds.
 
 ### engine-hooks — automated upkeep
 - Workstream: workflow
@@ -109,6 +111,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Intended start: after a conversation with Zach (PR #8 prerequisite already merged)
 - Why/context: Zach shared his `zachburke9/keystone-*` ecosystem (engine / catalog / instance-template / 3 modules, private, MIT) on 2026-07-02 — a domain-neutral workspace OS with a module catalog + importer (`catalog.json` + `import_module.py`, vendored copies, `module.json` version-compat seam). The 2026-07-05 comparison (D-20260705-keystone-reposition) found keystone has **no policy-enforcement layer**: its hooks are advisory/protective, none declaratively configurable per repo. Our guardrail engine (declarative `.claude/guardrails.json` deny/warn rules + `ip_class` provenance tripwires, tested) fills that hole exactly, and fits his extension contract (a `kind: utility` module whose hook registers into his `hooks-registry.json` panel). Turns duplicated effort into collaboration; we keep authorship + the plugin distribution channel for our own repos.
 - To start, future-us needs: Zach's buy-in; a `module.json` (`kind: utility`, `provides.hooks`); a thin keystone-shaped wrapper around `hooks/guardrail.sh` + `templates/guardrails.json`; a registry entry for his `/workspace` panel. Relates to hook-starter-library (shipped), provenance-guard (shipped), [[SP4-meta-onboarding]].
+- Refresh (keystone v0.2.0, 2026-08-28): de-risked — the extension contract is now concrete (marketplace `git-subdir` → the module repo's `plugin/` subtree; `module.json` at root with the enforced `depends_on.engine` semver gate; hooks hand-registered into `hooks-registry.json` — his own team module ships dormant/unregistered, so dormant-by-default is the norm). v0.2.0 still has no policy-enforcement layer; the fit is unchanged. Wrapper est. ~a day once buy-in exists. Compounds with [[policy-packs]] (our engine + a starter pack beats the bare engine as a contribution).
 
 ### vendor-neutral-runtime - ~80% of workspace-os usable from non-Claude agents (MCP + scripts-core)  (brainstorm 2026-07-30)
 - Workstream: meta
@@ -318,3 +321,31 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Intended start: after /guardrails has real-use evidence
 - Why/context: the advisory lint hook scored 1/10 in the EC2 audit — the same hand-authored-JSON disease as guardrails (zero `.claude/lint.json` in any real workspace). But the right fix may differ: capture the QUESTION (conversational authoring like /guardrails, fold linting into the guardrail engine, or retire the hook) rather than presuppose a build. D-20260824-guardrails-canonical-hookify-misfits settles the guardrail half only.
 - To start, future-us needs: /guardrails adoption evidence (did conversational authoring actually light up the dark surface?), then a short decision spec across the three options.
+
+### policy-packs — versioned, importable packs of guardrail/lint/playbook policy  (keystone v0.2.0 review 2026-08-28)
+- Workstream: packaging
+- Priority: mid
+- Intended start: on-deck — next after the current roundout items; extends the differentiated guardrail core
+- Why/context: the 2026-08-28 re-read of keystone v0.2.0 (republished 2026-08-13 as a squashed
+  snapshot; 25 skills + `/workspace` panel + the catalog/importer module system) confirmed the
+  D-20260705-keystone-reposition seam holds — keystone still has NO declarative per-repo policy
+  layer — and showed its module system is mostly editorial: `module.json`'s `provides` is prose the
+  importer merely echoes, nothing in the engine reads `modules/` at runtime, wiring a module in is a
+  documented human procedure, updates are destructive re-vendors (rmtree + copytree, no
+  lockfile/rollback), and `depends_on.modules` is declared in every manifest and implemented
+  nowhere. The transferable idea is the **versioned shareable unit riding on an engine** — and
+  workspace-os has the better substrate because its engine is already declarative. A pack = a
+  versioned data file (e.g. `packs/python-data.json`, `packs/public-repo.json`) bundling guardrail
+  rules + lint config + playbook refs, imported by `/guardrails` or `/project-init` into
+  `.claude/guardrails.json` / `.claude/lint.json` with provenance recorded (steal keystone's
+  `.import-meta.json` shape: source repo/ref/commit). Activation is automatic — the hooks read the
+  config, so file-present = active — which fixes keystone's installation≠activation gap for free.
+  Expansion ALONG the differentiated enforcement axis, not sideways into his knowledge-module lane.
+- Anti-borrow (keystone defects observed 2026-08-28): one distribution channel only (his
+  marketplace + vendored-copy dual channel ships module skills twice); manifests machine-read,
+  never descriptive prose; imports idempotent with a recorded source ref, never delete-and-recopy.
+- To start, future-us needs: the pack format (one JSON vs a dir; how playbooks ride along), the
+  import verb's home (`/guardrails` subcommand vs a `/project-init` flag), and the provenance-stamp
+  shape. Compounds with [[keystone-module-guardrails]]; relates to
+  [[guardrail-conversational-authoring]], [[stateful-guardrail-predicates]], hook-starter-library
+  (shipped).
