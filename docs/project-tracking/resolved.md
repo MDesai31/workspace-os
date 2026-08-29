@@ -429,3 +429,20 @@ does and what firing looks like, adoption, occasional ops, updating, troubleshoo
 `scripts/validate-plugin.py` gained a doc-freshness gate: every skill and hook must be
 mentioned in README.md or GUIDE.md or validation fails — a new surface cannot ship
 undocumented (negative-tested). Driven by the feature count reaching 15 skills + 6 hooks.
+
+### A-20260828-checkout-propagation — propagation schema + checkout grouping + matrix view + write path
+- Workstream: schema
+- Status: done
+- Created: 2026-08-28
+- Completed: 2026-08-28
+- Commit: 286020b (PR #34, merged to main, v0.25.0)
+
+Ships the remaining halves of the one-project-many-checkouts idea (EC2 audit 2026-08-24;
+link-resolution half shipped v0.22.1): the `Propagation:`/`Propagated-to:` append-only
+schema lines (conventions/project-tracking.md § "Propagation across checkouts"),
+`scripts/checkout-groups.sh` (grouping by normalized origin URL, 14-case test),
+`/project-status matrix`, `/project-log propagated`, and the capture-cadence line. Spec:
+docs/specs/2026-08-28-one-project-many-checkouts-design.md. Plan:
+docs/plans/2026-08-28-one-project-many-checkouts.md. Decision:
+D-20260828-propagation-intent-fact-lines.
+Closes the one-project-many-checkouts idea (both remaining halves).

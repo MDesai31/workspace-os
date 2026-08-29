@@ -359,3 +359,6 @@ tracking-skills-roundout.
 - Spawns: A-20260828-checkout-propagation
 
 Design: docs/specs/2026-08-28-one-project-many-checkouts-design.md (brainstormed + approved 2026-08-28).
+
+Closes one-project-many-checkouts (idea COMPLETE: link-resolution half v0.22.1, propagation
+schema + matrix v0.25.0). See resolved.md A-20260828-checkout-propagation.
