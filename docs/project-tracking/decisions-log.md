@@ -362,3 +362,13 @@ Design: docs/specs/2026-08-28-one-project-many-checkouts-design.md (brainstormed
 
 Closes one-project-many-checkouts (idea COMPLETE: link-resolution half v0.22.1, propagation
 schema + matrix v0.25.0). See resolved.md A-20260828-checkout-propagation.
+
+### D-20260828-handoff-live-file-lifecycle — handoffs are live files per effort, surfaced by hook, not an append-only history or a /continue verb
+- Workstream: skills
+- Created: 2026-08-28
+- Status: accepted
+- Rationale: a handoff is working state, not history — a dead brief has no archive value, so the record is one live file per effort (`handoffs/<effort-slug>.md`), refreshed on re-pause and deleted at completion with a one-line trace on the resolved record (mirroring how action records leave action-items.md). Discovery is automatic: the existing capture-cadence SessionStart hook lists live handoffs (the EC2 audit's automatic-surfaces-get-adopted finding), so no /continue verb ships — resume = read the surfaced file. /handoff is its own model-invocable skill because its trigger language ("let's stop here") is conversational; burying it in a /project-log mode costs discovery. Keystone's checkpoint/draft-PR machinery, registry codes, and _unfiled promotion are deliberately not borrowed.
+- Consequences: capture-cadence.sh gains a second output block (still fail-open); /project-log done gains a handoff-deletion proposal; /project-status gains a Live handoffs section; skill count grows by two (/handoff, /work-journal).
+- Spawns: A-20260828-session-continuity
+
+Design: docs/specs/2026-08-28-session-continuity-design.md (brainstormed + approved 2026-08-28).
