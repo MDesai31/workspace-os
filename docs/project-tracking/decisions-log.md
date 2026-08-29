@@ -323,6 +323,11 @@ engine's whole point); guardrails.json-only with no routing (recreates the ergon
 hazards the engine genuinely cannot express). Spec:
 `docs/specs/2026-08-24-guardrail-conversational-authoring-design.md` § Decision.
 
+Closes guardrail-conversational-authoring (idea COMPLETE, v0.22.0; the hookify session-mining
+borrow spun off as its own idea, guardrails-session-mining). dispatch-ledger closed the same
+sweep (v0.23.0; no D- record — its one decision is folded into resolved.md
+A-20260824-dispatch-ledger).
+
 ### D-20260824-playbook-surface-before-default — playbooks surface via deny-once by default; per-playbook opt-out to after-injection
 - Workstream: skills
 - Created: 2026-08-24

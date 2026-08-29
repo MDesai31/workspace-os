@@ -164,36 +164,10 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
   whether `/memory-lint` (read-only today for the citation pass) should gain a write path at all.
   Relates to memory-provenance-fields (shipped).
 
-### guardrail-conversational-authoring — let guardrail rules be authored by conversation, not hand-written JSON  (EC2 audit 2026-08-24)
-- Workstream: workflow
-- Priority: high
-- Intended start: before any further guardrail-engine feature work
-- **Shipped (v0.22.0, 2026-08-24):** the /guardrails skill + `scripts/guardrails-upsert.sh` + capture-cadence nudge. See `resolved.md` A-20260824-guardrail-conversational-authoring. Decision: D-20260824-guardrails-canonical-hookify-misfits. Unblocks [[stateful-guardrail-predicates]].
-- Why/context: **MEASURED: zero `guardrails.json` files exist in either real workspace** (the UDX
-  `_meta` workspace on EC2 and the Windows checkout), despite both carrying exactly the hazards the
-  engine was built for: an employer IP boundary and a never-push enterprise remote. What actually
-  enforces those hazards is three *hookify* rules (`block-bundle-ship`, `block-enterprise-push`,
-  `warn-em-dashes`). The engine did not lose on capability, it lost on authoring ergonomics:
-  hookify rules are written by asking for one mid-task, `guardrails.json` must be hand-written
-  against a schema. The broader pattern from the same audit: every workspace-os surface that runs
-  automatically or via one command scored 6-9/10 in real use; every surface needing a hand-authored
-  JSON config scored 1-3 (guardrails 2, lint 1). A working day never has a quiet moment to write
-  schema. This is the prerequisite for [[stateful-guardrail-predicates]] and any other rule-language
-  work: enriching a language nobody authors in compounds the drag.
-- To start, future-us needs: a `/guardrails` skill that proposes a rule from a described hazard
-  (propose-confirm-apply, like every other capture skill), and a decision on whether to keep
-  competing with hookify or to emit hookify-compatible rules. Relates to hook-starter-library
-  (shipped), keystone-module-guardrails.
-- Borrow (hookify, market survey 2026-08-28): bare `/hookify` mines the recent conversation for
-  correctable behaviors and proposes rules — the one feature it has over /guardrails (whose
-  mechanics — dry-run through the real engine, tracked shared config — are strictly better). A
-  "mine this session for near-misses" mode on /guardrails bolts their best discovery onto our
-  better engine. Per D-20260828-build-only-what-native-wont this is a borrow, not a build-alike.
-
 ### stateful-guardrail-predicates — guardrail rules that test state, not just match text  (EC2 audit 2026-08-24)
 - Workstream: workflow
 - Priority: mid
-- Intended start: AFTER [[guardrail-conversational-authoring]], not before
+- Intended start: AFTER guardrail-conversational-authoring (shipped), not before — that gate is now cleared
 - Why/context: the engine matches regex over command/content/path text only (`hooks/guardrail.sh`),
   so a rule cannot depend on machine or repo state. Add `"predicate": "<shell command>"` alongside
   `match`, deciding on exit status. That expresses hazards this work has hit and handled with
@@ -207,29 +181,11 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
   on error to match the engine's existing contract), and a decision on whether predicates run on
   every matching tool call or are cached per session.
 
-### dispatch-ledger — log every subagent dispatch so cost rules can be derived, not guessed  (EC2 audit 2026-08-24)
-- Workstream: meta
-- Priority: high
-- Intended start: standalone; it is the cheaper half of [[probe-first-dispatch-gate]] and useful alone
-- **Shipped (v0.23.0, 2026-08-24):** capture hook + summary script; ledger at `~/.claude/workspace-os/dispatch-ledger.jsonl`. See `resolved.md` A-20260824-dispatch-ledger. Token counts: opportunistic harness fields + always-recorded `est_tokens` (chars/4) — the "obtainable or estimated" question resolved as both.
-- Why/context: **MEASURED: two dispatches burned ~484k tokens re-deriving a CSV the pipeline had
-  already written**, which a 0.25s `run_diff.sh` probe would have surfaced. The lesson currently
-  lives as hand-written prose in a CLAUDE.md, so it holds only while the model chooses to obey it,
-  and it was written only after the cost was paid. A ledger (agent, prompt size, duration, tokens,
-  outcome) makes that class of rule derivable from data instead of hindsight. It is also the missing
-  substrate under [[agent-self-improvement]], which assumes a per-agent observation log exists but
-  never says where the observations come from. Note the audit's own closing point: every number in
-  it came from running an ad hoc probe, none of it was visible from the plugin's own reporting.
-- To start, future-us needs: a PostToolUse (or Stop) hook on `Task`, a ledger location that is
-  local-only and never ships to an employer repo, and a decision on whether token counts are
-  obtainable from the harness or must be estimated. Relates to agent-self-improvement,
-  integrity-auditor.
-
 ### probe-first-dispatch-gate — block an expensive dispatch until its cheap probe has run  (EC2 audit 2026-08-24)
 - Workstream: workflow
 - Priority: mid
-- Intended start: after [[dispatch-ledger]] and [[stateful-guardrail-predicates]] both exist
-- **Note (2026-08-24):** the [[dispatch-ledger]] prerequisite now exists (v0.23.0); still gated on [[stateful-guardrail-predicates]].
+- Intended start: after dispatch-ledger (shipped) and [[stateful-guardrail-predicates]] both exist
+- **Note (2026-08-24):** the dispatch-ledger (shipped) prerequisite now exists (v0.23.0); still gated on [[stateful-guardrail-predicates]].
 - Why/context: the payoff half of the ~484k-token lesson above. A registry of (question class to
   deterministic probe) pairs, plus a PreToolUse hook on `Task` that blocks a matching dispatch when
   its probe has not run this session and injects the probe's output instead. Note `hooks.json`
@@ -324,7 +280,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
   them as `/ingest` / `/project-log` candidates. Confirm-gated like every capture skill — the
   proposal batch is the output, never direct writes.
 - To start, future-us needs: transcript format handling, a dedupe pass against existing
-  facts/records, and cost bounds (mining is LLM work — relates to [[dispatch-ledger]]'s cost
+  facts/records, and cost bounds (mining is LLM work — relates to dispatch-ledger (shipped)'s cost
   discipline). Relates to [[integrity-auditor]] (same batch-cadence shape).
 
 ### memory-lint-hardening — path-existence + contradiction checks  (market survey 2026-08-28)
@@ -341,3 +297,16 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
   illustrative paths; (b) a contradiction-pass prompt shape and where its findings land (advisory
   bucket like UNVERIFIED-SINCE?). Relates to [[fact-reverification-runner]],
   [[memory-restamp-flow]].
+
+### guardrails-session-mining — /guardrails mines the session for near-misses  (spun off 2026-08-29 from the shipped guardrail-conversational-authoring idea)
+- Workstream: workflow
+- Priority: mid
+- Intended start: opportunistic, with any /guardrails touch
+- Why/context: hookify's one feature over the shipped /guardrails (market survey 2026-08-28) — bare
+  `/hookify` mines the recent conversation for correctable behaviors and proposes rules. Our
+  mechanics (dry-run through the real engine, tracked shared config) are strictly better, so a
+  "mine this session for near-misses" mode bolts their best discovery onto our engine. Per
+  D-20260828-build-only-what-native-wont this is a borrow, not a build-alike.
+- To start, future-us needs: a discovery pass shape (what counts as a near-miss in a transcript)
+  feeding the existing author-mode propose→dry-run→confirm pipeline unchanged. Relates to
+  [[transcript-mining-ingest]] (same mining shape, different target).
