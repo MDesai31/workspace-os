@@ -125,6 +125,14 @@ installing or updating, restart Claude Code before expecting them.
   confirm. `/guardrails list` and `/guardrails remove <name>` complete the loop. What you'll
   see when a deny fires: the tool call fails with the rule's reason — that's the rule working.
 
+**Policy packs** bundle ready-made rules: `/guardrails pack list` shows what ships with the
+plugin, `/guardrails pack add public-repo` imports deny-tier protections for a public repo,
+and `/guardrails pack add enterprise-clean-room` sets up an employer IP boundary (it asks
+for your tripwire strings and enterprise remote pattern, then denies both everywhere in the
+repo). Re-importing after a plugin update refreshes a pack's rules without touching rules
+you wrote yourself; `/guardrails pack remove <name>` takes one out again. Format:
+`conventions/packs.md`.
+
 ### Playbook surfacing
 
 `hooks/playbook-surface.sh` (PreToolUse + PostToolUse on Bash/Edit/Write) surfaces a matching
