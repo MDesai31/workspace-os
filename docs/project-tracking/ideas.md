@@ -255,15 +255,3 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
   bucket like UNVERIFIED-SINCE?). Relates to [[fact-reverification-runner]],
   [[memory-restamp-flow]].
 
-### guardrails-session-mining — /guardrails mines the session for near-misses  (spun off 2026-08-29 from the shipped guardrail-conversational-authoring idea)
-- Workstream: workflow
-- Priority: mid
-- Intended start: opportunistic, with any /guardrails touch
-- Why/context: hookify's one feature over the shipped /guardrails (market survey 2026-08-28) — bare
-  `/hookify` mines the recent conversation for correctable behaviors and proposes rules. Our
-  mechanics (dry-run through the real engine, tracked shared config) are strictly better, so a
-  "mine this session for near-misses" mode bolts their best discovery onto our engine. Per
-  D-20260828-build-only-what-native-wont this is a borrow, not a build-alike.
-- To start, future-us needs: a discovery pass shape (what counts as a near-miss in a transcript)
-  feeding the existing author-mode propose→dry-run→confirm pipeline unchanged. Relates to
-  [[transcript-mining-ingest]] (same mining shape, different target).

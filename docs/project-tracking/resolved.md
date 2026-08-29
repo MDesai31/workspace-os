@@ -536,3 +536,19 @@ Shipped /memory-adopt foreign (store-level conversion, read-only source, retire 
 default-scan store detection (name + point, never silent conversion), and the conversion-mapping
 SoT in conventions/memory.md (slug/type-via-gates/body+Source line/split/reroute/link rules).
 Closes adoption-import — its last sub-slice.
+
+### A-20260829-guardrails-session-mining — /guardrails mine: session near-miss discovery
+- Workstream: workflow
+- Status: done
+- Completed: 2026-08-29
+- Commit: ccd2dc9 (PR #41, merged to main, v0.31.0)
+- Created: 2026-08-29
+
+The hookify borrow: mine the current session for near-misses (corrections, hazardous calls,
+repeated manual guards, near-fires) and feed the existing author pipeline unchanged.
+Spec: docs/specs/2026-08-29-guardrails-session-mining-design.md.
+
+Shipped /guardrails mine: four near-miss classes (corrections > hazardous calls > repeated
+manual guards > rule near-fires), per-rule session-moment citation (no citable moment = dropped),
+empty-mine stop, and everything downstream reusing author mode unchanged. Decision:
+D-20260829-mine-current-session-only. Closes the guardrails-session-mining idea.

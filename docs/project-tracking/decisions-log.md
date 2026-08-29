@@ -406,3 +406,15 @@ Design: docs/specs/2026-08-28-policy-packs-design.md (brainstormed + approved 20
 
 Closes policy-packs (idea COMPLETE, v0.27.0). The starter-pack half of
 keystone-module-guardrails' "engine + pack" contribution now exists; see that idea's note.
+
+### D-20260829-mine-current-session-only — /guardrails mine reads the current session only, never transcript files
+- Workstream: workflow
+- Created: 2026-08-29
+- Status: accepted
+- Rationale: the two mining shapes have different economics and different targets. Current-session mining is free (the conversation is already in context), immediate (the near-miss is minutes old and citable), and rule-shaped. Historical transcript mining costs real LLM work over ~/.claude/projects files, needs a dedupe pass against landed rules and facts, and mostly surfaces fact/record-shaped items — that is the transcript-mining-ingest idea's lane. Splitting by source keeps /guardrails mine cheap enough to run at any session end without cost hesitation.
+- Consequences: a near-miss from a past session cannot be mined; re-describe it to author mode instead. If transcript-mining-ingest ships, its rule-shaped findings should hand off to the /guardrails author pipeline rather than growing a second proposer.
+- Spawns: A-20260829-guardrails-session-mining
+
+Closes guardrails-session-mining (idea COMPLETE, v0.31.0 — the hookify discovery borrow,
+landed on our authoring pipeline unchanged).
+
