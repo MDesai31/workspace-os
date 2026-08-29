@@ -312,6 +312,36 @@ out="$(python3 "$SCRIPT" --check-tracking \
       --tracking-root "$MT/repo-b/project-tracking" 2>&1)"; ec=$?
 check "check-tracking flags a violation in the second root" "$ec" "1" "$out" "A-20260103-fat-record"
 
+# --- F- finding records: link targets + boundary coverage (finding-record-class) ---
+FR="$(mktemp -d)"; trap 'rm -rf "$MT" "$FR"' EXIT
+mkdir -p "$FR/docs/memory" "$FR/docs/project-tracking"
+cat > "$FR/docs/memory/MEMORY.md" <<'EOF'
+# Memory Index
+
+## Domain
+- [Finding fact](finding-fact.md) — cites a finding record
+EOF
+cat > "$FR/docs/memory/finding-fact.md" <<'EOF'
+---
+name: finding-fact
+description: fact whose provenance is a finding record
+type: domain
+---
+
+Settled as behavior per [[F-20260829-fixture-finding]].
+EOF
+printf '### F-20260829-fixture-finding — is it a bug or behavior?\n- Status: open\n' \
+  > "$FR/docs/project-tracking/findings.md"
+
+run_check "$FR"
+check "F- record resolves as a link target" "$ec" "0" "$out" ""
+
+{ printf '### F-20260830-fat-finding — oversized finding\n- Status: open\n'
+  for i in $(seq 1 45); do echo "- filler line $i"; done; } \
+  >> "$FR/docs/project-tracking/findings.md"
+out="$(python3 "$SCRIPT" --check-tracking --tracking-root "$FR/docs/project-tracking" 2>&1)"; ec=$?
+check "check-tracking covers findings.md" "$ec" "1" "$out" "F-20260830-fat-finding"
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

@@ -76,7 +76,7 @@ FRONTMATTER_DESC = re.compile(r"^description:\s*(.+?)\s*$", re.MULTILINE)
 FRONTMATTER_APPLIES = re.compile(r"^applies-to:\s*(branch|repo):(\S.*?)\s*$", re.MULTILINE)
 FRONTMATTER_VERIFIED = re.compile(
     r"^verified-against:\s*([0-9a-fA-F]{7,40})\s+(\d{4}-\d{2}-\d{2})\s*$", re.MULTILINE)
-RECORD_HEADING = re.compile(r"^###\s+([AD]-\d{8}-[A-Za-z0-9-]+)", re.MULTILINE)
+RECORD_HEADING = re.compile(r"^###\s+([ADF]-\d{8}-[A-Za-z0-9-]+)", re.MULTILINE)
 
 # Citation lint: a `path.ext:NNN` line-number citation, a backticked `path::symbol` anchor,
 # and a bare backticked identifier used as the adjacency signal for a line citation.
