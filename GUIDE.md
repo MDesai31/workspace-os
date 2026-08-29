@@ -75,6 +75,12 @@ do, the daily set is:
   extracts its decisions/actions as real records. **`release-notes`** turns git history +
   the decisions log into a grouped, plain-English `RELEASES.md` entry (team or leadership
   audience) — never inventing a change.
+- **`/project-log finding`** — an open question that closes on *evidence*, not work ("is
+  this a bug or intended?", "waiting on the vendor to confirm"). The `F-` record carries who
+  owes the answer (`Awaiting:`) and what settles it (`Closes-on:`); close it with
+  **`/project-log verdict F-… bug|behavior|latent|answered|moot <evidence>`** — a `bug`
+  chains into an action, `behavior` worth keeping graduates to memory. Open findings (and
+  stale ones) surface in `/project-status`.
 - **`/project-plan`** — a future intent: the why and rough timing, parked, not started.
 - **`/ingest`** — a durable fact about the codebase into `docs/memory/`;
   `gotcha:`/`stale-prior:` routes a corrected assumption to the right home (a CLAUDE.md

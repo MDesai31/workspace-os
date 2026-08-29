@@ -47,6 +47,8 @@ into `resolved.md` — see "Git mode" below.
    lists. List what you'll consider.
 3. **Classify** each detected chunk through the routing in `conventions/project-tracking.md`: → an
    idea (`ideas.md`), → a `D-` decision (`decisions-log.md`), → an `A-` action (`action-items.md`),
+   → an `F-` finding (`findings.md` — open questions / verdict-legend registers; items with a
+   settled verdict close on adoption into `resolved.md`),
    → skip in docs-only mode (completed → `resolved.md` via the git mode below), or → out-of-lane (durable knowledge →
    `/memory-adopt`).
 4. **Dedup.** Read existing `<data_root>/project-tracking/`; if a proposed record's slug already
