@@ -43,6 +43,11 @@ Closes `SP2-memory` (idea COMPLETE: SP2a + SP2b shipped; resolved.md A-20260626-
 - Rationale: opt-in adoption is the non-empty-repo entry point; `/project-init` scaffolds-if-absent so memory-adopt can run after init or independently. CLAUDE.md trim is proposed but only applied on explicit confirm + gate-passing lines (imperatives stay). Dedup is model-judgment (no exact-match required). Reuses the existing conventions boundary test and type gates from `conventions/memory.md` — no new schema. Source files are read-only; only `docs/memory/` and the CLAUDE.md summary section are written.
 - Spawns: A-20260626-memory-adopt
 
+Closes adoption-import (idea COMPLETE: all four source types — free-form docs + CLAUDE.md v0.3.0,
+tracking docs v0.4.0, instruction-file class v0.5.0, git history v0.12.0, foreign memory stores
+v0.30.0 /memory-adopt foreign).
+
+
 ### D-20260627-memory-adopt-claudemd-scope — "never migrate CLAUDE.md" scoped to the passive default
 - Workstream: memory
 - Created: 2026-06-27

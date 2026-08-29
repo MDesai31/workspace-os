@@ -520,3 +520,19 @@ Shipped /project-log discovery (work-log entries; durable facts route to /ingest
 (meetings/ file + ledger extraction, ledgers stay SoT), release-notes (RELEASES.md, never-invent
 rule), and /work-journal prep (read-only briefing). Conventions gained Meetings + Release notes
 sections. Closes the tracking-skills-roundout idea; portfolio mode stays in portfolio-registry.
+
+### A-20260829-foreign-memory-adopt — /memory-adopt foreign: convert a foreign memory store
+- Workstream: memory
+- Status: done
+- Completed: 2026-08-29
+- Commit: b7b99c1 (PR #40, merged to main, v0.30.0)
+- Created: 2026-08-29
+
+adoption-import sub-slice (a), the last one: detection heuristics for existing memory/notes/wiki
+stores + store-level conversion to workspace-os schema (read-only source, propose-confirm-apply).
+Spec: docs/specs/2026-08-29-foreign-memory-adopt-design.md.
+
+Shipped /memory-adopt foreign (store-level conversion, read-only source, retire reminder),
+default-scan store detection (name + point, never silent conversion), and the conversion-mapping
+SoT in conventions/memory.md (slug/type-via-gates/body+Source line/split/reroute/link rules).
+Closes adoption-import — its last sub-slice.
