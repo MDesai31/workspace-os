@@ -418,3 +418,14 @@ keystone-module-guardrails' "engine + pack" contribution now exists; see that id
 Closes guardrails-session-mining (idea COMPLETE, v0.31.0 — the hookify discovery borrow,
 landed on our authoring pipeline unchanged).
 
+### D-20260829-awaiting-not-a-verdict — findings close on evidence; ownership is a field, not a verdict
+- Workstream: schema
+- Created: 2026-08-29
+- Status: accepted
+- Rationale: the UDX register's legend mixed two axes — what the evidence showed (BUG/BEHAVIOR/LATENT) and who owes it (TEAM). An F- record splits them: the verdict enum (bug|behavior|latent|answered|moot) says what was learned, set once at close; Awaiting: says who/what owes the evidence while open, and Closes-on: names the evidence that settles it. The closing verb is `verdict`, not `done` — nothing was done, something was learned — and closed findings archive to resolved.md so the single-archive invariant (work-journal/status cross-referencing) holds. moot earns its slot because questions get overtaken by events; without it they linger open or close with a dishonest `answered`.
+- Consequences: /tracking-adopt maps legend registers onto the enum (settled items close on adoption); memory_graph harvests F- ids so facts can cite findings as provenance; a bug verdict hands its work to a spawned A- record rather than mutating the finding.
+- Spawns: A-20260829-finding-record-class
+
+Closes finding-record-class (idea COMPLETE, v0.32.0). The UDX register's actual adoption is
+usage on the EC2 machine via /tracking-adopt.
+

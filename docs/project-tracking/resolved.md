@@ -552,3 +552,20 @@ Shipped /guardrails mine: four near-miss classes (corrections > hazardous calls 
 manual guards > rule near-fires), per-rule session-moment citation (no citable moment = dropped),
 empty-mine stop, and everything downstream reusing author mode unchanged. Decision:
 D-20260829-mine-current-session-only. Closes the guardrails-session-mining idea.
+
+### A-20260829-finding-record-class — F- records: findings/questions that close on evidence
+- Workstream: schema
+- Status: done
+- Completed: 2026-08-29
+- Commit: 92f2f48 (PR #42, merged to main, v0.32.0)
+- Created: 2026-08-29
+
+Verdict-carrying record class (bug|behavior|latent|answered|moot) with Awaiting:/Closes-on:
+fields, findings.md queue, /project-log finding+verdict, status surfacing, tracking-adopt
+migration routing, memory_graph F- support. Spec: docs/specs/2026-08-29-finding-record-class-design.md.
+
+Shipped the F- record class end to end: conventions template + verdict enum (Awaiting:/Closes-on
+split per D-20260829-awaiting-not-a-verdict), findings.md queue + /project-init stamp,
+/project-log finding+verdict with per-verdict chaining, /project-status surfacing (report section
++ >14d staleness in brief), /tracking-adopt legend-register routing (the UDX migration path),
+capture-cadence nudge, memory_graph F- harvest (TDD, 60/60). Closes the finding-record-class idea.

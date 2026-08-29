@@ -170,21 +170,6 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - To start, future-us needs: the `Task` PreToolUse surface, a probe-registry shape, and a
   session-scoped record of which probes have run.
 
-### finding-record-class — a record type for findings and questions, which close on evidence  (EC2 audit 2026-08-24)
-- Workstream: schema
-- Priority: mid
-- Intended start: alongside A-20260828-checkout-propagation (same schema touch; that slice is now active)
-- Why/context: `_meta/pending-tracking/open-questions.md` is a hand-maintained parallel register with
-  its own verdict legend (BUG / BEHAVIOR / LATENT / RESOLVED / TEAM) plus a migration banner showing
-  items being hand-copied into action records. That legend is a taxonomy the schema lacks. An `A-`
-  record implies work *you* will do; a BEHAVIOR or TEAM verdict implies a judgment someone else
-  owes, and a question closes when *evidence arrives*, not when work finishes. Forcing those into
-  actions is why the parallel register exists at all. Distinct from tracking-skills-roundout, which
-  proposes journaling modes (`/work-journal`, `discovery`, `meeting-notes`), not a verdict-carrying
-  class.
-- To start, future-us needs: the verdict enum and its close conditions, whether findings live in
-  their own file or as a record kind in `action-items.md`, and a migration path for the existing
-  register.
 
 ### deliverable-provenance — bind a published figure to the fact or run that produced it  (EC2 audit 2026-08-24)
 - Workstream: memory
