@@ -1,0 +1,19 @@
+{
+  "name": "enterprise-clean-room",
+  "description": "IP boundary + never-push wall for working beside an employer codebase: denies tripwire content and enterprise-remote git traffic; marks the repo ip_class enterprise.",
+  "params": [
+    { "name": "tripwire_regex", "prompt": "Employer-identifying strings as a regex alternation (e.g. AcmeCorp|acme\\.internal)" },
+    { "name": "forbidden_remote_regex", "prompt": "Enterprise git remote host pattern (e.g. github\\.acme\\.example)" }
+  ],
+  "ip_class": "enterprise",
+  "guardrails": {
+    "bash": [
+      { "name": "pack-no-enterprise-remote", "match": "git[^|;&]*(push|pull|fetch|clone|remote[[:space:]]+add)[^|;&]*{{forbidden_remote_regex}}", "action": "deny", "reason": "enterprise-clean-room pack: git traffic to an enterprise remote from this workspace is a hard boundary." },
+      { "name": "pack-no-tripwire-in-commands", "match": "{{tripwire_regex}}", "action": "deny", "reason": "enterprise-clean-room pack: employer tripwire string in a command. Keep employer content out of this workspace." }
+    ],
+    "write": [
+      { "name": "pack-no-tripwire-content", "match": "{{tripwire_regex}}", "field": "content", "action": "deny", "reason": "enterprise-clean-room pack: employer tripwire string crossing into written content." }
+    ]
+  },
+  "lint": { "linters": [] }
+}

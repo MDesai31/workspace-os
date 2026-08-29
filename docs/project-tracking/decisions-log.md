@@ -375,3 +375,13 @@ Design: docs/specs/2026-08-28-session-continuity-design.md (brainstormed + appro
 
 Closes session-state-records (idea COMPLETE, v0.26.0). tracking-skills-roundout ships its
 /work-journal half the same release; see that idea's Shipped annotation.
+
+### D-20260828-pack-stamp-ledger — pack provenance = per-rule stamp + a _packs ledger; removal never downgrades ip_class
+- Workstream: packaging
+- Created: 2026-08-28
+- Status: accepted
+- Rationale: the keystone anti-borrows enforced by construction — one distribution channel (in-plugin packs/, version = plugin version), machine-read manifests (a pack failing validate-plugin.py fails CI), and imports that are idempotent and scoped: every imported rule carries `"pack": "<name>"` (the engines read named fields only, so the stamp is inert — proven by test), `add` deletes-then-inserts only that pack's stamped rules (hand-authored rules are never touched; no delete-and-recopy), and a `_packs` ledger in guardrails.json records {version, imported} per pack. `remove` deletes the stamped rules + ledger entry but never changes ip_class — silently dropping a provenance boundary is worse than a stale one, so it prints a review note instead. Params ({{placeholders}}) are substituted by the /guardrails skill conversationally; the deterministic script dies on any unsubstituted placeholder, keeping bash template-free.
+- Consequences: /guardrails grows a pack mode (list/add/remove); validate-plugin.py gains a packs gate; the starter enterprise-clean-room pack productizes the two measured UDX hazards (employer tripwire content, enterprise remote traffic) that today live in personal hookify rules.
+- Spawns: A-20260828-policy-packs
+
+Design: docs/specs/2026-08-28-policy-packs-design.md (brainstormed + approved 2026-08-28).
