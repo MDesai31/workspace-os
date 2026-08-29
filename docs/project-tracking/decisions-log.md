@@ -349,3 +349,13 @@ analog. No integrated tracking+memory+guardrails per-repo plugin exists. Spawned
 /project-plan, same day): [[session-state-records]], [[transcript-mining-ingest]],
 [[memory-lint-hardening]]; borrow notes on guardrail-conversational-authoring, portfolio-registry,
 tracking-skills-roundout.
+
+### D-20260828-propagation-intent-fact-lines — propagation state = an intent line plus append-only fact lines, grouped by remote URL
+- Workstream: schema
+- Created: 2026-08-28
+- Status: accepted
+- Rationale: a single "landed here" line with an implicit all-checkouts target cannot express the audit's real case (a fix relevant to a subset of checkouts), so intent (`- Propagation: all | <folders>`) and fact (`- Propagated-to: <folder> <date> [sha]`) are separate lines — both appended, never edited, the `Superseded-by:` pattern, `merge=union`-safe. Grouping is automatic by normalized `origin` URL (zero config — the audit's automatic-vs-hand-authored adoption finding), keyed by folder basename like the sidecar data roots. `all` is dynamic (every grouped checkout at read time) so the matrix reflects the current workspace. Sidecar-only: in-repo checkouts share tracking files through git itself. A- records only: decisions are reasoning, not deployable diffs.
+- Consequences: `/project-status` gains a `matrix` mode and `/project-log` a `propagated` mode; `scripts/checkout-groups.sh` becomes the single grouping source; the record body line-ceiling and boundary rules are untouched.
+- Spawns: A-20260828-checkout-propagation
+
+Design: docs/specs/2026-08-28-one-project-many-checkouts-design.md (brainstormed + approved 2026-08-28).

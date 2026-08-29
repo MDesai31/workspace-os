@@ -78,6 +78,9 @@ do, the daily set is:
   next" (filter by workstream or `high`/`mid`/`low`).
 - **`/memory-search <query>`** — find a fact; `links <fact>` shows what links to/from it.
 
+In a marked workspace with several checkouts of one repo, log where a fix has landed with
+`/project-log propagated` and see what each checkout still needs with `/project-status matrix`.
+
 Schemas and lifecycle: [`conventions/project-tracking.md`](conventions/project-tracking.md)
 and [`conventions/memory.md`](conventions/memory.md).
 

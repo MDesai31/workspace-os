@@ -24,3 +24,4 @@ jobs:
       - run: bash tests/test-guardrails-upsert.sh
       - run: bash tests/test-dispatch-ledger.sh
       - run: bash tests/test-playbook-surface.sh
+      - run: bash tests/test-checkout-groups.sh

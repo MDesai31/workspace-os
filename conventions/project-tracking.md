@@ -219,6 +219,27 @@ match is secondary. Re-running the same range proposes nothing new.
 **Out of scope (deliberate):** decision mining from commit/PR prose ("chose X because Y" → `D-`)
 and open branches/stale issues → `action-items.md` — fuzzy and noisy; deferred, not implied.
 
+## Propagation across checkouts (sidecar workspaces)
+
+In a marked workspace, several checkout folders may be checkouts of ONE project — grouped
+automatically by normalized `origin` URL (`scripts/checkout-groups.sh`; zero config), keyed
+by folder basename like the sidecar data roots (`conventions/data-root.md`). Two optional,
+**append-only** lines on **action** records (open or resolved) carry propagation state;
+both are meaningless in in-repo mode, where checkouts share tracking files through git:
+
+- `- Propagation: all | <folder>, <folder>` — written at most once; declares which of the
+  project's checkouts need this change. `all` is dynamic: every checkout in the project's
+  group **at read time**. Its presence is what makes a record matrix-relevant.
+- `- Propagated-to: <folder> YYYY-MM-DD [sha-or-PR#]` — one line per landing, appended in
+  landing order (the `Superseded-by:` pattern: append, never edit).
+
+**Read rule:** covered = the record's home checkout (the folder whose data root holds the
+record) once the record is done, plus every `Propagated-to:` folder; pending = target set
+minus covered. A `Propagated-to:` folder outside the current group reads as unknown —
+lenient, never an error (folders get renamed or removed). Written by
+`/project-log propagated`; rendered by `/project-status matrix`. The body line-ceiling and
+the memory/tracking boundary apply unchanged.
+
 ## Concurrency
 
 `action-items.md`, `decisions-log.md`, `resolved.md`, and `ideas.md` are append-heavy and

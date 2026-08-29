@@ -255,29 +255,10 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - To start, future-us needs: the playbook shape, a home (`docs/playbooks/`?), and the surfacing
   mechanism; a PreToolUse hook matching the trigger seems likelier than always-loaded context.
 
-### one-project-many-checkouts — model several checkouts of ONE repo, and propagation between them  (EC2 audit 2026-08-24)
-- Workstream: schema
-- Priority: high
-- Intended start: next tracking-schema touch
-- Why/context: the four UDX folders are branches of a single repo, but the plugin models each as an
-  independent data root. **MEASURED consequences: (a) 10 "broken links" reported permanently at the
-  workspace tier, all of which resolve to real `A-`/`D-` records in the repo tiers** — noise that
-  trains you to ignore lint output, which is the failure mode that lets real findings hide; (b)
-  propagation state has no schema, so one record's `Status:` fell back to freeform prose reading
-  "fixed, pushed, deployed... Not yet applied to develop-scheduling" because `open`/`done` cannot say
-  "landed in two of four checkouts." Distinct from portfolio-registry (many projects) and from
-  memory-applies-to-field (labelling one fact's scope).
-- **Shipped (v0.22.1, 2026-08-24, the link-resolution half):** `--tracking-root` repeatable in
-  `memory_graph.py` (union harvest, aggregated `--check-tracking`); `/memory-lint` workspace-tier
-  pass now feeds one per repo tier. See `resolved.md` A-20260824-multi-tracking-root. Kills the 10
-  false positives on its own.
-- To start remaining halves, future-us needs: a `propagated-to:` line on the record schema, and a
-  `/branch-matrix` view answering "which checkouts still need this fix."
-
 ### finding-record-class — a record type for findings and questions, which close on evidence  (EC2 audit 2026-08-24)
 - Workstream: schema
 - Priority: mid
-- Intended start: alongside [[one-project-many-checkouts]] (same schema touch)
+- Intended start: alongside A-20260828-checkout-propagation (same schema touch; that slice is now active)
 - Why/context: `_meta/pending-tracking/open-questions.md` is a hand-maintained parallel register with
   its own verdict legend (BUG / BEHAVIOR / LATENT / RESOLVED / TEAM) plus a migration banner showing
   items being hand-copied into action records. That legend is a taxonomy the schema lacks. An `A-`

@@ -1,10 +1,10 @@
 ---
 name: project-status
-description: Read-only status view over the current repo's project tracking — open actions by workstream, ideas by priority, recent decisions and resolved items, plus a brief mode for "what should I work on next". Use on /project-status, or when the user asks "what's next", "where are we", "what's the status", or "what should I work on". Writes nothing.
+description: Read-only status view over the current repo's project tracking — open actions by workstream, ideas by priority, recent decisions and resolved items, plus a brief mode for "what should I work on next". Use on /project-status, or when the user asks "what's next", "where are we", "what's the status", or "what should I work on". Also a matrix mode showing, per project in a marked workspace, which checkouts each change has landed in and which still need it. Writes nothing.
 user-invocable: true
 disable-model-invocation: false
 allowed-tools: Read, Bash, Glob, Grep
-argument-hint: "[workstream | high|mid|low] | brief [workstream | high|mid|low]"
+argument-hint: "[workstream | high|mid|low] | brief [workstream | high|mid|low] | matrix"
 ---
 
 # Project Status
@@ -26,7 +26,8 @@ instead of its single-workspace project registry.)
    (greenfield repo) or `/tracking-adopt` (repo with existing work-state docs), and stop.
    Never create anything.
 
-1. **Parse `$ARGUMENTS`.** A leading `brief` selects brief mode. The remaining token (if any)
+1. **Parse `$ARGUMENTS`.** A leading `brief` selects brief mode; a leading `matrix` selects
+   matrix mode (no filter tokens — matrix is always whole-workspace). The remaining token (if any)
    is the filter, matched case-insensitively — first against the repo's workstream list (the
    tracking README's `## Workstreams` section, else the tags actually present in records),
    then against the priority enum `high` / `mid` / `low`. Unknown token → say so, list the
@@ -82,3 +83,34 @@ Inputs: open action items plus ideas whose `Priority:` is `high` / `mid` / `low`
 `someday`). Action records carry no priority field — place each in a tier by judgment from
 its content and age. Within a tier, oldest `Created:` first. Always end with the suggested
 order line.
+
+## Matrix mode (`/project-status matrix`)
+
+The cross-checkout propagation view (`conventions/project-tracking.md` § "Propagation
+across checkouts"). Sidecar/workspace-meta modes only — in `mode=in-repo`, print one line
+("matrix applies to marked workspaces only") and stop.
+
+1. Run `bash "${CLAUDE_PLUGIN_ROOT}/scripts/checkout-groups.sh" "<workspace_root>"` and
+   group its lines by `key=`. Drop groups with fewer than two folders. None left → one-line
+   empty state ("no multi-checkout projects in this workspace") and stop.
+2. For every folder in each remaining group, read
+   `<workspace_root>/<folder>/project-tracking/action-items.md` and `resolved.md`
+   (leniently, as ever) and select records carrying a `- Propagation:` line.
+3. Render one table per project:
+
+   ```
+   PROPAGATION MATRIX: <project> — <N> checkouts
+   Record                       | <folder> (<branch>) | <folder> (<branch>) | …
+   A-… (home: <folder>)         | landed 2026-08-21   | pending             | n/a
+   ```
+
+   Cells, per the conventions read rule: `landed <date>` — the home checkout once the
+   record is done (use its `Completed:` date) or a `Propagated-to:` line's date;
+   `pending` — in the target set, not landed; `n/a` — not in the target set. Elide
+   resolved records older than ~60 days that have no pending cells, reporting the elided
+   count (the recent-window rule).
+4. Close each table with per-checkout summaries — "`<folder>` still needs: <IDs>" (omit
+   fully-covered checkouts) — and, when any `Propagated-to:` line names a folder outside
+   the current group, one line listing those unknown folders (render, never error).
+
+Read-only like every other mode; records with no `Propagation:` line never appear here.
