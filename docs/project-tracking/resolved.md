@@ -462,3 +462,19 @@ handoff deletion in /project-log done + listing in /project-status, and /work-jo
 (summary + log). Spec: docs/specs/2026-08-28-session-continuity-design.md. Plan:
 docs/plans/2026-08-28-session-continuity.md. Decision: D-20260828-handoff-live-file-lifecycle.
 Closes the session-state-records idea; ships the work-journal half of tracking-skills-roundout.
+
+### A-20260828-policy-packs — pack format + import script + /guardrails pack + two starter packs
+- Workstream: packaging
+- Status: done
+- Created: 2026-08-28
+- Completed: 2026-08-28
+- Commit: 660a594 (PR #36, merged to main, v0.27.0)
+
+Ships the policy-packs idea (keystone v0.2.0 review 2026-08-28): machine-read pack format
+(conventions/packs.md), fail-loud scripts/pack-import.sh (per-rule "pack" stamp, _packs
+ledger, idempotent re-import, hand-authored rules untouched, no ip_class downgrade on
+remove; 25-case test), /guardrails pack list|add|remove with skill-side param substitution,
+starter packs public-repo + enterprise-clean-room (the UDX-audit hazards productized), and
+a validator packs gate (negative-tested). Spec: docs/specs/2026-08-28-policy-packs-design.md.
+Plan: docs/plans/2026-08-28-policy-packs.md. Decision: D-20260828-pack-stamp-ledger.
+Closes the policy-packs idea.

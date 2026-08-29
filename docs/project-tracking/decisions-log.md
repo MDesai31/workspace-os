@@ -385,3 +385,6 @@ Closes session-state-records (idea COMPLETE, v0.26.0). tracking-skills-roundout 
 - Spawns: A-20260828-policy-packs
 
 Design: docs/specs/2026-08-28-policy-packs-design.md (brainstormed + approved 2026-08-28).
+
+Closes policy-packs (idea COMPLETE, v0.27.0). The starter-pack half of
+keystone-module-guardrails' "engine + pack" contribution now exists; see that idea's note.
