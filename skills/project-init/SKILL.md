@@ -41,6 +41,10 @@ relative to this skill's base directory (the plugin root is two levels up from
    - `templates/decisions-log.md` → `<data_root>/project-tracking/decisions-log.md`
    - `templates/resolved.md` → `<data_root>/project-tracking/resolved.md`
 
+   Also stamp the playbooks scaffold: create `<data_root>/playbooks/` and copy
+   `templates/playbooks/README.md` into it. If `<data_root>/playbooks/` already exists,
+   skip it silently (it may hold playbooks).
+
 3a. **Scaffold memory - guard against an existing store.** An empty index that contradicts a store
     already in use is an active hazard: it invites a future session to start a second store. Before
     creating `<data_root>/memory/`:
@@ -87,7 +91,7 @@ relative to this skill's base directory (the plugin root is two levels up from
    user asks — leave the new files staged-ready for them.
 
 7. **Report.** Print the created trees and the resolved mode, and remind the user they can now
-   use `/project-log`, `/project-plan`, `/ingest`, and `/memory-lint`.
+   use `/project-log`, `/project-plan`, `/ingest`, `/playbook`, and `/memory-lint`.
 
 ## Notes
 
