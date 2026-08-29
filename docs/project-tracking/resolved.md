@@ -569,3 +569,16 @@ split per D-20260829-awaiting-not-a-verdict), findings.md queue + /project-init 
 /project-log finding+verdict with per-verdict chaining, /project-status surfacing (report section
 + >14d staleness in brief), /tracking-adopt legend-register routing (the UDX migration path),
 capture-cadence nudge, memory_graph F- harvest (TDD, 60/60). Closes the finding-record-class idea.
+
+### A-20260829-pack-gh-aware-denies — enterprise-clean-room: gh-aware deny rules
+- Workstream: workflow
+- Status: done
+- Created: 2026-08-29
+- Completed: 2026-08-29
+- Commit: e0adc36 (PR #43, merged to main, v0.32.1)
+
+Surfaced by the ship-a-slice sidecar discussion: git-push-shaped denies never see gh (API
+traffic), and gh infers the repo from the checkout's remote so the enterprise host may never
+appear in command text. Added pack-no-gh-to-enterprise-host (host-named gh calls) and
+pack-no-gh-write-ops (pr/repo/release write verbs + mutating gh api, host or not; read-only gh
+allowed). Engine dry-run proven both directions. Re-import on EC2 refreshes stamped rules.
