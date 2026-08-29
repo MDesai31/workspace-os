@@ -33,8 +33,9 @@ instead of its single-workspace project registry.)
    then against the priority enum `high` / `mid` / `low`. Unknown token → say so, list the
    valid workstreams, and stop. No filter → whole-repo view.
 
-2. **Read fresh.** Read all four files — `action-items.md`, `ideas.md`, `decisions-log.md`,
-   `resolved.md` — every run; never trust a remembered copy. Parse **leniently**: adopted
+2. **Read fresh.** Read all five files — `action-items.md`, `ideas.md`, `decisions-log.md`,
+   `resolved.md`, `findings.md` (absent in pre-v0.32 repos — treat as empty, never create) —
+   every run; never trust a remembered copy. Parse **leniently**: adopted
    repos carry legacy IDs (`#21`, item `K`) and non-record prose (e.g. a pre-existing resolved
    table). Render what is there as found — never rewrite it, never warn about its format.
    Count only what parses as a record; mention unparsed content in one line (e.g. "plus a
@@ -56,13 +57,15 @@ Sections, in order:
    workstreams.
 3. **Live handoffs** — one line per file in `<data_root>/project-tracking/handoffs/`:
    `<slug> — paused <date from its Paused: line>`. No dir or no files → omit the section.
-4. **Ideas** by priority, high → mid → low: one title line each (name + a one-phrase hook);
+4. **Open findings** — `ID — title — Awaiting: <who/what> — age`, oldest first. No file or
+   none open → omit the section.
+5. **Ideas** by priority, high → mid → low: one title line each (name + a one-phrase hook);
    `someday`-priority ideas collapse to a single count line.
-5. **Recent decisions** — last ~5, newest first: `ID — title`. Mark superseded decisions
+6. **Recent decisions** — last ~5, newest first: `ID — title`. Mark superseded decisions
    (read rule: an appended `Superseded-by:` line wins over `Status:`).
-6. **Recent resolved** — last ~5, newest first: `ID — title — completed date`.
-7. **Summary** — one line of counts (open actions, ideas by priority tier, decisions,
-   resolved).
+7. **Recent resolved** — last ~5, newest first: `ID — title — completed date`.
+8. **Summary** — one line of counts (open actions, open findings, ideas by priority tier,
+   decisions, resolved).
 
 ## Brief mode (`/project-status brief`)
 
@@ -83,7 +86,9 @@ Suggested order: <IDs> — priority first, then staleness (oldest Created first)
 
 Inputs: open action items plus ideas whose `Priority:` is `high` / `mid` / `low` (skip
 `someday`). Live handoffs (files in `<data_root>/project-tracking/handoffs/`) list at the
-top of IMMEDIATE as `<slug>: paused <date> — resume by reading its handoff file`. Action
+top of IMMEDIATE as `<slug>: paused <date> — resume by reading its handoff file`. Open
+findings stale >14 days list under NEXT as
+`<F-id>: awaiting <who/what> for <N> days — chase or close with a verdict`. Action
 records carry no priority field — place each in a tier by judgment from
 its content and age. Within a tier, oldest `Created:` first. Always end with the suggested
 order line.

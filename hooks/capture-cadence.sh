@@ -31,6 +31,7 @@ As you work in this repo, watch for durable items worth recording and capture th
 - a decision (a choice + why) -> /project-log decision (or model-decision)
 - a started or finished action -> /project-log action | done
 - a durable fact about this codebase -> /ingest
+- an open question that closes on evidence -> /project-log finding (a verdict closes it)
 - a future intent -> /project-plan
 - a hazard or near-miss worth a permanent rule -> /guardrails
 - a repeated multi-step procedure -> /playbook

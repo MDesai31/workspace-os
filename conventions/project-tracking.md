@@ -13,6 +13,7 @@ Created by `/project-init` under `<repo>/docs/project-tracking/`:
 | `resolved.md` | completed records (archived on done) | `/project-log done` |
 | `decisions-log.md` | decision records (append-only) | `/project-log decision` |
 | `ideas.md` | future intents | `/project-plan` |
+| `findings.md` | open findings/questions (close on evidence) | `/project-log finding` |
 | `README.md` | index + the repo's workstream list | manual / `/project-init` |
 
 ## IDs
@@ -109,6 +110,39 @@ row records only the association: *sha → headline metrics → verdict*, one ro
 candidate** (a build you'd want to find again), never per debug run. Either way the decision
 record's `Run:` field points at the run layer (tracker run ID/URL, or a `MODEL_LOG.md` row);
 decisions-log.md stays the reasoning layer on top and never duplicates run data.
+
+**Finding** — a question or investigation finding that closes on **evidence arriving**, not
+on work finishing. An `A-` record implies work you will do; a `D-` record implies a choice
+you made; a finding is a question with an owner and a close condition. Appended to
+`findings.md` (a queue, like `action-items.md`) by `/project-log finding`:
+```
+### F-YYYYMMDD-slug — <the question, as a question>
+- Workstream: <tag>
+- Status: open
+- Created: YYYY-MM-DD
+- Awaiting: <who/what owes the evidence: me | <person/role> | <event>>
+- Closes-on: <what evidence settles it, one line>
+
+<1-5 lines: what was observed, why it matters, what it might change>
+```
+Closed by `/project-log verdict <F-id> <verdict> <evidence>` — the closing verb is `verdict`,
+not `done`: nothing was done, something was learned. Closing appends three lines and moves
+the record to `resolved.md` (one archive for everything):
+```
+- Verdict: bug | behavior | latent | answered | moot
+- Evidence: <what arrived, one line — a sha, a log line, "confirmed by <role> <date>">
+- Completed: YYYY-MM-DD
+```
+The verdict enum: **bug** — defect confirmed; almost always `Spawns:` an `A-` record (the
+work belongs to the action). **behavior** — works as designed; the closed record IS the
+documentation. **latent** — real but not currently biting; typically spawns an idea via
+`/project-plan`. **answered** — a non-defect question settled. **moot** — overtaken by
+events (Evidence says what mooted it). "Waiting on the team" is never a verdict — it is the
+`Awaiting:` field while open. Boundaries: a *discovery* (`/project-log discovery`) is a
+logged observation with no lifecycle; an *action* is work you own; an *idea* is intent with
+no evidence pending. A `behavior` verdict worth keeping long-term graduates to a
+`docs/memory/` fact via `/ingest` — the closed record stays as provenance, linked, never
+duplicated. `F-` ids are `[[wikilink]]`-resolvable from memory like `A-`/`D-`.
 
 **Idea** — appended to `ideas.md`:
 ```
@@ -231,6 +265,10 @@ each chunk:
 - explicit decision (a "Key decisions" item, "Supersedes…", "chose X because Y") → a **`D-` record**
   in `decisions-log.md` (the body `[[wikilink]]`s the source doc);
 - open TODO / unchecked `- [ ]` / "next up" → an **`A-` record** in `action-items.md`, status `open`;
+- open question / "waiting on X to confirm" / a verdict-legend register (BUG/BEHAVIOR/LATENT/…
+  markers) → an **`F-` record** in `findings.md` (map the legend onto the verdict enum; an item
+  already carrying a settled verdict closes on adoption — Verdict/Evidence/Completed lines from
+  the source text — and routes to `resolved.md` instead);
 - completed / checked `- [x]` / changelog "done" → **docs-only mode: skip** (a resolved record
   needs a real commit ref, which prose cannot supply — run `/tracking-adopt git`); **git mode:
   cross-match** against the mined units (see "Git-history archaeology" below) — matched → enriches

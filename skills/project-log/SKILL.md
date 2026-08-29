@@ -1,9 +1,9 @@
 ---
 name: project-log
-description: Log a project action item, decision, discovery, or meeting, mark an item done, or cut release notes, in the repo's project tracking. Use whenever a decision (a choice + why), an action to do, an investigation finding, or a completed item arises - proactively, not only when asked. Accumulate candidates and propose them as a batch at a natural stopping point rather than interrupting mid-task. The general-purpose tracking entry point.
+description: Log a project action item, decision, discovery, finding (an open question that closes on evidence), or meeting, mark an item done, close a finding with a verdict, or cut release notes, in the repo's project tracking. Use whenever a decision (a choice + why), an action to do, an investigation finding, an open question, or a completed item arises - proactively, not only when asked. Accumulate candidates and propose them as a batch at a natural stopping point rather than interrupting mid-task. The general-purpose tracking entry point.
 user-invocable: true
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
-argument-hint: "[action|decision|model-decision|done|propagated|discovery|meeting|release-notes] <args>"
+argument-hint: "[action|decision|model-decision|done|propagated|discovery|finding|verdict|meeting|release-notes] <args>"
 ---
 
 # Project Log
@@ -122,6 +122,22 @@ Structured meeting capture (`conventions/project-tracking.md` § "Meetings"):
    meeting file lists the extracted ids at its top.
 4. Show the meeting file and the extracted records for review.
 
+### `finding <details>`
+A question or finding that closes on **evidence**, not work
+(`conventions/project-tracking.md` § the Finding template — read the boundary rules there).
+Mint `F-<today>-<slug>`; phrase the title as a question. Ask for `Awaiting:` (who/what owes
+the evidence) and `Closes-on:` (what settles it) if not inferable. Append to `findings.md`,
+replacing the `_No open findings yet._` placeholder if present.
+
+### `verdict <F-id> <verdict> <evidence>`
+Close a finding — nothing was done, something was learned. Locate `<F-id>` in `findings.md`
+(missing → say so, stop). `<verdict>` must be one of the conventions' enum
+(`bug|behavior|latent|answered|moot`); ask for the evidence line if not given. Append
+`- Verdict:`, `- Evidence:`, `- Completed: <today>` and move the record to `resolved.md`.
+Then chain by verdict: `bug` → offer `action` mode (fill `Spawns:`); `latent` → offer
+`/project-plan`; `behavior` worth keeping long-term → offer `/ingest` (record stays as
+provenance, linked, never duplicated).
+
 ### `release-notes [since:<ref|date>] [audience:team|leadership]`
 Git history + the decisions log → notes people will read
 (`conventions/project-tracking.md` § "Release notes"). **Never invent a change** — every
@@ -144,8 +160,10 @@ a cryptic subject.
 Infer from the wording: "should/decided/use X instead" → decision; model/experiment vocabulary
 ("champion/challenger", "promoted the model", "chose <architecture>", "validated with
 walk-forward", a run ID) → model-decision; "fix/add/remove/implement" → action; an `A-id` +
-"done/close/finished" → done; "found/noticed/turns out/discovered" → discovery; structured
-meeting sections (attendees, agenda, action items) → meeting. If ambiguous, ask.
+"done/close/finished" → done; "found/noticed/turns out/discovered" → discovery; "is this a
+bug or intended", "need to confirm", "waiting on <someone> to verify", "open question" →
+finding; an `F-id` + an outcome → verdict; structured meeting sections (attendees, agenda,
+action items) → meeting. If ambiguous, ask.
 
 ## After writing
 Show the user the exact record you added (or moved) and which file it's in. Do **not** commit

@@ -33,13 +33,14 @@ relative to this skill's base directory (the plugin root is two levels up from
 2. **Refuse if already initialized.** If `<data_root>/project-tracking/` already exists, do
    **not** overwrite. Report that it's already set up and stop (offer `/project-log` instead).
 
-3. **Stamp the templates.** Create `<data_root>/project-tracking/` and copy the five `.md`
+3. **Stamp the templates.** Create `<data_root>/project-tracking/` and copy the six `.md`
    templates into it:
    - `templates/README.md` → `<data_root>/project-tracking/README.md`
    - `templates/action-items.md` → `<data_root>/project-tracking/action-items.md`
    - `templates/ideas.md` → `<data_root>/project-tracking/ideas.md`
    - `templates/decisions-log.md` → `<data_root>/project-tracking/decisions-log.md`
    - `templates/resolved.md` → `<data_root>/project-tracking/resolved.md`
+   - `templates/findings.md` → `<data_root>/project-tracking/findings.md`
 
    Also stamp the playbooks scaffold: create `<data_root>/playbooks/` and copy
    `templates/playbooks/README.md` into it. If `<data_root>/playbooks/` already exists,
