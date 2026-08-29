@@ -1,6 +1,6 @@
 ---
 name: guardrails
-description: Author a guardrail rule by describing the hazard - propose, dry-run through the real engine, confirm, apply; also list or remove rules. Use when the user describes something that must never happen in this repo (a never-push remote, an IP boundary, a dangerous command), asks to add/list/remove a guardrail, or when a hazard or near-miss worth a permanent rule surfaces mid-task - propose it at a natural boundary, never write without confirmation.
+description: Author a guardrail rule by describing the hazard - propose, dry-run through the real engine, confirm, apply; also list or remove rules. Use when the user describes something that must never happen in this repo (a never-push remote, an IP boundary, a dangerous command), asks to add/list/remove a guardrail, or when a hazard or near-miss worth a permanent rule surfaces mid-task - propose it at a natural boundary, never write without confirmation. Also imports/removes policy packs (/guardrails pack list|add NAME|remove NAME) - versioned rule bundles shipped with the plugin.
 user-invocable: true
 allowed-tools: Bash, Read
 ---
@@ -26,6 +26,7 @@ sidecar: `<data_root>/guardrails.json` - the repo tree is never touched).
 - `remove <name>` -> run `list`, find the rule (search both types; if the name is ambiguous
   or missing, say so and stop). Show the matching rule, confirm, then
   `... guardrails-upsert.sh remove --type <t> --name <name>`.
+- `pack list` / `pack add <name>` / `pack remove <name>` -> Pack mode below.
 - Anything else (including no args) -> author mode below. The argument text, if any, is the
   hazard description; otherwise ask for it. Multiple hazards accumulate into ONE batch -
   propose together at a natural boundary, like /ingest.
@@ -77,3 +78,35 @@ editing JSON directly).
 **6. Report:** resolved path and mode, the landed rules, a reminder that the config is
 version-controlled (commit it with the repo; in sidecar mode the sidecar repo holds it), and
 the removal one-liner: `/guardrails remove <name>`.
+
+## Pack mode
+
+Policy packs are versioned rule bundles in this plugin's `packs/` dir
+(`conventions/packs.md` is the format SoT). Every write goes through
+`scripts/pack-import.sh` (fail-loud, atomic, idempotent - re-import replaces only that
+pack's stamped rules and never touches hand-authored ones); this skill NEVER edits the
+configs by hand.
+
+- `pack list` -> run `bash "${CLAUDE_PLUGIN_ROOT}/scripts/pack-import.sh" list`, show the
+  output verbatim.
+- `pack add <name>`:
+  1. Read `${CLAUDE_PLUGIN_ROOT}/packs/<name>.json` (missing -> run `pack list`, stop).
+  2. For each entry in `params`, ask the user for a value using its `prompt` text, then
+     substitute every `{{name}}` occurrence in the pack JSON. No params -> skip.
+  3. Propose: the full resulting rule set and linters, where they will land (the resolved
+     config paths from the prerequisite step), and - when the pack declares `ip_class` -
+     the class change, called out explicitly ("this marks the repo's policy class
+     '<value>'"). Wait for confirmation.
+  4. On yes: write the substituted JSON to a temp file, run
+     `bash "${CLAUDE_PLUGIN_ROOT}/scripts/pack-import.sh" add <temp-file>`, delete the
+     temp file, surface any script error verbatim. In sidecar mode commit the sidecar
+     repo (`git -C <workspace_root> add -A && git -C <workspace_root> commit`).
+  5. Report: the script's output, plus the removal one-liner
+     (`/guardrails pack remove <name>`).
+- `pack remove <name>` -> show what `pack list` says is imported for that name, confirm,
+  run `... pack-import.sh remove <name>`, and relay its `ip_class` note verbatim when it
+  prints one. Sidecar commit as above.
+
+Param values are org-specific (tripwire strings, remote hosts) - treat them as the repo's
+policy data: they land in the version-controlled config, so never include an actual secret
+VALUE (a token, a password) as a param; tripwires are identifying STRINGS, not credentials.
