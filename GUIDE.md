@@ -132,6 +132,11 @@ installing or updating, restart Claude Code before expecting them.
   (one call that must fire, one that must not — you see both results), and applies it only on
   confirm. `/guardrails list` and `/guardrails remove <name>` complete the loop. What you'll
   see when a deny fires: the tool call fails with the rule's reason — that's the rule working.
+- **Mine a session for rules** — at the end of a session where something went sideways, run
+  `/guardrails mine`: it scans the conversation for near-misses (a correction you had to
+  type, a command that almost did damage, a check performed by hand twice) and proposes
+  rules through the same dry-run + confirm pipeline, each citing the moment it came from.
+  Nothing qualifies → it says so and stops.
 
 **Policy packs** bundle ready-made rules: `/guardrails pack list` shows what ships with the
 plugin, `/guardrails pack add public-repo` imports deny-tier protections for a public repo,

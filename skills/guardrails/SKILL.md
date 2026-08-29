@@ -1,6 +1,6 @@
 ---
 name: guardrails
-description: Author a guardrail rule by describing the hazard - propose, dry-run through the real engine, confirm, apply; also list or remove rules. Use when the user describes something that must never happen in this repo (a never-push remote, an IP boundary, a dangerous command), asks to add/list/remove a guardrail, or when a hazard or near-miss worth a permanent rule surfaces mid-task - propose it at a natural boundary, never write without confirmation. Also imports/removes policy packs (/guardrails pack list|add NAME|remove NAME) - versioned rule bundles shipped with the plugin.
+description: Author a guardrail rule by describing the hazard - propose, dry-run through the real engine, confirm, apply; also list or remove rules. Use when the user describes something that must never happen in this repo (a never-push remote, an IP boundary, a dangerous command), asks to add/list/remove a guardrail, or when a hazard or near-miss worth a permanent rule surfaces mid-task - propose it at a natural boundary, never write without confirmation. Also mines the current session for near-misses worth rules (/guardrails mine), and imports/removes policy packs (/guardrails pack list|add NAME|remove NAME) - versioned rule bundles shipped with the plugin.
 user-invocable: true
 allowed-tools: Bash, Read
 ---
@@ -27,6 +27,7 @@ sidecar: `<data_root>/guardrails.json` - the repo tree is never touched).
   or missing, say so and stop). Show the matching rule, confirm, then
   `... guardrails-upsert.sh remove --type <t> --name <name>`.
 - `pack list` / `pack add <name>` / `pack remove <name>` -> Pack mode below.
+- `mine` -> Mine mode below: scan THIS session for near-misses worth a permanent rule.
 - Anything else (including no args) -> author mode below. The argument text, if any, is the
   hazard description; otherwise ask for it. Multiple hazards accumulate into ONE batch -
   propose together at a natural boundary, like /ingest.
@@ -78,6 +79,39 @@ editing JSON directly).
 **6. Report:** resolved path and mode, the landed rules, a reminder that the config is
 version-controlled (commit it with the repo; in sidecar mode the sidecar repo holds it), and
 the removal one-liner: `/guardrails remove <name>`.
+
+## Mine mode
+
+Discovery over THIS session's conversation - no transcript files, no history (the
+batch/historical case belongs to the transcript-mining-ingest idea, not here). Mining finds
+candidates; **everything downstream is author mode, unchanged** - the same step-1 routing,
+the same dry-run gate, the same confirm-before-apply.
+
+**1. Scan the session** for near-misses, in priority order:
+
+- a **user correction or prohibition** ("don't X", "never push to Y", "stop doing Z") - the
+  strongest signal; the user already paid for this rule once;
+- a **hazardous call that happened or almost happened**: a destructive command that errored
+  or was caught late, a write that nearly landed a secret or tripwire string, a push aimed
+  at the wrong remote;
+- a **repeated manual guard** - the same check performed by hand more than once this
+  session;
+- an **existing-rule near-fire**: a landed rule whose regex just missed something it was
+  clearly meant to catch (propose the tightened regex as a revision via `remove` + `add`).
+
+NOT candidates: one-off typos, failures with no hazard (a red test is not a near-miss),
+anything a landed rule already covers, style preferences with no blast radius.
+
+**2. Evidence discipline:** every candidate cites the session moment it came from - one line
+on what actually happened. A candidate with no citable moment is dropped, not proposed.
+
+**3. Route and pipeline:** run each candidate through author-mode step 1 (engine-fit /
+hookify-fit / state-dependent), then steps 2-6 exactly as written - draft, dry-run both
+directions through the real engine, propose the batch (each rule showing its session-moment
+citation alongside the dry-run evidence), confirm, apply. The user may accept a subset.
+
+**4. Empty mine:** if nothing qualifies, say "no near-misses found this session" and stop -
+never pad the batch to justify the invocation.
 
 ## Pack mode
 

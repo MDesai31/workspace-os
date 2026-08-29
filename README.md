@@ -57,7 +57,7 @@ points, and nothing is ever written without your confirmation.
 | | `/memory-search` | find a fact by keyword, or its backlinks | [GUIDE](GUIDE.md#daily-workflow) |
 | | `/handoff` | pause an effort into a live handoff record; auto-surfaced at session start | [conventions](conventions/project-tracking.md) |
 | | `/work-journal` | summarize recent work from git + tracking; `log` records the session; `prep` briefs a meeting | [GUIDE](GUIDE.md#daily-workflow) |
-| **Occasionally** | `/guardrails` | author a deny/warn rule from a described hazard (dry-run proven); `pack` imports versioned policy packs ([format](conventions/packs.md)) | [GUIDE](GUIDE.md#guardrails) |
+| **Occasionally** | `/guardrails` | author a deny/warn rule from a described hazard (dry-run proven); `mine` scans the session for near-misses; `pack` imports versioned policy packs ([format](conventions/packs.md)) | [GUIDE](GUIDE.md#guardrails) |
 | | `/playbook` | author/adopt a procedure that auto-surfaces at trigger time | [conventions](conventions/playbooks.md) |
 | | `/memory-lint` | memory integrity (link graph, index parity, citation freshness) + playbook lint | [GUIDE](GUIDE.md#maintenance-linting-and-updating) |
 | | `/memory-adopt` `/tracking-adopt` | adopt a repo's existing docs / roadmaps / git history; `foreign` converts an existing notes/wiki store | [GUIDE](GUIDE.md#adopting-an-existing-repo) |
