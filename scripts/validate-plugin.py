@@ -77,6 +77,46 @@ for hook in sorted((REPO / "hooks").glob("*.sh")):
     if hook.name not in docs_text:
         errors.append(f"hooks/{hook.name}: not mentioned in README.md or GUIDE.md")
 
+# Packs gate: every packs/*.json is machine-valid — a pack failing here fails CI
+# (spec: docs/specs/2026-08-28-policy-packs-design.md).
+import re
+for pack_path in sorted((REPO / "packs").glob("*.json")):
+    rel = pack_path.relative_to(REPO)
+    try:
+        pack = json.loads(pack_path.read_text())
+    except json.JSONDecodeError as e:
+        errors.append(f"{rel}: invalid JSON ({e})")
+        continue
+    if pack.get("name") != pack_path.stem:
+        errors.append(f"{rel}: 'name' must equal the filename stem ('{pack.get('name')}')")
+    for key in ("description", "guardrails"):
+        if not pack.get(key):
+            errors.append(f"{rel}: missing required key '{key}'")
+    strings = [pack.get("ip_class") or ""]
+    for rtype in ("bash", "write"):
+        for rule in (pack.get("guardrails") or {}).get(rtype, []):
+            for field in ("name", "match", "action", "reason"):
+                if not rule.get(field):
+                    errors.append(f"{rel}: {rtype} rule missing '{field}'")
+            strings.extend(str(v) for v in rule.values())
+    for linter in (pack.get("lint") or {}).get("linters", []):
+        for field in ("name", "match", "command"):
+            if not linter.get(field):
+                errors.append(f"{rel}: linter missing '{field}'")
+        strings.extend(str(v) for v in linter.values())
+    declared = set()
+    for param in pack.get("params", []):
+        if not param.get("name") or not param.get("prompt"):
+            errors.append(f"{rel}: every param needs 'name' and 'prompt'")
+        declared.add(param.get("name"))
+    used = set()
+    for s in strings:
+        used.update(re.findall(r"\{\{(\w+)\}\}", s))
+    for p in sorted(declared - used - {None}):
+        errors.append(f"{rel}: param '{p}' declared but never used")
+    for p in sorted(used - declared):
+        errors.append(f"{rel}: placeholder '{{{{{p}}}}}' not declared in params")
+
 if errors:
     print("Plugin validation FAILED:")
     for e in errors:

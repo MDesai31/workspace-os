@@ -1,0 +1,14 @@
+{
+  "name": "public-repo",
+  "description": "Deny-tier protections for a public repo: secrets files, private keys, force-push to the default branch.",
+  "guardrails": {
+    "bash": [
+      { "name": "pack-no-force-push-default", "match": "git push[^|;&]*(--force|-f )[^|;&]*\\b(main|master)\\b", "action": "deny", "reason": "public-repo pack: force-push to the default branch rewrites shared history. Use a feature branch + PR." }
+    ],
+    "write": [
+      { "name": "pack-no-env-files", "match": "(^|/)\\.env(\\..+)?$", "field": "path", "action": "deny", "reason": "public-repo pack: .env files never enter a public repo. Use environment variables or a gitignored local file." },
+      { "name": "pack-no-private-keys", "match": "-----BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY-----", "field": "content", "action": "deny", "reason": "public-repo pack: private key material in write content. Remove it." }
+    ]
+  },
+  "lint": { "linters": [] }
+}
