@@ -478,3 +478,12 @@ starter packs public-repo + enterprise-clean-room (the UDX-audit hazards product
 a validator packs gate (negative-tested). Spec: docs/specs/2026-08-28-policy-packs-design.md.
 Plan: docs/plans/2026-08-28-policy-packs.md. Decision: D-20260828-pack-stamp-ledger.
 Closes the policy-packs idea.
+
+### A-20260829-docs-refresh-v0271 — refresh README/GUIDE/ARCHITECTURE for v0.25–v0.27 surfaces
+- Workstream: docs
+- Status: done
+- Created: 2026-08-29
+- Completed: 2026-08-29
+- Commit: e95f70c (PR #37, merged to main, v0.27.1)
+
+Caught ARCHITECTURE.md up with everything since v0.21 (diagram now covers /guardrails + packs, /playbook, /handoff, /work-journal, /continuity, propagation matrix, all six hooks; guardrail bullet reflects hard denies + pack-stamped imports); GUIDE hook count + capture-cadence list + live-handoff surfacing fixed; README links conventions/packs.md. The doc-freshness gate kept mentions current but not depth — this closes the depth gap.
