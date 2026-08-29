@@ -1,14 +1,14 @@
 ---
 name: work-journal
-description: Summarize recent work from git history cross-referenced with project tracking (what shipped, which records closed, what's still open), or log this session's accomplishments to the work log. Use on /work-journal, or when the user asks "what did I do this week", "summarize recent work", "status update for the last N days", or says "log this session".
+description: Summarize recent work from git history cross-referenced with project tracking (what shipped, which records closed, what's still open), log this session's accomplishments to the work log, or prep a meeting briefing. Use on /work-journal, or when the user asks "what did I do this week", "summarize recent work", "status update for the last N days", says "log this session", or wants a briefing before a meeting.
 user-invocable: true
 allowed-tools: Read, Bash, Glob, Grep, Write, Edit
-argument-hint: "[since:YYYY-MM-DD] | log"
+argument-hint: "[since:YYYY-MM-DD] | log | prep"
 ---
 
 # Work Journal
 
-Two modes over this repo's history and `<data_root>/project-tracking/`. Per-repo - the repo
+Three modes over this repo's history and `<data_root>/project-tracking/`. Per-repo - the repo
 is the scope (no project codes). The work-log entry shape lives in
 `conventions/project-tracking.md` § "Session continuity: handoffs and the work log".
 (Summary shape adapted from zachburke9/keystone-engine's work-journal skill, MIT -
@@ -59,3 +59,29 @@ Default window: the last 7 days. Read-only; lenient parsing per the house rule.
    `Commits:`, `Records:`) and append it to `<data_root>/project-tracking/work-log.md` only
    on confirmation - create the file with a `# Work log` header line on first use. Sidecar
    auto-commit per Step 0.
+
+## Prep mode: `/work-journal prep`
+
+A read-only briefing for an upcoming meeting - "what happened since we last met, and where
+did the meeting's asks land."
+
+1. Anchor date: the newest file in `<data_root>/project-tracking/meetings/` (by filename
+   date). No meetings dir or files -> fall back to the last `work-log.md` entry's date, else
+   the last 7 days; say which anchor was used.
+2. Run the summary-mode machinery since the anchor.
+3. If the anchor is a meeting file, status each record it extracted: done (with the
+   `Completed:` date from `resolved.md`) or still open.
+4. Render:
+
+   ```
+   MEETING PREP: <repo> - since <anchor date> (<anchor kind>)
+
+   ### Since last meeting
+   <2-5 bullets>
+
+   ### Their asks
+   - <A-id> - <title> (done <date> | open)
+
+   ### Open questions / decisions needed
+   <open D-shaped items, or "none">
+   ```

@@ -50,13 +50,13 @@ points, and nothing is ever written without your confirmation.
 |---|---|---|---|
 | **Set up once (per repo)** | `/project-init` | stamp the tracking + memory scaffold into a repo | [GUIDE](GUIDE.md#setting-up-a-personal-repo) |
 | | `/workspace-init` | mark an enterprise workspace for local-only sidecar data | [GUIDE](GUIDE.md#setting-up-an-enterprise-workspace-sidecar-mode) |
-| **Daily** | `/project-log` | log an action / decision / model-decision; `done` archives; `propagated` records a landing in another checkout | [conventions](conventions/project-tracking.md) |
+| **Daily** | `/project-log` | log an action / decision / model-decision / discovery / meeting; `done` archives; `propagated` records a landing in another checkout; `release-notes` cuts a changelog | [conventions](conventions/project-tracking.md) |
 | | `/project-plan` | park a future intent without starting it | [conventions](conventions/project-tracking.md) |
 | | `/project-status` | read-only status + `brief` "what should I work on next"; `matrix` shows per-checkout propagation in a marked workspace | [GUIDE](GUIDE.md#daily-workflow) |
 | | `/ingest` | capture a durable fact (or `gotcha:` a stale prior) into memory | [conventions](conventions/memory.md) |
 | | `/memory-search` | find a fact by keyword, or its backlinks | [GUIDE](GUIDE.md#daily-workflow) |
 | | `/handoff` | pause an effort into a live handoff record; auto-surfaced at session start | [conventions](conventions/project-tracking.md) |
-| | `/work-journal` | summarize recent work from git + tracking; `log` records the session | [GUIDE](GUIDE.md#daily-workflow) |
+| | `/work-journal` | summarize recent work from git + tracking; `log` records the session; `prep` briefs a meeting | [GUIDE](GUIDE.md#daily-workflow) |
 | **Occasionally** | `/guardrails` | author a deny/warn rule from a described hazard (dry-run proven); `pack` imports versioned policy packs ([format](conventions/packs.md)) | [GUIDE](GUIDE.md#guardrails) |
 | | `/playbook` | author/adopt a procedure that auto-surfaces at trigger time | [conventions](conventions/playbooks.md) |
 | | `/memory-lint` | memory integrity (link graph, index parity, citation freshness) + playbook lint | [GUIDE](GUIDE.md#maintenance-linting-and-updating) |
