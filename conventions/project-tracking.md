@@ -160,6 +160,34 @@ line ceiling (`--max-record-lines`, default 40) or carry a `**MEASURED**` block.
   remain. Never leave a *fully* shipped idea in place: its `Priority:` line keeps counting toward
   the open backlog, so `/project-status` over-reports that tier.
 
+## Session continuity: handoffs and the work log
+
+Mid-task state lives in `<data_root>/project-tracking/handoffs/` — **one live file per
+paused effort**, `handoffs/<effort-slug>.md` (slug: short kebab descriptor, stable across
+re-pauses). A handoff is working state, not history: re-pausing **refreshes the same file**
+(update `Paused:`, rewrite sections; never a second file for one effort), and completing the
+work **deletes it** — `/project-log done` checks `handoffs/` for a file whose `Records:`
+line names the A-id being closed (fallback: slug match against the record title) and, on
+confirmation, deletes it and appends `- Handoff: <slug> (closed)` to the record moving to
+`resolved.md`. Record shape: `templates/handoff.md` — header lines (`Paused:`, `Resume-by:`,
+`Records:`, `Branch:`), a **For you** block (3–5 plain lines), then Mission / In flight /
+At start, read / Traps / Next steps / Out of scope. **Calibrate to the task**: a small
+continuation gets Mission + In flight + Next steps only; never ceremonialize trivia. Every
+path or figure named in a handoff is verified against the live workspace before writing — a
+handoff that transmits a stale path is worse than none. Handoff files name records by plain
+id and are not part of the machine-linted graph (the tracking-wikilink human contract).
+Written by `/handoff`; surfaced at SessionStart by `hooks/capture-cadence.sh`; listed by
+`/project-status`.
+
+Session accomplishments live in `<data_root>/project-tracking/work-log.md` (created on
+first use, header `# Work log`), appended by `/work-journal log`, one dated entry per
+session:
+
+    ## YYYY-MM-DD - <session focus, one phrase>
+    - <2-5 bullets of what was done>
+    - Commits: <shas or "none">
+    - Records: <A-/D- ids touched, or "none">
+
 ## Adopting existing docs (`/tracking-adopt`)
 
 `/tracking-adopt` bulk-applies these record rules to a repo's pre-existing **work-state** docs
