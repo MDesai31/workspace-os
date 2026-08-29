@@ -75,6 +75,11 @@ Complete an action:
 3. **Remove the whole record from `action-items.md`** and **append it to `resolved.md`**.
    (If removing it leaves `action-items.md` with no records, restore the "_No open items yet._"
    placeholder.)
+4. **Handoff check** (`conventions/project-tracking.md` § "Session continuity"): look in
+   `<data_root>/project-tracking/handoffs/` for a file whose `Records:` line names this
+   `<A-id>` (fallback: slug match against the record title). If found, propose deleting it;
+   on confirmation delete the file and append `- Handoff: <slug> (closed)` to the record
+   being moved. Never delete unconfirmed.
 
 ### `propagated <A-id> <folder> [sha]`
 Record that a change landed in another checkout of this project

@@ -43,7 +43,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Borrow (comparison 2026-06-28): give `/project-status` Notion-style **database views** — filter/sort open items by workstream / status / priority.
 - Borrow (keystone 2026-07-05): keystone ships `/project-status`, `/work-journal`, `/meeting-notes`, `/release-notes` + a `release_draft.py` (MIT). Adapt that prose instead of writing it; per D-20260705-keystone-reposition this idea is borrow-first (priority stays mid only because the *adaptation* to our schema is still real work).
 - Borrow refresh (keystone v0.2.0, 2026-08-28): engine republished 2026-08-13 (25 skills); `/work-journal`, `/meeting-notes`, `/release-notes` now ship as polished plugin SKILL.md files — the borrow surface for the remaining roundout items is richer than the July snapshot.
-- Note (market survey 2026-08-28): session-surviving state files are becoming table-stakes (GSD's `STATE.md`/`CONTEXT.md` lineage popularized them market-wide) — captured separately as [[session-state-records]], a sibling of `/work-journal`; plan the two together.
+- Note (market survey 2026-08-28): session-surviving state files are becoming table-stakes (GSD's `STATE.md`/`CONTEXT.md` lineage popularized them market-wide) — shipping as A-20260828-session-continuity together with `/work-journal`.
 
 ### portfolio-registry — cross-repo Layer 3
 - Workstream: portfolio
@@ -337,23 +337,6 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
   shape. Compounds with [[keystone-module-guardrails]]; relates to
   [[guardrail-conversational-authoring]], [[stateful-guardrail-predicates]], hook-starter-library
   (shipped).
-
-### session-state-records — a session-surviving "where was I" record type  (market survey 2026-08-28)
-- Workstream: skills
-- Priority: mid
-- Intended start: alongside the remaining [[tracking-skills-roundout]] work (natural sibling of `/work-journal`)
-- Why/context: tracking is durable but mid-task state is not — nothing records "what's in flight,
-  what was I about to do, what's blocked on what" across sessions. The 2026-08-28 market survey
-  found GSD's `.planning/STATE.md` + `CONTEXT.md` popularized session-surviving state files hard
-  enough that they're near table-stakes across the spec-driven majors, and keystone v0.2.0 ships
-  the Claude-plugin version as `checkpoint`/`handoff`/`pause`/`continue` skills (MIT — borrow-first
-  per D-20260705-keystone-reposition). Distinct from `/work-journal` (what I *did*) — this is what
-  is *mid-flight*. Per D-20260828-build-only-what-native-wont this passes triage: it's a schema
-  (opinionated), and native session-resume restores context, not a reviewable record.
-- To start, future-us needs: adapt keystone's checkpoint/handoff SKILL.md prose to our schema; and
-  a shape decision — a mutable STATE file (GSD-style) conflicts with the append-only instinct, so
-  likelier a dated handoff record that supersedes its predecessor. Relates to
-  [[tracking-skills-roundout]], [[finding-record-class]].
 
 ### transcript-mining-ingest — batch-mine session transcripts for uncaptured facts  (market survey 2026-08-28)
 - Workstream: memory

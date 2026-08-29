@@ -54,12 +54,14 @@ Sections, in order:
    oldest first within each workstream. Untagged records group under `(untagged)`; if the repo
    has no workstream enum and no tagged records, use a single untagged group — never invent
    workstreams.
-3. **Ideas** by priority, high → mid → low: one title line each (name + a one-phrase hook);
+3. **Live handoffs** — one line per file in `<data_root>/project-tracking/handoffs/`:
+   `<slug> — paused <date from its Paused: line>`. No dir or no files → omit the section.
+4. **Ideas** by priority, high → mid → low: one title line each (name + a one-phrase hook);
    `someday`-priority ideas collapse to a single count line.
-4. **Recent decisions** — last ~5, newest first: `ID — title`. Mark superseded decisions
+5. **Recent decisions** — last ~5, newest first: `ID — title`. Mark superseded decisions
    (read rule: an appended `Superseded-by:` line wins over `Status:`).
-5. **Recent resolved** — last ~5, newest first: `ID — title — completed date`.
-6. **Summary** — one line of counts (open actions, ideas by priority tier, decisions,
+6. **Recent resolved** — last ~5, newest first: `ID — title — completed date`.
+7. **Summary** — one line of counts (open actions, ideas by priority tier, decisions,
    resolved).
 
 ## Brief mode (`/project-status brief`)
@@ -80,7 +82,9 @@ Suggested order: <IDs> — priority first, then staleness (oldest Created first)
 ```
 
 Inputs: open action items plus ideas whose `Priority:` is `high` / `mid` / `low` (skip
-`someday`). Action records carry no priority field — place each in a tier by judgment from
+`someday`). Live handoffs (files in `<data_root>/project-tracking/handoffs/`) list at the
+top of IMMEDIATE as `<slug>: paused <date> — resume by reading its handoff file`. Action
+records carry no priority field — place each in a tier by judgment from
 its content and age. Within a tier, oldest `Created:` first. Always end with the suggested
 order line.
 

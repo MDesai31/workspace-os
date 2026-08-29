@@ -55,6 +55,8 @@ points, and nothing is ever written without your confirmation.
 | | `/project-status` | read-only status + `brief` "what should I work on next"; `matrix` shows per-checkout propagation in a marked workspace | [GUIDE](GUIDE.md#daily-workflow) |
 | | `/ingest` | capture a durable fact (or `gotcha:` a stale prior) into memory | [conventions](conventions/memory.md) |
 | | `/memory-search` | find a fact by keyword, or its backlinks | [GUIDE](GUIDE.md#daily-workflow) |
+| | `/handoff` | pause an effort into a live handoff record; auto-surfaced at session start | [conventions](conventions/project-tracking.md) |
+| | `/work-journal` | summarize recent work from git + tracking; `log` records the session | [GUIDE](GUIDE.md#daily-workflow) |
 | **Occasionally** | `/guardrails` | author a deny/warn rule from a described hazard (dry-run proven) | [GUIDE](GUIDE.md#guardrails) |
 | | `/playbook` | author/adopt a procedure that auto-surfaces at trigger time | [conventions](conventions/playbooks.md) |
 | | `/memory-lint` | memory integrity: link graph, index parity, citation freshness | [GUIDE](GUIDE.md#maintenance-linting-and-updating) |
