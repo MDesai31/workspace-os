@@ -96,14 +96,15 @@ and [`conventions/memory.md`](conventions/memory.md).
 In any repo with workspace-os data, a SessionStart hook (`hooks/capture-cadence.sh`) injects
 a short standing instruction: as work happens, Claude watches for durable items — a decision,
 a finished action, a fact, a future intent, a hazard worth a guardrail rule, a repeated
-procedure worth a playbook — and **proposes them as a batch at natural stopping points**
+procedure worth a playbook, a fix landed in another checkout, a pause worth a handoff — and
+**proposes them as a batch at natural stopping points**
 (task done, before a commit). Nothing is written without your confirmation, and every capture
 goes through the relevant skill's full ritual (format, secret-scan, idempotency). In repos
 without workspace-os data the hook stays silent.
 
 ## The automatic hooks
 
-Five hooks ship with the plugin. All of them **fail open**: any error, missing dependency, or
+Six hook scripts ship with the plugin. All of them **fail open**: any error, missing dependency, or
 absent config means silence, never a broken session. Hooks load at session start — after
 installing or updating, restart Claude Code before expecting them.
 
@@ -172,7 +173,9 @@ bash scripts/dispatch-ledger-summary.sh [--repo NAME] [--top N]
 
 `hooks/capture-cadence.sh` (the [capture cadence](#the-capture-cadence)) and
 `hooks/sidecar-memory-context.sh` (in sidecar mode, injects the memory index that in-repo
-mode gets via the CLAUDE.md import).
+mode gets via the CLAUDE.md import). `capture-cadence.sh` also lists any **live handoffs**
+(paused efforts in `project-tracking/handoffs/`) so a session that resumes one starts by
+reading its record instead of re-deriving the state.
 
 ## Adopting an existing repo
 
