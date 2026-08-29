@@ -26,3 +26,4 @@ jobs:
       - run: bash tests/test-playbook-surface.sh
       - run: bash tests/test-checkout-groups.sh
       - run: bash tests/test-pack-import.sh
+      - run: bash tests/test-playbook-lint.sh

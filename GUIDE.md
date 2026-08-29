@@ -26,6 +26,7 @@ A "personal repo" is any repo where committing docs in-tree is fine (your own pr
    - `docs/project-tracking/` — action-items, ideas, decisions-log, resolved, and a README
      seeded with the repo's **workstream tags** (you'll be asked for 3–7 of them: the
      cross-cutting axes of the project, e.g. `pipeline · strategy · ops`).
+   - `docs/playbooks/` — the home for trigger-surfaced procedures (author with `/playbook`).
    - `docs/memory/` — the shared knowledge base plus its `MEMORY.md` index, an
      `@docs/memory/MEMORY.md` import in the repo's `CLAUDE.md` (so every session loads the
      index), and the portable layer: an operator's manual, a vendored `memory_graph.py`
@@ -210,6 +211,10 @@ All adoption is opt-in and propose→confirm→apply; nothing is reshaped silent
   index parity, orphans, citation freshness against the code, tracking-boundary checks) plus
   model-judgment checks. For CI or pre-commit in a data repo:
   `python3 scripts/memory_graph.py --check`.
+- **Playbook integrity:** the same `/memory-lint` run also lints `playbooks/` via
+  `scripts/playbook-lint.sh` — the surfacing hook fails open, so a malformed playbook (bad
+  frontmatter, an invalid trigger regex, a typo'd `surface:` value) just silently never
+  surfaces; the lint is where that becomes visible.
 - **Updating the plugin:** merge to `main`, then on each machine
   `claude plugin update workspace-os@workspace-os` (the full `name@marketplace` form), then
   restart Claude Code. If your marketplace source is a **local directory checkout** (the

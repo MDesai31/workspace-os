@@ -1,6 +1,6 @@
 ---
 name: memory-lint
-description: Check this repo's docs/memory/ for index/file drift, invalid frontmatter, slug mismatches, and broken wikilinks. Use after editing memory by hand, before committing memory changes, or when memory recall seems stale.
+description: Check this repo's docs/memory/ for index/file drift, invalid frontmatter, slug mismatches, and broken wikilinks, plus playbook integrity (dead triggers, malformed frontmatter the surfacing hook would swallow). Use after editing memory or playbooks by hand, before committing memory changes, or when memory recall seems stale.
 user-invocable: true
 allowed-tools: Read, Edit, Bash, Glob, Grep
 ---
@@ -87,6 +87,21 @@ Flags any `A-`/`D-` record whose body exceeds `--max-record-lines` (default 40) 
 `**MEASURED**` block; both belong in a memory fact (`conventions/project-tracking.md` § the
 memory/tracking boundary). Exit 1 on findings.
 
+## Step 1c - playbook integrity
+
+The surfacing hook (`hooks/playbook-surface.sh`) fails open, so a malformed playbook is
+*silent non-surfacing*; this pass is the fail-loud counterpart
+(`conventions/playbooks.md` is the SoT):
+
+    bash "${CLAUDE_PLUGIN_ROOT}/scripts/playbook-lint.sh" "<data_root>/playbooks"
+
+In sidecar mode also pass the workspace tier: append `"<workspace_root>/playbooks"` to the
+same invocation. FAILs are frontmatter the hook would skip or mis-parse, missing
+`name`/`description`, a `name` ≠ filename stem, a trigger ERE `grep -E` rejects (a
+silently-dead trigger), or a `surface` value the hook would silently coerce; NOTEs
+(docs-only, body over 300 lines) are informational. A missing `playbooks/` dir is a note,
+not a failure.
+
 ## Step 2 — model checks (what the script can't judge)
 
 1. **Frontmatter** — each fact file has valid frontmatter with `name`, `description`, and
@@ -97,6 +112,6 @@ memory/tracking boundary). Exit 1 on findings.
 
 ## Step 3 — report
 
-One merged `PASS`/`FAIL` summary listing the specific offenders from both passes. Offer to fix
+One merged `PASS`/`FAIL` summary listing the specific offenders from every pass. Offer to fix
 mechanical issues (missing index line, slug/name mismatch, a mistyped wikilink) but never edit
 fact bodies. Do **not** commit.
