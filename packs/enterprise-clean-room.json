@@ -9,6 +9,8 @@
   "guardrails": {
     "bash": [
       { "name": "pack-no-enterprise-remote", "match": "git[^|;&]*(push|pull|fetch|clone|remote[[:space:]]+add)[^|;&]*{{forbidden_remote_regex}}", "action": "deny", "reason": "enterprise-clean-room pack: git traffic to an enterprise remote from this workspace is a hard boundary." },
+      { "name": "pack-no-gh-to-enterprise-host", "match": "gh[^|;&]*{{forbidden_remote_regex}}", "action": "deny", "reason": "enterprise-clean-room pack: gh invocation naming the enterprise host. gh reaches the remote through the GitHub API, so git-push rules never see it - this boundary is the same one." },
+      { "name": "pack-no-gh-write-ops", "match": "gh[[:space:]]+(pr[[:space:]]+(create|merge|close|edit|reopen)|repo[[:space:]]+(create|delete|edit|sync|fork)|release[[:space:]]+(create|edit|delete)|api[^|;&]*-X[[:space:]]*(POST|PATCH|PUT|DELETE))", "action": "deny", "reason": "enterprise-clean-room pack: gh write operation from a clean-room workspace. gh targets the current checkout's remote - enterprise here - even when no host appears in the command; read-only gh (view/list/checks/status) stays allowed." },
       { "name": "pack-no-tripwire-in-commands", "match": "{{tripwire_regex}}", "action": "deny", "reason": "enterprise-clean-room pack: employer tripwire string in a command. Keep employer content out of this workspace." }
     ],
     "write": [
