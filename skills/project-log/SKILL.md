@@ -1,9 +1,9 @@
 ---
 name: project-log
-description: Log a project action item, decision, or mark one done, in the repo's project tracking. Use whenever a decision (a choice + why), an action to do, or a completed item arises - proactively, not only when asked. Accumulate candidates and propose them as a batch at a natural stopping point rather than interrupting mid-task. The general-purpose tracking entry point.
+description: Log a project action item, decision, discovery, or meeting, mark an item done, or cut release notes, in the repo's project tracking. Use whenever a decision (a choice + why), an action to do, an investigation finding, or a completed item arises - proactively, not only when asked. Accumulate candidates and propose them as a batch at a natural stopping point rather than interrupting mid-task. The general-purpose tracking entry point.
 user-invocable: true
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
-argument-hint: "[action|decision|model-decision|done|propagated] <args>   (e.g. action data/pipeline \"fix the X gap\")"
+argument-hint: "[action|decision|model-decision|done|propagated|discovery|meeting|release-notes] <args>"
 ---
 
 # Project Log
@@ -100,11 +100,52 @@ only — `mode=in-repo` → say propagation applies to marked workspaces only, a
    unless a `Propagated-to:` line for that folder already exists (then say so and write
    nothing). Sidecar auto-commit applies (Step 0).
 
+### `discovery <details>`
+An investigation finding — lighter than a decision. Route before writing
+(`conventions/project-tracking.md` § "Session continuity"):
+
+1. **Durable fact about the codebase** (would survive this effort) → this is memory, not
+   tracking: hand off to `/ingest` and write nothing here. Never duplicate into both.
+2. **Work-state finding** → append the dated discovery entry (the conventions' shape) to
+   `<data_root>/project-tracking/work-log.md`; create the file with a `# Work log` header
+   on first use.
+3. Then ask: does this change anything? Offer to chain into `decision` or `action` mode.
+
+### `meeting <date and/or notes>`
+Structured meeting capture (`conventions/project-tracking.md` § "Meetings"):
+
+1. Parse date (default today; convert relative dates), topic slug, attendees, and content.
+2. Write `<data_root>/project-tracking/meetings/YYYY-MM-DD-<slug>.md`: attendees, narrative
+   notes, open questions.
+3. Extract each decision/action the meeting raised as a real record via `decision` /
+   `action` mode (the ledgers stay SoT); the record body names the meeting file, and the
+   meeting file lists the extracted ids at its top.
+4. Show the meeting file and the extracted records for review.
+
+### `release-notes [since:<ref|date>] [audience:team|leadership]`
+Git history + the decisions log → notes people will read
+(`conventions/project-tracking.md` § "Release notes"). **Never invent a change** — every
+line traces to a real commit or `D-` record; read `git show <sha> --stat` before describing
+a cryptic subject.
+
+1. Window: `since:` if given, else since the last tag (`git describe --tags --abbrev=0`),
+   else the last ~20 commits.
+2. Group commits by theme/version markers (`v\d+\.\d+`) — grouping and translation are the
+   value, never one line per commit. Map `D-` records created in the window to the groups
+   they explain.
+3. Audience `team` (default): concise, technical-but-readable. `leadership`: outcomes and
+   impact, no code/file jargon.
+4. Render: a dated window header, `Highlights` (2-4 lines), grouped changes citing `D-` ids,
+   `Still open` (work explicitly flagged pending). Propose it; on confirmation prepend under
+   a new dated heading (newest first) to `RELEASES.md` — repo root in in-repo mode,
+   `<data_root>/RELEASES.md` in sidecar (never the repo tree). Sidecar auto-commit (Step 0).
+
 ### Quick-add (no mode keyword)
 Infer from the wording: "should/decided/use X instead" → decision; model/experiment vocabulary
 ("champion/challenger", "promoted the model", "chose <architecture>", "validated with
 walk-forward", a run ID) → model-decision; "fix/add/remove/implement" → action; an `A-id` +
-"done/close/finished" → done. If ambiguous, ask.
+"done/close/finished" → done; "found/noticed/turns out/discovered" → discovery; structured
+meeting sections (attendees, agenda, action items) → meeting. If ambiguous, ask.
 
 ## After writing
 Show the user the exact record you added (or moved) and which file it's in. Do **not** commit

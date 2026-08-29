@@ -188,6 +188,33 @@ session:
     - Commits: <shas or "none">
     - Records: <A-/D- ids touched, or "none">
 
+`/project-log discovery` appends investigation findings to the same file, one dated entry
+per finding:
+
+    ## YYYY-MM-DD - discovery: <one-line finding>
+    - <1-3 bullets: what was found, where, what it might change>
+
+A discovery is work-state. A finding that is a durable fact about the codebase (it would
+survive this effort) belongs in memory via `/ingest`, not here — the memory/tracking
+boundary above decides, and content is never duplicated across the two.
+
+## Meetings
+
+`/project-log meeting` captures a structured meeting as
+`<data_root>/project-tracking/meetings/YYYY-MM-DD-<slug>.md` (date = the meeting's; slug =
+short kebab topic): attendees, narrative notes, open questions. Decisions and actions raised
+in the meeting are never recorded in the meeting file alone — each is extracted as a real
+`D-`/`A-` record in the ledgers (same templates, same IDs), the record body naming the
+meeting file and the meeting file listing the extracted ids at its top. The ledgers stay the
+single source of truth; the meeting file holds the narrative they should not.
+
+## Release notes
+
+`/project-log release-notes` renders git history + the decisions log into grouped,
+plain-English notes appended (newest first) to `RELEASES.md` — at the repo root in in-repo
+mode; at `<data_root>/RELEASES.md` in sidecar mode (the repo tree is never touched). The
+hard rule: **never invent a change** — every line traces to a real commit or `D-` record.
+
 ## Adopting existing docs (`/tracking-adopt`)
 
 `/tracking-adopt` bulk-applies these record rules to a repo's pre-existing **work-state** docs

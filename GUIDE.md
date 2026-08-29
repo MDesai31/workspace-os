@@ -70,6 +70,11 @@ do, the daily set is:
 - **`/project-log decision`** — a choice plus the why (`D-YYYYMMDD-slug`, append-only;
   reversals happen by supersession, never edits). **`model-decision`** is the DS/ML variant
   (dataset vintage, validation protocol, one headline metric, a run pointer).
+- **`/project-log discovery`** — an investigation finding, dated into `work-log.md` (a
+  *durable* finding routes to `/ingest` instead). **`meeting`** captures a meeting file and
+  extracts its decisions/actions as real records. **`release-notes`** turns git history +
+  the decisions log into a grouped, plain-English `RELEASES.md` entry (team or leadership
+  audience) — never inventing a change.
 - **`/project-plan`** — a future intent: the why and rough timing, parked, not started.
 - **`/ingest`** — a durable fact about the codebase into `docs/memory/`;
   `gotcha:`/`stale-prior:` routes a corrected assumption to the right home (a CLAUDE.md
@@ -87,7 +92,8 @@ Stopping with work unfinished? **`/handoff`** writes a live record of what's mid
 repo sees it automatically at start — resume by asking to pick it up, and it's deleted when
 the work completes via `/project-log done`. **`/work-journal`** answers "what did I do this
 week" from git history cross-referenced with tracking; **`/work-journal log`** records the
-session in `work-log.md`.
+session in `work-log.md`; **`/work-journal prep`** briefs an upcoming meeting (work since
+the last one, where its asks landed).
 
 Schemas and lifecycle: [`conventions/project-tracking.md`](conventions/project-tracking.md)
 and [`conventions/memory.md`](conventions/memory.md).
