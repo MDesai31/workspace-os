@@ -332,3 +332,20 @@ hazards the engine genuinely cannot express). Spec:
 - Spawns: A-20260824-procedure-playbooks
 
 Considered and rejected: always-after (first call always unguided — the exact measured failure); UserPromptSubmit injection (prompt-scoped, not tool-scoped — fires on user turns, not at the moment of the matching call); always-before (no soft option for advisory-grade procedures).
+
+### D-20260828-build-only-what-native-wont — evolution rule: build only what native Claude Code can't or won't ship
+- Workstream: meta
+- Created: 2026-08-28
+- Status: accepted
+- Rationale: the 2026-08-28 three-lane market survey (tracking/spec frameworks, agent memory, hooks/guardrails) confirmed Anthropic's absorption pattern — native has eaten neutral-convenience categories one at a time (auto mode killed the auto-approver category; auto-memory, hookify, and managed settings each took a pillar's middle). The durable gaps sort into four classes: (1) designs Anthropic already chose against — in-repo PR-reviewable memory (auto-memory is deliberately machine-local) and deterministic auditable policy (their bet is classifier-judged auto mode; native permissions explicitly refuse content-field matching and ship no warn tier); (2) opinionated schemas — append-only decision supersession, capture conventions, adoption that reshapes legacy docs (neutral infrastructure never ships a schema); (3) incentive-inverted seams — vendor neutrality (the AGENTS.md layer) and the `_meta/` sidecar (serves the employee; Anthropic sells to the employer); (4) boundary knowledge only the org holds — `ip_class` provenance walls. Rule: every new surface must be opinionated, deterministic, git-native, or boundary-aware; neutral convenience is never built — it is borrowed, or awaited from native.
+- Consequences: extends D-20260705-keystone-reposition's borrow-first logic from keystone to the whole market; idea triage gains the question "would native plausibly ship this?" — a yes demotes the idea to borrow/await.
+
+Survey context (in-session 2026-08-28): tracking/spec is saturated (spec-kit ~132k★, gstack ~130k★,
+OpenSpec ~66k★, BMAD ~52k★) but none ship decision-supersession, doc adoption, or ambient capture;
+memory is dominated by external DB/services (mem0, claude-mem) with no PR-reviewable+linted+SHA-fresh
+combination anywhere and no sidecar analog at all; enforcement's real competitor is first-party
+hookify (gitignored rules, no dry-run), and `ip_class` + declarative `lint.json` have no market
+analog. No integrated tracking+memory+guardrails per-repo plugin exists. Spawned idea captures (via
+/project-plan, same day): [[session-state-records]], [[transcript-mining-ingest]],
+[[memory-lint-hardening]]; borrow notes on guardrail-conversational-authoring, portfolio-registry,
+tracking-skills-roundout.

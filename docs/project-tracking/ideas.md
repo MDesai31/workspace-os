@@ -43,6 +43,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Borrow (comparison 2026-06-28): give `/project-status` Notion-style **database views** — filter/sort open items by workstream / status / priority.
 - Borrow (keystone 2026-07-05): keystone ships `/project-status`, `/work-journal`, `/meeting-notes`, `/release-notes` + a `release_draft.py` (MIT). Adapt that prose instead of writing it; per D-20260705-keystone-reposition this idea is borrow-first (priority stays mid only because the *adaptation* to our schema is still real work).
 - Borrow refresh (keystone v0.2.0, 2026-08-28): engine republished 2026-08-13 (25 skills); `/work-journal`, `/meeting-notes`, `/release-notes` now ship as polished plugin SKILL.md files — the borrow surface for the remaining roundout items is richer than the July snapshot.
+- Note (market survey 2026-08-28): session-surviving state files are becoming table-stakes (GSD's `STATE.md`/`CONTEXT.md` lineage popularized them market-wide) — captured separately as [[session-state-records]], a sibling of `/work-journal`; plan the two together.
 
 ### portfolio-registry — cross-repo Layer 3
 - Workstream: portfolio
@@ -54,6 +55,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Note (keystone 2026-07-05): keystone's `projects.md` registry solves the *single-workspace* case only; our cross-**separate-repo** portfolio problem remains unsolved there — this idea stays differentiated, not overlap. See D-20260705-keystone-reposition.
 - Note (sidecar 2026-07-07): the "where does it live" blocker is answered for the single-workspace case — workspace-level files under `_meta/` root (D-20260707-sidecar-data-layer). Cross-workspace aggregation remains open.
 - Note (keystone v0.2.0, 2026-08-28): still single-workspace only (`projects.md` registry + `manage_projects.py`); the cross-separate-repo problem remains unsolved on both sides — differentiation holds.
+- Note (market survey 2026-08-28): the lane is opening — OpenSpec "Stores" (beta) does cross-repo planning via a **shared git repo** (= the `_meta/` sidecar pattern with a remote; a candidate answer to the remaining where-does-it-live blocker), and gstack's GBrain puts per-repo **trust tiers** on cross-repo knowledge (`ip_class` thinking applied to the memory tier — adopt that concept if this builds). Two mainstream moves in one season is the demand signal this idea was parked to wait for.
 
 ### engine-hooks — automated upkeep
 - Workstream: workflow
@@ -180,6 +182,11 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
   (propose-confirm-apply, like every other capture skill), and a decision on whether to keep
   competing with hookify or to emit hookify-compatible rules. Relates to hook-starter-library
   (shipped), keystone-module-guardrails.
+- Borrow (hookify, market survey 2026-08-28): bare `/hookify` mines the recent conversation for
+  correctable behaviors and proposes rules — the one feature it has over /guardrails (whose
+  mechanics — dry-run through the real engine, tracked shared config — are strictly better). A
+  "mine this session for near-misses" mode on /guardrails bolts their best discovery onto our
+  better engine. Per D-20260828-build-only-what-native-wont this is a borrow, not a build-alike.
 
 ### stateful-guardrail-predicates — guardrail rules that test state, not just match text  (EC2 audit 2026-08-24)
 - Workstream: workflow
@@ -349,3 +356,50 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
   shape. Compounds with [[keystone-module-guardrails]]; relates to
   [[guardrail-conversational-authoring]], [[stateful-guardrail-predicates]], hook-starter-library
   (shipped).
+
+### session-state-records — a session-surviving "where was I" record type  (market survey 2026-08-28)
+- Workstream: skills
+- Priority: mid
+- Intended start: alongside the remaining [[tracking-skills-roundout]] work (natural sibling of `/work-journal`)
+- Why/context: tracking is durable but mid-task state is not — nothing records "what's in flight,
+  what was I about to do, what's blocked on what" across sessions. The 2026-08-28 market survey
+  found GSD's `.planning/STATE.md` + `CONTEXT.md` popularized session-surviving state files hard
+  enough that they're near table-stakes across the spec-driven majors, and keystone v0.2.0 ships
+  the Claude-plugin version as `checkpoint`/`handoff`/`pause`/`continue` skills (MIT — borrow-first
+  per D-20260705-keystone-reposition). Distinct from `/work-journal` (what I *did*) — this is what
+  is *mid-flight*. Per D-20260828-build-only-what-native-wont this passes triage: it's a schema
+  (opinionated), and native session-resume restores context, not a reviewable record.
+- To start, future-us needs: adapt keystone's checkpoint/handoff SKILL.md prose to our schema; and
+  a shape decision — a mutable STATE file (GSD-style) conflicts with the append-only instinct, so
+  likelier a dated handoff record that supersedes its predecessor. Relates to
+  [[tracking-skills-roundout]], [[finding-record-class]].
+
+### transcript-mining-ingest — batch-mine session transcripts for uncaptured facts  (market survey 2026-08-28)
+- Workstream: memory
+- Priority: low
+- Intended start: opportunistic, after the roundout
+- Why/context: capture today is proactive-in-session (capture-cadence hook + model-invocable
+  skills), but whatever slips past a session is gone. claude-memory-compiler (~1.3k★) runs a
+  nightly "compiler" over session logs producing cross-referenced knowledge articles; the
+  transferable half is the *mining*, not the compiling — a batch mode that reads recent transcripts
+  (`~/.claude/projects/<project>/`), extracts uncaptured decision/fact-shaped moments, and proposes
+  them as `/ingest` / `/project-log` candidates. Confirm-gated like every capture skill — the
+  proposal batch is the output, never direct writes.
+- To start, future-us needs: transcript format handling, a dedupe pass against existing
+  facts/records, and cost bounds (mining is LLM work — relates to [[dispatch-ledger]]'s cost
+  discipline). Relates to [[integrity-auditor]] (same batch-cadence shape).
+
+### memory-lint-hardening — path-existence + contradiction checks  (market survey 2026-08-28)
+- Workstream: memory
+- Priority: low
+- Intended start: path-existence fits any memory_graph.py touch (an afternoon); contradiction pass with the next /memory-lint slice
+- Why/context: two survey borrows, one deterministic and one judged. (a) agents-lint verifies that
+  file paths referenced in memory/instruction files actually exist — cheap, deterministic, catches
+  "a stale fact names a dead file", and belongs in `memory_graph.py --check`. (b)
+  claude-memory-compiler's linter includes a fact-vs-fact **contradiction** check — LLM-judged, so
+  it belongs in the `/memory-lint` skill layer, never the deterministic script (same
+  script-vs-judgment split the plugin already uses everywhere).
+- To start, future-us needs: (a) a path-reference extractor + existence check with an opt-out for
+  illustrative paths; (b) a contradiction-pass prompt shape and where its findings land (advisory
+  bucket like UNVERIFIED-SINCE?). Relates to [[fact-reverification-runner]],
+  [[memory-restamp-flow]].
