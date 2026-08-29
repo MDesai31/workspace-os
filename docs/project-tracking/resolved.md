@@ -446,3 +446,19 @@ docs/specs/2026-08-28-one-project-many-checkouts-design.md. Plan:
 docs/plans/2026-08-28-one-project-many-checkouts.md. Decision:
 D-20260828-propagation-intent-fact-lines.
 Closes the one-project-many-checkouts idea (both remaining halves).
+
+### A-20260828-session-continuity — /handoff records + surfacing + /work-journal
+- Workstream: skills
+- Status: done
+- Created: 2026-08-28
+- Completed: 2026-08-28
+- Commit: 9a33436 (PR #35, merged to main, v0.26.0)
+
+The session-pair slice of session-state-records + tracking-skills-roundout (borrow-first
+from keystone v0.2.0, minus his draft-PR/registry machinery): the handoff record class
+(conventions § "Session continuity" + templates/handoff.md, live file per effort), the
+model-invocable /handoff skill, SessionStart surfacing via capture-cadence (18-case test),
+handoff deletion in /project-log done + listing in /project-status, and /work-journal
+(summary + log). Spec: docs/specs/2026-08-28-session-continuity-design.md. Plan:
+docs/plans/2026-08-28-session-continuity.md. Decision: D-20260828-handoff-live-file-lifecycle.
+Closes the session-state-records idea; ships the work-journal half of tracking-skills-roundout.

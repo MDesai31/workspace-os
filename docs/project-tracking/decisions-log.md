@@ -372,3 +372,6 @@ schema + matrix v0.25.0). See resolved.md A-20260828-checkout-propagation.
 - Spawns: A-20260828-session-continuity
 
 Design: docs/specs/2026-08-28-session-continuity-design.md (brainstormed + approved 2026-08-28).
+
+Closes session-state-records (idea COMPLETE, v0.26.0). tracking-skills-roundout ships its
+/work-journal half the same release; see that idea's Shipped annotation.
