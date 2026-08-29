@@ -3,7 +3,7 @@ name: project-log
 description: Log a project action item, decision, or mark one done, in the repo's project tracking. Use whenever a decision (a choice + why), an action to do, or a completed item arises - proactively, not only when asked. Accumulate candidates and propose them as a batch at a natural stopping point rather than interrupting mid-task. The general-purpose tracking entry point.
 user-invocable: true
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
-argument-hint: "[action|decision|model-decision|done] <workstream> <details>   (e.g. action data/pipeline \"fix the X gap\")"
+argument-hint: "[action|decision|model-decision|done|propagated] <args>   (e.g. action data/pipeline \"fix the X gap\")"
 ---
 
 # Project Log
@@ -75,6 +75,25 @@ Complete an action:
 3. **Remove the whole record from `action-items.md`** and **append it to `resolved.md`**.
    (If removing it leaves `action-items.md` with no records, restore the "_No open items yet._"
    placeholder.)
+
+### `propagated <A-id> <folder> [sha]`
+Record that a change landed in another checkout of this project
+(`conventions/project-tracking.md` § "Propagation across checkouts"). Sidecar workspaces
+only — `mode=in-repo` → say propagation applies to marked workspaces only, and stop.
+
+1. Run `bash "${CLAUDE_PLUGIN_ROOT}/scripts/checkout-groups.sh" "<workspace_root>"` and
+   group its lines by `key=`.
+2. Locate `<A-id>` in `action-items.md`, then `resolved.md`, under
+   `<workspace_root>/<f>/project-tracking/` for EVERY folder `<f>` in the grouped projects
+   — the record may live in a sibling checkout's root. Not found → list the locations
+   searched and stop (a write tool should not guess).
+3. `<folder>` must be in the record's project group; otherwise list the valid folders and
+   stop.
+4. If the record has no `- Propagation:` line, propose one (default `all`) and append it on
+   confirmation before anything else.
+5. Append `- Propagated-to: <folder> <today YYYY-MM-DD> [sha]` to the record's body —
+   unless a `Propagated-to:` line for that folder already exists (then say so and write
+   nothing). Sidecar auto-commit applies (Step 0).
 
 ### Quick-add (no mode keyword)
 Infer from the wording: "should/decided/use X instead" → decision; model/experiment vocabulary

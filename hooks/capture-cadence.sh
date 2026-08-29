@@ -34,6 +34,7 @@ As you work in this repo, watch for durable items worth recording and capture th
 - a future intent -> /project-plan
 - a hazard or near-miss worth a permanent rule -> /guardrails
 - a repeated multi-step procedure -> /playbook
+- a fix landed in another checkout of this project -> /project-log propagated
 
 Do not interrupt mid-task. Accumulate candidates and PROPOSE them as a batch at a natural stopping
 point (task done, before a commit). On the user's confirmation, invoke the relevant skill so the
