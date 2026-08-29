@@ -429,3 +429,16 @@ landed on our authoring pipeline unchanged).
 Closes finding-record-class (idea COMPLETE, v0.32.0). The UDX register's actual adoption is
 usage on the EC2 machine via /tracking-adopt.
 
+### D-20260829-markdown-stays-canonical — tracking stays markdown-canonical; Projects-canonical rejected; one-way mirror evidence-gated
+- Workstream: schema
+- Created: 2026-08-29
+- Status: accepted
+- Rationale: Projects-canonical is structurally incompatible with sidecar mode (the local-only no-remote _meta layer cannot have its canon in GitHub's cloud - the data model would fork in two), inverts D-20260828-build-only-what-native-wont (migrates canon onto the platform-surface class the strategy avoids; GitHub already sunset Projects classic once), and turns the deterministic layer (memory_graph link resolution, merge=union, the AGENTS.md vendor-neutral layer) into PAT-gated network calls - the surface shape the EC2 audit measured at 1-3/10 adoption. User-owned Projects v2 boards additionally need a classic PAT: standing secret surface for a plugin that needs none.
+- Consequences: no build now - /project-log release-notes already serves the outward-readable view. The one-way mirror (files -> board, board never an input) is deferred behind recorded re-evaluation triggers: a second regular human reader of a tracked repo's status; portfolio-registry going active (a board is then a candidate RENDERER of its registry, never the registry); GitHub removing the classic-PAT requirement. If built: dormant-by-default with the integrity-auditor cloud-tier hardening, adapted from Zach's workflows.
+- Spawns: none
+
+Full weighing: docs/specs/2026-08-29-github-native-tracking-decision.md.
+
+Closes github-native-tracking (idea COMPLETE - it was captured as a decision to deliberate;
+deciding was the work).
+

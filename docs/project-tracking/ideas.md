@@ -30,6 +30,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Note (keystone 2026-07-05): keystone's `projects.md` registry solves the *single-workspace* case only; our cross-**separate-repo** portfolio problem remains unsolved there — this idea stays differentiated, not overlap. See D-20260705-keystone-reposition.
 - Note (sidecar 2026-07-07): the "where does it live" blocker is answered for the single-workspace case — workspace-level files under `_meta/` root (D-20260707-sidecar-data-layer). Cross-workspace aggregation remains open.
 - Note (keystone v0.2.0, 2026-08-28): still single-workspace only (`projects.md` registry + `manage_projects.py`); the cross-separate-repo problem remains unsolved on both sides — differentiation holds.
+- Note (2026-08-29): per D-20260829-markdown-stays-canonical, if this builds, a GitHub Projects board is a candidate RENDERER of the registry, never the registry itself; that decision also lists portfolio-registry going active as a mirror re-evaluation trigger.
 - Note (market survey 2026-08-28): the lane is opening — OpenSpec "Stores" (beta) does cross-repo planning via a **shared git repo** (= the `_meta/` sidecar pattern with a remote; a candidate answer to the remaining where-does-it-live blocker), and gstack's GBrain puts per-repo **trust tiers** on cross-repo knowledge (`ip_class` thinking applied to the memory tier — adopt that concept if this builds). Two mainstream moves in one season is the demand signal this idea was parked to wait for.
 
 ### engine-hooks — automated upkeep
@@ -41,12 +42,6 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - **Shipped (2026-08-13, the capture nudge):** a scoped SessionStart hook (`hooks/capture-cadence.sh`) injects a proactive, batch-at-boundaries capture cadence in workspace-os repos, paired with making the capture skills model-invocable. See `resolved.md` A-20260812-proactive-capture-cadence. Remaining: the `Stop`-hook variant and target-repo CI wiring of the `--check` gate.
 - To start, future-us needs: a `Stop` hook nudging "log what you decided this session," and target-repo wiring for the `--check` gate.
 
-### github-native-tracking — tracking surface in GitHub Issues/Projects (a decision to deliberate)  (brainstorm 2026-06-28)
-- Workstream: schema
-- Priority: mid
-- Intended start: decide before building — this forks the data model
-- Why/context: tracking today is markdown-only (append-`union` files). Zach's repo pushes tracking into GitHub-native surfaces: issue templates (`effort`/`task`/`tracking`), a `project-autofill` workflow, and a `project-weekly-update` workflow that posts status to a GitHub **Projects v2** board via GraphQL (`createProjectV2StatusUpdate`). Bigger visibility and a real board, but a heavier model and a potential second source of truth. Capture as a *decision to make*, not a build: stay markdown-canonical (portable, offline, diff-friendly, the current design) or adopt GitHub Projects (richer, needs PATs + online)?
-- To start, future-us needs: a decision spec weighing markdown-canonical vs Projects-canonical (or a one-way sync between them); if adopted, issue templates + a Projects-v2 GraphQL workflow (PAT with `project` scope — note: user-owned boards need a classic PAT). Relates to [[portfolio-registry]], tracking-skills-roundout (shipped).
 
 ### leakage-audit-skill — reusable ML leakage checklist  (brainstorm 2026-06-28)
 - Workstream: skills
