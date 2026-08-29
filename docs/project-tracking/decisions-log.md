@@ -234,6 +234,11 @@ Design: `docs/specs/2026-08-12-proactive-capture-cadence-design.md`. Plan: `docs
 
 Spec: docs/specs/2026-07-12-project-status-design.md. First sub-slice of tracking-skills-roundout.
 
+Closes tracking-skills-roundout (idea COMPLETE across v0.19.0 + v0.26.0 + v0.29.0:
+/project-status, /work-journal summary+log+prep, /project-log discovery/meeting/release-notes).
+The portfolio mode was never this idea's to ship - it lives in portfolio-registry's scope.
+
+
 ### D-20260817-portable-refresh-scope — --refresh covers plugin-owned files only, never AGENTS.md
 - Workstream: memory
 - Created: 2026-08-17

@@ -33,19 +33,6 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Borrow (keystone 2026-07-05): keystone ships this whole layer, polished — `hooks-registry.json` (each hook's FULL definition, so a disabled hook is always restorable), `manage_hooks.py` (matches by script basename across project/user scopes, `--dry-run` everywhere), `manage_skills.py`/`manage_projects.py`, the `/workspace` panel skill, a `workspace-guide` agent, `examples/blank-module/`. All MIT. Vendor/adapt; our `hooks/guardrail.sh` becomes the first registry entry. See D-20260705-keystone-reposition.
 - To start, future-us needs: vendor keystone's registry + manage scripts, adapt paths/idioms to the plugin layout, register the guardrail engine as the first entry.
 
-### tracking-skills-roundout — fuller tracking surface
-- Workstream: skills
-- Priority: mid
-- Intended start: incremental, alongside real use
-- Why/context: SP1 ships action/decision/done + plan; the full set adds visibility and capture modes.
-- **Shipped (v0.19.0, 2026-08-14):** `/project-status` (report + brief + workstream/priority filters) — first sub-slice; keystone's registry/set-mode deliberately dropped (per-repo tracking has no project registry). See `resolved.md` A-20260712-project-status. Decision: D-20260712-project-status-design. Remaining: `/work-journal`, extra `/project-log` modes (`discovery`, `meeting-notes`, `release-notes`), `/project-status` portfolio mode (blocked on [[portfolio-registry]]).
-- **Shipped (v0.26.0, 2026-08-28):** `/work-journal` (summary + log; keystone-adapted, registry parts dropped) — see `resolved.md` A-20260828-session-continuity. Remaining: extra `/project-log` modes (`discovery`, `meeting-notes`, `release-notes`), `/work-journal prep`, `/project-status` portfolio mode (blocked on [[portfolio-registry]]).
-- To start, future-us needs: `/project-status` (summarize open items by workstream), `/work-journal` (what I did this session), and extra `/project-log` modes — `discovery` (→ a `work-log.md`), `meeting-notes`, `release-notes` (→ `RELEASES.md`/CHANGELOG).
-- Borrow (comparison 2026-06-28): give `/project-status` Notion-style **database views** — filter/sort open items by workstream / status / priority.
-- Borrow (keystone 2026-07-05): keystone ships `/project-status`, `/work-journal`, `/meeting-notes`, `/release-notes` + a `release_draft.py` (MIT). Adapt that prose instead of writing it; per D-20260705-keystone-reposition this idea is borrow-first (priority stays mid only because the *adaptation* to our schema is still real work).
-- Borrow refresh (keystone v0.2.0, 2026-08-28): engine republished 2026-08-13 (25 skills); `/work-journal`, `/meeting-notes`, `/release-notes` now ship as polished plugin SKILL.md files — the borrow surface for the remaining roundout items is richer than the July snapshot.
-- Note (market survey 2026-08-28): session-surviving state files are becoming table-stakes (GSD's `STATE.md`/`CONTEXT.md` lineage popularized them market-wide) — shipping as A-20260828-session-continuity together with `/work-journal`.
-
 ### portfolio-registry — cross-repo Layer 3
 - Workstream: portfolio
 - Priority: someday
@@ -72,7 +59,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Priority: mid
 - Intended start: decide before building — this forks the data model
 - Why/context: tracking today is markdown-only (append-`union` files). Zach's repo pushes tracking into GitHub-native surfaces: issue templates (`effort`/`task`/`tracking`), a `project-autofill` workflow, and a `project-weekly-update` workflow that posts status to a GitHub **Projects v2** board via GraphQL (`createProjectV2StatusUpdate`). Bigger visibility and a real board, but a heavier model and a potential second source of truth. Capture as a *decision to make*, not a build: stay markdown-canonical (portable, offline, diff-friendly, the current design) or adopt GitHub Projects (richer, needs PATs + online)?
-- To start, future-us needs: a decision spec weighing markdown-canonical vs Projects-canonical (or a one-way sync between them); if adopted, issue templates + a Projects-v2 GraphQL workflow (PAT with `project` scope — note: user-owned boards need a classic PAT). Relates to [[portfolio-registry]], [[tracking-skills-roundout]].
+- To start, future-us needs: a decision spec weighing markdown-canonical vs Projects-canonical (or a one-way sync between them); if adopted, issue templates + a Projects-v2 GraphQL workflow (PAT with `project` scope — note: user-owned boards need a classic PAT). Relates to [[portfolio-registry]], tracking-skills-roundout (shipped).
 
 ### leakage-audit-skill — reusable ML leakage checklist  (brainstorm 2026-06-28)
 - Workstream: skills
@@ -106,7 +93,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - **Shipped (2026-07-23, the search/backlink view):** `scripts/memory_graph.py` gained `--search QUERY` (name + description substring) and `--backlinks NODE` (LINKS OUT + BACKLINKS from the wikilink graph), surfaced by the new `/memory-search` skill. See `resolved.md` A-20260723-memory-search and `decisions-log.md` D-20260723-memory-search-scope. Remaining: the note-templates set, and the optional property-views by type/tag.
 - **Shipped (2026-07-27, the note-templates half - gotcha flavor):** `/ingest gotcha:` captures a stale-prior and routes it via the boundary test - a confirmed imperative bullet in a managed CLAUDE.md section (in-repo only, via the idempotent `scripts/claude-md-upsert.sh`) or a `docs/memory/` fact with the gotcha body shape; the flavor is documented in `conventions/memory.md` § Recurring flavors. See `resolved.md` A-20260727-ingest-gotcha and `decisions-log.md` D-20260727-ingest-gotcha-claudemd. Remaining: the optional property-views by type/tag.
 - **Shipped (2026-08-12, citation-freshness lint):** `memory_graph.py --check-citations` verifies `file:NNN` and `` `path::symbol` `` citations against the source tree (definition-block containment; nearby non-definition tokens are UNANCHORED not stale; ambiguous basenames flagged), wired into `/memory-lint`. See `resolved.md` A-20260812-memory-hygiene-lints. Pairs with the captured memory-volatility-field (shipped) (`verified-against` would give it an exact baseline).
-- To start, future-us needs: a `/memory-search` entrypoint reading `memory_graph.py --json` output, a templates set; decide whether templates live in the plugin or `docs/memory/`. Relates to SP2-memory (shipped), stale-priors-memory (shipped), [[tracking-skills-roundout]].
+- To start, future-us needs: a `/memory-search` entrypoint reading `memory_graph.py --json` output, a templates set; decide whether templates live in the plugin or `docs/memory/`. Relates to SP2-memory (shipped), stale-priors-memory (shipped), tracking-skills-roundout (shipped).
 
 ### keystone-module-guardrails — package the guardrail engine as a keystone utility module  (keystone 2026-07-05)
 - Workstream: meta

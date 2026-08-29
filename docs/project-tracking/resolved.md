@@ -505,3 +505,18 @@ sed/grep-E parsing dialect, so lint-clean implies hook-parseable; 19/19 TDD case
 /memory-lint Step 1c wiring (repo + workspace tiers), and the /project-init playbooks/ scaffold
 stamp (templates/playbooks/README.md; skip-if-exists). Closes the procedure-playbooks idea
 (UDX five-doc adoption = usage on the EC2 machine).
+
+### A-20260829-tracking-roundout — /project-log discovery+meeting+release-notes modes, /work-journal prep
+- Workstream: skills
+- Status: done
+- Completed: 2026-08-29
+- Commit: 108b6a5 (PR #39, merged to main, v0.29.0)
+- Created: 2026-08-29
+
+The tracking-skills-roundout idea's remaining modes, keystone-v0.2.0-adapted (registry parts
+dropped, memory-boundary routing added). Spec: docs/specs/2026-08-29-tracking-roundout-design.md.
+
+Shipped /project-log discovery (work-log entries; durable facts route to /ingest), meeting
+(meetings/ file + ledger extraction, ledgers stay SoT), release-notes (RELEASES.md, never-invent
+rule), and /work-journal prep (read-only briefing). Conventions gained Meetings + Release notes
+sections. Closes the tracking-skills-roundout idea; portfolio mode stays in portfolio-registry.
