@@ -196,23 +196,6 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - To start, future-us needs: the `Task` PreToolUse surface, a probe-registry shape, and a
   session-scoped record of which probes have run.
 
-### procedure-playbooks — an artifact class for multi-step procedures, surfaced at trigger time  (EC2 audit 2026-08-24)
-- Workstream: skills
-- Priority: high
-- Intended start: next artifact-class slice
-- **Shipped (v0.24.0, 2026-08-24):** shape (`conventions/playbooks.md` + template) + trigger-time surfacing hook (before=deny-once / after=inject, per-playbook, default before — D-20260824-playbook-surface-before-default) + `/playbook` author/adopt/list. See `resolved.md` A-20260824-procedure-playbooks. Remaining follow-ups: `/project-init` stamps `playbooks/`, a `/memory-lint` playbook pass; UDX's five docs adopt via `/playbook adopt` on that machine.
-- Why/context: **MEASURED: 1,063 lines across five files in `_meta/conventions/`** (Snowflake
-  querying, notebook editing, git-across-checkouts, run triage) are hand-rolled because the plugin
-  has no artifact class for them. Memory is one-fact-per-file and a `type: convention` fact cannot
-  hold a 300-line procedure; tracking records are work-state, not how-to. The tell that prose
-  routing is failing: the workspace INDEX.md literally pleads "read the relevant one before writing
-  queries, not after they fail." A playbook shape (trigger, preconditions, steps, verify, known
-  traps) plus **trigger-time surfacing** (the Snowflake playbook loads on first `sfq.py` invocation,
-  not by hoping the model recalls it) is the fix. Distinct from memory-backlinks-search's note
-  templates, which are memory *flavors* (the gotcha type), not procedures.
-- To start, future-us needs: the playbook shape, a home (`docs/playbooks/`?), and the surfacing
-  mechanism; a PreToolUse hook matching the trigger seems likelier than always-loaded context.
-
 ### finding-record-class — a record type for findings and questions, which close on evidence  (EC2 audit 2026-08-24)
 - Workstream: schema
 - Priority: mid

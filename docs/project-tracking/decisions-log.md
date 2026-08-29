@@ -338,6 +338,9 @@ A-20260824-dispatch-ledger).
 
 Considered and rejected: always-after (first call always unguided — the exact measured failure); UserPromptSubmit injection (prompt-scoped, not tool-scoped — fires on user turns, not at the moment of the matching call); always-before (no soft option for advisory-grade procedures).
 
+Closes procedure-playbooks (idea COMPLETE, v0.24.0 core + v0.28.0 follow-ups: init stamp +
+playbook lint). The UDX five-doc adoption is usage on that machine, not plugin work.
+
 ### D-20260828-build-only-what-native-wont — evolution rule: build only what native Claude Code can't or won't ship
 - Workstream: meta
 - Created: 2026-08-28

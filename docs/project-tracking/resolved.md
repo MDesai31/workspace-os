@@ -487,3 +487,21 @@ Closes the policy-packs idea.
 - Commit: e95f70c (PR #37, merged to main, v0.27.1)
 
 Caught ARCHITECTURE.md up with everything since v0.21 (diagram now covers /guardrails + packs, /playbook, /handoff, /work-journal, /continuity, propagation matrix, all six hooks; guardrail bullet reflects hard denies + pack-stamped imports); GUIDE hook count + capture-cadence list + live-handoff surfacing fixed; README links conventions/packs.md. The doc-freshness gate kept mentions current but not depth — this closes the depth gap.
+
+### A-20260829-playbook-followups — /project-init stamps playbooks/ + deterministic playbook lint
+- Workstream: skills
+- Status: done
+- Completed: 2026-08-29
+- Commit: 4409b1a (PR #38, merged to main, v0.28.0)
+- Created: 2026-08-29
+
+Plugin-side remainder of the shipped procedure-playbooks idea: stamp the playbooks/ scaffold at
+init, and lint the silent failure modes of the fail-open surfacing hook (bad frontmatter, dead
+ERE triggers, coerced surface values) via scripts/playbook-lint.sh, wired into /memory-lint.
+Spec: docs/specs/2026-08-29-playbook-followups-design.md.
+
+Shipped scripts/playbook-lint.sh (fail-loud counterpart to the fail-open surfacing hook; same
+sed/grep-E parsing dialect, so lint-clean implies hook-parseable; 19/19 TDD cases, in CI),
+/memory-lint Step 1c wiring (repo + workspace tiers), and the /project-init playbooks/ scaffold
+stamp (templates/playbooks/README.md; skip-if-exists). Closes the procedure-playbooks idea
+(UDX five-doc adoption = usage on the EC2 machine).
