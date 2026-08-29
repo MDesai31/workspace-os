@@ -85,16 +85,18 @@ sidecar workspaces:
 
     checkout-groups.sh <workspace_root>
 
-For each directory directly under `<workspace_root>` (excluding `_meta`): if it is a git
+For each directory at depth 1 - and depth 2 under non-repo directories (the resolver
+supports nested repos) - under the workspace root (excluding `_meta`): if it is a git
 repo with an `origin` remote, normalize the URL - strip scheme, credentials, and trailing
-`.git`; rewrite `git@host:path` to `host/path`; lowercase the host - and emit one line:
+`.git`; rewrite `git@host:path` to `host/path`; lowercase the key - and emit one line:
 
     project=<repo-basename> key=<normalized-url> folder=<name> branch=<current-branch>
 
 Detached HEAD emits `branch=` empty. Non-repos and no-remote folders are skipped silently.
 Fail-loud only when `<workspace_root>` is missing/unreadable (a read tool that errors should
 say so - the summary-script posture). Plain bash + git, no jq. Skills consume these lines
-and never re-derive grouping in prose.
+and never re-derive grouping in prose. Accepts the workspace root or the `_meta` dir itself
+(resolve-data-root's `workspace_root`); a trailing `_meta` component is normalized away.
 
 ### 3. `/project-status matrix` - the view (read-only)
 

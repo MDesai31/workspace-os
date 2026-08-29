@@ -50,9 +50,9 @@ points, and nothing is ever written without your confirmation.
 |---|---|---|---|
 | **Set up once (per repo)** | `/project-init` | stamp the tracking + memory scaffold into a repo | [GUIDE](GUIDE.md#setting-up-a-personal-repo) |
 | | `/workspace-init` | mark an enterprise workspace for local-only sidecar data | [GUIDE](GUIDE.md#setting-up-an-enterprise-workspace-sidecar-mode) |
-| **Daily** | `/project-log` | log an action / decision / model-decision; `done` archives | [conventions](conventions/project-tracking.md) |
+| **Daily** | `/project-log` | log an action / decision / model-decision; `done` archives; `propagated` records a landing in another checkout | [conventions](conventions/project-tracking.md) |
 | | `/project-plan` | park a future intent without starting it | [conventions](conventions/project-tracking.md) |
-| | `/project-status` | read-only status + `brief` "what should I work on next" | [GUIDE](GUIDE.md#daily-workflow) |
+| | `/project-status` | read-only status + `brief` "what should I work on next"; `matrix` shows per-checkout propagation in a marked workspace | [GUIDE](GUIDE.md#daily-workflow) |
 | | `/ingest` | capture a durable fact (or `gotcha:` a stale prior) into memory | [conventions](conventions/memory.md) |
 | | `/memory-search` | find a fact by keyword, or its backlinks | [GUIDE](GUIDE.md#daily-workflow) |
 | **Occasionally** | `/guardrails` | author a deny/warn rule from a described hazard (dry-run proven) | [GUIDE](GUIDE.md#guardrails) |
