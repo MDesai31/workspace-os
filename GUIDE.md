@@ -81,6 +81,13 @@ do, the daily set is:
 In a marked workspace with several checkouts of one repo, log where a fix has landed with
 `/project-log propagated` and see what each checkout still needs with `/project-status matrix`.
 
+Stopping with work unfinished? **`/handoff`** writes a live record of what's mid-flight
+(mission, traps, next steps) into `project-tracking/handoffs/`; your next session in the
+repo sees it automatically at start — resume by asking to pick it up, and it's deleted when
+the work completes via `/project-log done`. **`/work-journal`** answers "what did I do this
+week" from git history cross-referenced with tracking; **`/work-journal log`** records the
+session in `work-log.md`.
+
 Schemas and lifecycle: [`conventions/project-tracking.md`](conventions/project-tracking.md)
 and [`conventions/memory.md`](conventions/memory.md).
 
