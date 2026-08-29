@@ -35,10 +35,30 @@ As you work in this repo, watch for durable items worth recording and capture th
 - a hazard or near-miss worth a permanent rule -> /guardrails
 - a repeated multi-step procedure -> /playbook
 - a fix landed in another checkout of this project -> /project-log propagated
+- stopping with work unfinished -> /handoff
 
 Do not interrupt mid-task. Accumulate candidates and PROPOSE them as a batch at a natural stopping
 point (task done, before a commit). On the user's confirmation, invoke the relevant skill so the
 record follows its full ritual (format, the AGENTS.md/CLAUDE.md boundary test, secret-scan,
 idempotency). Skip trivia; capture only what future-you could not re-derive.
 EOF
+
+# Live handoffs: surface paused efforts (conventions/project-tracking.md § Session continuity).
+# Fail open: any error in this block must not break the hook.
+hdir="$data_root/project-tracking/handoffs"
+if [ -n "$data_root" ] && [ -d "$hdir" ]; then
+  lines=""
+  for f in "$hdir"/*.md; do
+    [ -f "$f" ] || continue
+    slug="$(basename "$f" .md)"
+    paused="$(sed -n 's/^- Paused: //p' "$f" 2>/dev/null | head -1)"
+    [ -n "$paused" ] || paused="unknown"
+    lines="${lines}- ${slug} (paused ${paused})
+"
+  done
+  if [ -n "$lines" ]; then
+    printf '\n## Live handoffs\n%b' "$lines"
+    printf 'If the user'\''s request matches one of these efforts, READ that handoff file fully before\nstarting work; refresh it as the work moves, and delete it via /project-log done when the\neffort completes.\n'
+  fi
+fi
 exit 0
