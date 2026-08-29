@@ -442,3 +442,14 @@ Full weighing: docs/specs/2026-08-29-github-native-tracking-decision.md.
 Closes github-native-tracking (idea COMPLETE - it was captured as a decision to deliberate;
 deciding was the work).
 
+### D-20260829-finish-task-superseded — SP3-finish-task closed: natives ate the orchestrator, a playbook holds the ritual
+- Workstream: workflow
+- Created: 2026-08-29
+- Status: accepted
+- Rationale: the June capture predates two things that consumed its scope from both ends. The generic half (review -> verify -> commit -> PR) is now covered by borrowed/native surfaces (/commit-push-pr, superpowers finishing-a-development-branch + verification-before-completion, /code-review) - building a sequencer over them is the build-alike D-20260828-build-only-what-native-wont forbids. The differentiated half (the tracking close-out: resolved record with merge SHA, Closes line, idea removal, wikilink repoint, memory_graph check, plugin update) is a PROCEDURE, not an orchestrator - and the playbook artifact class (v0.24.0, which postdates the idea) is built for exactly that shape. Codified as docs/playbooks/ship-a-slice.md (trigger: opening or merging a PR via gh, surface before), lint-clean. The keystone /finish-task borrow surface also shrank: their ritual binds to a registry and sequential-ID model our close-out has since diverged from (F- records, ship-close protocol, sidecar commits).
+- Consequences: no /finish-task skill will be built; the ship ritual lives as a playbook in this repo (and any repo can author its own). If a future multi-repo release ritual outgrows a playbook, that is a new idea with new evidence, not a revival of this one.
+- Spawns: none
+
+Closes SP3-finish-task (idea CLOSED superseded - not shipped; the surviving slice was
+captured as the ship-a-slice playbook, first playbook dogfooded in this repo).
+

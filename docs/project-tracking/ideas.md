@@ -4,13 +4,6 @@ Future intents — captured by `/project-plan`, not started. Scope before acting
 `action-items.md` when an idea goes active. These are the slices that take `workspace-os` from
 SP1 (tracking) to the full workspace plugin discussed in the design.
 
-### SP3-finish-task — closing-ritual orchestration
-- Workstream: workflow
-- Priority: low (demoted by D-20260705-keystone-reposition — borrow-first, don't build)
-- Intended start: only if adapting keystone's version proves insufficient
-- Why/context: a single `/finish-task` that sequences the gates that already exist instead of restating them — review (`/code-review`, `/security-review`) → verify → commit → PR → and the tracking close-out (log `done`, move to resolved, log any decisions) in the same pass.
-- Borrow (keystone 2026-07-05): `zachburke9/keystone-engine` ships `/finish-task` + `/branch-cleanup` (MIT, shared with us). Adapt those SKILL.md files to workspace-os conventions rather than authoring from scratch. See D-20260705-keystone-reposition.
-- To start, future-us needs: adapt keystone's `/finish-task` + `/branch-cleanup` SKILL.md files (CI/PR flow + review skills already exist here).
 
 ### SP4-meta-onboarding — management + extension layer
 - Workstream: meta
