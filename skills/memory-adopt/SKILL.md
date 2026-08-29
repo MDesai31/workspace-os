@@ -1,10 +1,10 @@
 ---
 name: memory-adopt
-description: Adopt a repo's existing documentation into docs/memory/. Use when starting workspace-os in a repo that already has docs (README, design notes, an overgrown CLAUDE.md) and you want that knowledge reshaped into the shared memory layer. Opt-in; propose-confirm-apply; never auto-runs.
+description: Adopt a repo's existing documentation into docs/memory/, or convert a foreign memory store (a notes/ dir, an Obsidian-style vault) with the foreign mode. Use when starting workspace-os in a repo that already has docs (README, design notes, an overgrown CLAUDE.md) or an existing memory/notes system you want reshaped into the shared memory layer. Opt-in; propose-confirm-apply; never auto-runs.
 user-invocable: true
 disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
-argument-hint: "[path or glob to limit the scan]   (default: the repo's common doc locations)"
+argument-hint: "[path or glob to limit the scan] | foreign <store-path>"
 ---
 
 # Memory Adopt
@@ -39,8 +39,10 @@ only. The only files ever edited are **instruction files** (`CLAUDE.md`, `AGENTS
    `CONTRIBUTING.md`, `ARCHITECTURE.md`, `DEVELOPMENT.md`), honoring the optional path/glob
    argument. **Resolve `@import`s** in instruction files recursively (cycle-guarded, depth cap 5,
    repo-relative only) and add the targets as instruction files. **Exclude** `<data_root>/memory/`
-   and `<data_root>/project-tracking/`. List what you'll consider, marking which are instruction
-   files.
+   and `<data_root>/project-tracking/`. **Check for a foreign memory store** (the detection
+   signals in `conventions/memory.md` § "Adopting a foreign memory store"): on a hit, name the
+   store, point the user at `/memory-adopt foreign <path>`, and leave its files out of this
+   scan. List what you'll consider, marking which are instruction files.
 3. **Classify** each chunk through the gates in `conventions/memory.md`: → a memory fact (pick
    `domain|convention|reference`), → stays in its instruction file (imperative), or → skip (work-state /
    not-knowledge / about-the-person).
@@ -61,4 +63,25 @@ only. The only files ever edited are **instruction files** (`CLAUDE.md`, `AGENTS
    target), preserving the rest of the file. **Never modify free-form source docs.**
 9. **Report** what was created, the instruction-file trim(s) applied (if any), and what was skipped + why.
    Do **not** commit — leave everything staged-ready.
+
+## Foreign store mode: `/memory-adopt foreign <path>`
+
+Store-level conversion of an existing memory system (a `memory/`/`notes/` dir, an
+Obsidian-style vault) into `<data_root>/memory/` schema. The detection signals, the full
+conversion mapping (slug/description/type/body/links/frontmatter), and the routing for
+notes that are not facts (procedures → `/playbook adopt`, work-state → `/tracking-adopt`)
+live in `conventions/memory.md` § "Adopting a foreign memory store" — read it and follow it
+exactly.
+
+1. Run steps 0-1 above (resolve, bootstrap). `<path>` must exist and contain `.md` files;
+   if it does not look like a store per the conventions' signals, say what's missing and ask
+   before proceeding anyway.
+2. Read every `.md` in the store (the store is **read-only** throughout — conversion copies,
+   never moves or deletes). Build the per-note conversion table per the conventions mapping.
+3. Then the normal ritual, unchanged: dedup (step 4), secret-scan (step 5), propose the
+   whole batch (step 6 — the table shows each note → fact slug/type/one-line, splits,
+   reroutes, flattened links, and skips with the deciding gate), confirm (step 7), apply
+   (step 8: fact files + index lines).
+4. Report per step 9, plus the conventions' retire reminder: the foreign store still exists
+   and is now the second store — retiring it is the user's call, never this skill's.
 

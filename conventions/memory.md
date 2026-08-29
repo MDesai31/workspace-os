@@ -214,6 +214,40 @@ explicit confirmation, structure-preserving; imperatives are never trimmed. The 
 to an instruction file. **Idempotent:** before proposing, skip any fact whose slug or content is
 already in `docs/memory/`. **Never write secrets.**
 
+## Adopting a foreign memory store (`/memory-adopt foreign`)
+
+A repo may already run a *different memory system* — a top-level `memory/` or `notes/` dir, an
+Obsidian-style vault, another tool's store. Converting one is store-level, explicit
+(`/memory-adopt foreign <path>`), and the source store is **read-only**: conversion copies,
+never moves or deletes.
+
+**Detection (default-scan courtesy).** The default `/memory-adopt` scan checks likely roots
+(`memory/`, `notes/`, `docs/notes/`, `wiki/`, `kb/`, a dir holding `.obsidian/`) — excluding
+`docs/memory/` itself — for a dir that looks like a store: **≥3 `.md` files, most short**, plus
+at least one signal: YAML frontmatter, `[[wikilinks]]`, or an index/MOC file (`MEMORY.md`,
+`INDEX.md`, `MOC*`, `_index*`, `00-*`). On detection: name the store, point at `foreign` mode,
+and exclude its files from the normal scan. Never convert on detection alone.
+
+**Conversion mapping (per source note):**
+
+- **slug** — kebab-normalized filename; a frontmatter `title` wins. Collisions get a
+  disambiguating suffix, called out in the proposal.
+- **description** — frontmatter description/summary, else the first substantive line, condensed.
+- **type** — the content gates above decide `domain|convention|reference`; foreign taxonomy
+  fields are hints, never mapped 1:1 (the `/memory-sync` rule).
+- **body** — preserved, not rewritten; append `Source: <original path> (adopted YYYY-MM-DD)`.
+  One-fact-per-file holds: a note bundling unrelated facts is proposed as a split; a large
+  procedure-shaped note routes to `/playbook adopt`; work-state routes to `/tracking-adopt` or
+  skips — the deciding gate named each time.
+- **links** — `[[Foo Bar]]` → `[[foo-bar]]` only when the target is adopted in the same batch;
+  otherwise flatten to plain text and report it. Never write a knowingly-broken wikilink.
+- **foreign frontmatter** — dropped except what maps; never copied verbatim.
+
+Dedup, secret-scan, batch proposal, and the index update follow the normal adoption steps.
+Non-markdown stores (databases, org-mode, exports) are out of scope — say so. After apply,
+remind the user to retire the foreign store themselves: two live stores is the
+second-store hazard; retiring is their call, never the skill's.
+
 ## Concurrency
 
 `MEMORY.md` is append-heavy; `/project-init` declares `docs/memory/MEMORY.md merge=union` in the

@@ -60,7 +60,7 @@ points, and nothing is ever written without your confirmation.
 | **Occasionally** | `/guardrails` | author a deny/warn rule from a described hazard (dry-run proven); `pack` imports versioned policy packs ([format](conventions/packs.md)) | [GUIDE](GUIDE.md#guardrails) |
 | | `/playbook` | author/adopt a procedure that auto-surfaces at trigger time | [conventions](conventions/playbooks.md) |
 | | `/memory-lint` | memory integrity (link graph, index parity, citation freshness) + playbook lint | [GUIDE](GUIDE.md#maintenance-linting-and-updating) |
-| | `/memory-adopt` `/tracking-adopt` | adopt a repo's existing docs / roadmaps / git history | [GUIDE](GUIDE.md#adopting-an-existing-repo) |
+| | `/memory-adopt` `/tracking-adopt` | adopt a repo's existing docs / roadmaps / git history; `foreign` converts an existing notes/wiki store | [GUIDE](GUIDE.md#adopting-an-existing-repo) |
 | | `/memory-sync` | migrate a fact from `~/.claude` auto-memory into a repo | [GUIDE](GUIDE.md#occasional-operations) |
 | | `/make-portable` | retrofit the vendor-neutral layer onto an existing memory base | [PORTABILITY_NOTES](PORTABILITY_NOTES.md) |
 | | `/continuity` | scaffold a repo-root bus-factor runbook (CONTINUITY.md) | [GUIDE](GUIDE.md#occasional-operations) |

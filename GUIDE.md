@@ -190,7 +190,9 @@ For a repo with pre-existing docs and work-state, after `/project-init`:
 
 - **`/memory-adopt`** — scans free-form docs (README, design notes, CLAUDE.md reference
   content, resolved `@import`s), proposes facts for `docs/memory/`, applies only what you
-  confirm. Idempotent; secret-scanned.
+  confirm. Idempotent; secret-scanned. **`/memory-adopt foreign <path>`** converts an
+  existing memory system (a `notes/` dir, an Obsidian-style vault) store-level into the
+  workspace-os schema — the source store is read-only; retiring it stays your call.
 - **`/tracking-adopt`** — routes roadmap entries → ideas, recorded decisions → the decisions
   log, open TODOs → action items. **`/tracking-adopt git`** mines merged git history into
   `resolved.md` (one record per merged unit, real SHAs, deduplicated).
