@@ -4,14 +4,16 @@
 
 ## Three layers
 
-1. **Engine (this plugin, portable).** Skills, the conventions doc, and the templates. Installed
+1. **Engine (this plugin, portable).** Skills, hooks, scripts, the conventions docs, the
+   templates, and the policy packs. Installed
    once into `~/.claude`, available in every repo, updated centrally. This is the only thing you
    carry job-to-job.
 2. **Data (per-repo, version-controlled — location RESOLVED, never assumed).** Default (in-repo
-   mode): `<repo>/docs/project-tracking/*.md` (tracking records)
-   and `<repo>/docs/memory/*.md` (a shared knowledge base, indexed by `MEMORY.md` and surfaced via
-   a `@docs/memory/MEMORY.md` import in the repo's CLAUDE.md) — living with each project's code and
-   readable by Claude in that project's sessions.
+   mode): `<repo>/docs/project-tracking/*.md` (tracking records, including live handoff records
+   under `project-tracking/handoffs/`), `<repo>/docs/memory/*.md` (a shared knowledge base,
+   indexed by `MEMORY.md` and surfaced via a `@docs/memory/MEMORY.md` import in the repo's
+   CLAUDE.md), and `<repo>/docs/playbooks/*.md` (trigger-surfaced procedures) — living with each
+   project's code and readable by Claude in that project's sessions.
    In a **marked workspace** (`_meta/workspace.json` — see `conventions/data-root.md`), the same
    data layer lives OUT of tree in a local-only `_meta/<repo>/` sidecar git repo instead
    (enterprise repos stay byte-identical to origin); memory gains a workspace tier
@@ -29,8 +31,10 @@
 /workspace-init ──marks──▶ <workspace>/_meta/ (sidecar git repo, no remote) + workspace.json
 resolve-data-root.sh ──answers──▶ mode + data_root   (run FIRST by every skill/hook)
 sidecar-memory-context.sh ──SessionStart──▶ injects _meta memory (workspace tier, then repo tier)
-/project-log  ──writes──▶ action-items.md · decisions-log.md · resolved.md
+/project-log  ──writes──▶ action-items.md · decisions-log.md · resolved.md   (propagated: appends Propagated-to: lines)
 /project-plan ──writes──▶ ideas.md
+/handoff      ──writes──▶ project-tracking/handoffs/<slug>.md   (live per-effort record; refreshed on re-pause, deleted on done)
+/work-journal ──reads──▶ git history × tracking   (summary; log mode appends work-log.md)
 /ingest       ──writes──▶ docs/memory/<slug>.md + MEMORY.md index
 /memory-lint  ──checks──▶ docs/memory/ index + wikilink integrity
 /memory-search ──queries──▶ docs/memory/ facts, by keyword or backlinks   (read-only)
@@ -38,16 +42,28 @@ sidecar-memory-context.sh ──SessionStart──▶ injects _meta memory (work
 /memory-adopt ──reshapes▶ existing docs ──▶ docs/memory/  (+ proposed CLAUDE.md trim)
 /tracking-adopt ──routes──▶ existing roadmap/TODO docs ──▶ docs/project-tracking/  (git mode: merged history ──▶ resolved.md)
 /project-status ──reads──▶ docs/project-tracking/ (all four files; read-only report/brief)
+/project-status matrix ──groups──▶ a workspace's checkouts by origin URL (scripts/checkout-groups.sh) × Propagated-to: lines
+/guardrails   ──authors──▶ guardrails.json rules via scripts/guardrails-upsert.sh   (dry-run proven, confirm-gated)
+/guardrails pack ──imports──▶ packs/<name>.json via scripts/pack-import.sh   (per-rule pack stamp + _packs ledger; idempotent)
+/playbook     ──writes──▶ docs/playbooks/<slug>.md   (adopt reshapes an existing how-to doc)
+/continuity   ──scaffolds▶ <repo>/CONTINUITY.md   (bus-factor runbook)
 guardrail.sh  ──reads──▶ <repo>/.claude/guardrails.json   (PreToolUse deny/warn on Bash|Edit|Write)
 lint.sh       ──reads──▶ <repo>/.claude/lint.json   (PostToolUse: lints edited file → additionalContext for Claude)
+playbook-surface.sh ──surfaces──▶ a matching playbook, once per session   (PreToolUse deny-once or PostToolUse context)
+dispatch-ledger.sh ──appends──▶ ~/.claude/workspace-os/dispatch-ledger.jsonl   (PostToolUse on dispatches; sizes only, local-only)
+capture-cadence.sh ──SessionStart──▶ capture nudge + live handoffs list
   tracking skills ──read──▶ conventions/project-tracking.md   (schema + lifecycle, SoT)
   memory skills   ──read──▶ conventions/memory.md             (schema + boundary test, SoT)
 ```
 
-- **The guardrail engine** (`hooks/guardrail.sh`) is a PreToolUse hook: warn-only built-in defaults
-  (secrets, force-push, `rm -rf`) plus declarative per-repo rules in `.claude/guardrails.json`
-  (`bash`/`write` rules, `deny` blocks / `warn` advises). Opt in by copying `templates/guardrails.json`;
-  the engine fails open when the file is absent. Same engine/data split as the rest of the plugin.
+- **The guardrail engine** (`hooks/guardrail.sh`) is a PreToolUse hook: built-in warn advisories
+  (possible secrets, force-push, `rm -rf`) and hard denies for high-confidence secrets, plus
+  declarative per-repo rules in `.claude/guardrails.json` (`bash`/`write` rules, `deny` blocks /
+  `warn` advises). Rules are authored conversationally via `/guardrails` (every write goes through
+  `scripts/guardrails-upsert.sh`) or imported as versioned **policy packs** from `packs/<name>.json`
+  via `/guardrails pack` (format SoT: `conventions/packs.md`; imported rules carry a `pack` stamp so
+  re-import replaces only them, never hand-authored rules). The engine fails open when the config is
+  absent. Same engine/data split as the rest of the plugin.
 - **The lint engine** (`hooks/lint.sh`) is the PostToolUse counterpart: after an `Edit`/`Write`/
   `MultiEdit`, it runs each linter a repo declares in `.claude/lint.json` (`{name, match, command}`)
   whose `match` regex matches the edited file's path, and feeds any diagnostics back to Claude as

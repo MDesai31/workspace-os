@@ -83,4 +83,5 @@ troubleshooting in [GUIDE.md](GUIDE.md#maintenance-linting-and-updating).
 - [PORTABILITY_NOTES.md](PORTABILITY_NOTES.md) — the vendor-neutral layer
 - `conventions/` — the single sources of truth the skills follow:
   [project-tracking](conventions/project-tracking.md) · [memory](conventions/memory.md) ·
-  [playbooks](conventions/playbooks.md) · [data-root](conventions/data-root.md)
+  [playbooks](conventions/playbooks.md) · [packs](conventions/packs.md) ·
+  [data-root](conventions/data-root.md)
