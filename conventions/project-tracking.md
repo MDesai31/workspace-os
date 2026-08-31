@@ -242,6 +242,26 @@ in the meeting are never recorded in the meeting file alone — each is extracte
 meeting file and the meeting file listing the extracted ids at its top. The ledgers stay the
 single source of truth; the meeting file holds the narrative they should not.
 
+## Date windows over git history
+
+Any skill that turns a date into a git window states the **time of day explicitly**. Git fills
+a bare date's missing time with the **current time of day**, not midnight, so a bare date
+silently truncates the window at whatever o'clock the command happened to run:
+
+- `--since` takes `'<date> 00:00'` — the inclusive start of that day.
+- `--until` takes `'<date> 23:59'` — the inclusive end. `00:00` is wrong here; it excludes
+  the whole day.
+
+Measured on a repo with commits at 02:00, 06:00, 09:00, and 23:00, run at 13:23: bare
+`--since=<today>` returned 1 commit against 4 for `'<today> 00:00'`, and bare
+`--until=<today>` returned 3 against 4 for `'<today> 23:59'`. The failure is silent, and it
+bites hardest on the same-day window a journal or status update is most likely to ask for —
+a same-day `/work-journal` would report that nothing happened.
+
+This applies to every date-shaped input, not just a user-typed one: a `since:` argument, a
+date parsed out of `work-log.md`, and a date read from a `meetings/` filename. A git **ref**
+passed where a date is also accepted is not a date and takes no time suffix.
+
 ## Release notes
 
 `/project-log release-notes` renders git history + the decisions log into grouped,

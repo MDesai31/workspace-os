@@ -15,8 +15,14 @@ set -uo pipefail
 
 root="${1:-}"
 [ -n "$root" ] || { echo "checkout-groups: usage: checkout-groups.sh <workspace-dir>" >&2; exit 1; }
-[ "$(basename "$root")" = "_meta" ] && root="$(dirname "$root")"
+# Validate the argument AS GIVEN, then resolve to absolute, and only then strip a trailing
+# _meta. Stripping first broke relative arguments both ways: `dirname _meta` is `.`, which
+# always exists (so a nonexistent `_meta` silently scanned the caller's cwd), and a plain `.`
+# from inside _meta never matched the basename test (so it scanned _meta's own subdirs and
+# reported nothing). Fail-loud on a bad directory is this script's documented contract.
 [ -d "$root" ] || { echo "checkout-groups: no such directory: $root" >&2; exit 1; }
+root="$(cd "$root" && pwd)" || { echo "checkout-groups: cannot enter directory: $1" >&2; exit 1; }
+[ "$(basename "$root")" = "_meta" ] && root="$(dirname "$root")"
 
 normalize() {  # <origin-url> -> lowercase host/path key
   local u="$1"

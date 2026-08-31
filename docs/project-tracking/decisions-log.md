@@ -453,3 +453,70 @@ deciding was the work).
 Closes SP3-finish-task (idea CLOSED superseded - not shipped; the surviving slice was
 captured as the ship-a-slice playbook, first playbook dogfooded in this repo).
 
+
+### D-20260825-workspace-root-mode — a distinct `workspace-root` mode, not a reused `sidecar`
+- Workstream: schema
+- Created: 2026-08-25
+- Status: accepted
+- Rationale: `resolve-data-root.sh` exited 1 whenever CWD was outside a git work tree, which is
+  the common layout for a sidecar workspace: several repos side by side, `_meta/` alongside
+  them, and the workspace folder itself not under version control. Every hook treats resolver
+  failure as "no data here, stay silent" (correct fail-open), so opening a session AT the
+  workspace root silently disabled the whole workspace tier. The fix walks up from CWD for
+  `<dir>/_meta/workspace.json`. Reporting `sidecar` from there was rejected: `guardrail.sh` and
+  `sidecar-memory-context.sh` both gate on `mode = sidecar` and then dereference `data_root`,
+  so they would receive a repo-tier path that does not exist. A distinct mode with **`data_root`
+  deliberately unset** lets consumers opt in through their existing `[ -n "$ws_root" ]` guards.
+  An unmarked non-git dir still errors and exits 1, so the fallback only ever fires on a real
+  marker.
+- Consequences: `capture-cadence.sh` now fires where it previously stayed silent, injecting a
+  session-start block in a context that had none. Intended, but new. `sidecar-memory-context.sh`
+  still gates on `sidecar`, so the workspace-tier `MEMORY.md` is NOT injected in `workspace-root`
+  mode; extending it would change what loads into every workspace-root session and deserves its
+  own decision. The walk-up also had to move below `marker_mode()`/`marker_name()`, since those
+  helpers are defined after the old early-exit, keeping one JSON-parsing path.
+- Spawns: A-20260831-dogfood-defect-batch
+
+Authored 2026-08-25 on another machine and transferred as a patch; it did not land, and main
+reached v0.32.1 without it. Re-verified against the v0.25-v0.32 consumer set before landing,
+rather than re-asserting the original "no consumer needed editing" claim, which was true only
+of 0.24.1. Every executable consumer of the resolver, classified under `mode=workspace-root`
+with `data_root` unset:
+
+- `hooks/guardrail.sh`, `hooks/lint.sh` — gate on `mode = sidecar`; both skip. `data_root` is
+  dereferenced only inside those gates. Safe no-op.
+- `hooks/sidecar-memory-context.sh` — hard `[ "$mode" = "sidecar" ] || exit 0`. Safe no-op, and
+  the documented consequence above.
+- `hooks/playbook-surface.sh` — already guards with `[ -n "$ws_root" ]`, so workspace-tier
+  playbooks surface correctly; its only writes go to `$TMPDIR`, never `data_root`.
+- `scripts/guardrails-upsert.sh`, `scripts/pack-import.sh` — take the non-sidecar branch and
+  write. Checked specifically for a write through an empty `data_root`: both compute
+  `root="$(git rev-parse --show-toplevel)"` and then `[ -z "$root" ] && root="${CLAUDE_PROJECT_DIR:-$PWD}"`,
+  so the path is `$PWD/.claude/...`, never `/.claude/...`. The engine reads the same path, so
+  write and read agree. Safe.
+- `hooks/capture-cadence.sh` — the one consumer that genuinely needed editing; its handoff
+  block had a second gate on `data_root`. See D-20260831-workspace-root-handoff-fanout.
+
+### D-20260831-workspace-root-handoff-fanout — handoffs fan out across repo dirs when there is no repo tier
+- Workstream: schema
+- Created: 2026-08-31
+- Status: accepted
+- Rationale: `capture-cadence.sh`'s handoff block gates on `[ -n "$data_root" ]`, a second gate
+  independent of the resolver fix — so handoffs stayed invisible from the workspace root even
+  with `workspace-root` mode working. At the workspace root there is no repo tier to read, and
+  no single repo is in scope; the useful answer is every paused effort in the workspace. The
+  block now reads `<ws>/<repo-folder>/project-tracking/handoffs/` for each entry plus the
+  workspace tier itself, gated on `data_root` being **unset** rather than on the mode string.
+  Reading via `checkout-groups.sh` was rejected: that script groups checkouts by `origin` URL,
+  so it would skip any repo without a remote, and it would introduce a second source of truth
+  about where repo data lives. The plain glob is the exact inverse of the resolver's own
+  `data_root=<ws>/<repo-folder-name>` mapping, and it is self-filtering — `_meta/memory` and
+  `_meta/sources` cannot match a pattern requiring the `project-tracking/handoffs` suffix.
+- Consequences: repo-tier entries are labelled `<folder>/<slug>` because a bare slug is
+  ambiguous once more than one repo can contribute; workspace-tier entries stay bare, belonging
+  to no repo. Gating on unset `data_root` keeps **sidecar mode repo-scoped** — inside a repo you
+  see only that repo's handoffs, pinned by a leak test. `workspace-meta` mode sets
+  `data_root == workspace_root` and therefore does **not** fan out; it already surfaces the
+  workspace tier through the repo-tier path. Extending the fan-out to `workspace-meta` would
+  change an existing mode's behavior and belongs to its own decision, not this batch.
+- Spawns: A-20260831-dogfood-defect-batch

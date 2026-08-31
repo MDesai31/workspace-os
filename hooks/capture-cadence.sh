@@ -45,21 +45,37 @@ idempotency). Skip trivia; capture only what future-you could not re-derive.
 EOF
 
 # Live handoffs: surface paused efforts (conventions/project-tracking.md § Session continuity).
+# Repo tier when there is one. In workspace-root mode there is NO repo tier (data_root unset),
+# so fan out instead across the workspace's per-repo data dirs -- the exact inverse of the
+# resolver's own data_root=<ws>/<repo-folder-name> mapping -- plus the workspace tier itself.
 # Fail open: any error in this block must not break the hook.
-hdir="$data_root/project-tracking/handoffs"
-if [ -n "$data_root" ] && [ -d "$hdir" ]; then
-  lines=""
-  for f in "$hdir"/*.md; do
+lines=""
+collect_handoffs() {  # <handoffs-dir> <label-prefix>
+  local d="$1" prefix="$2" f slug paused
+  [ -d "$d" ] || return 0
+  for f in "$d"/*.md; do
     [ -f "$f" ] || continue
     slug="$(basename "$f" .md)"
     paused="$(sed -n 's/^- Paused: //p' "$f" 2>/dev/null | head -1)"
     [ -n "$paused" ] || paused="unknown"
-    lines="${lines}- ${slug} (paused ${paused})
+    lines="${lines}- ${prefix}${slug} (paused ${paused})
 "
   done
-  if [ -n "$lines" ]; then
-    printf '\n## Live handoffs\n%b' "$lines"
-    printf 'If the user'\''s request matches one of these efforts, READ that handoff file fully before\nstarting work; refresh it as the work moves, and delete it via /project-log done when the\neffort completes.\n'
-  fi
+}
+
+if [ -n "$data_root" ]; then
+  collect_handoffs "$data_root/project-tracking/handoffs" ""
+elif [ -n "$ws_root" ]; then
+  collect_handoffs "$ws_root/project-tracking/handoffs" ""
+  for rd in "$ws_root"/*/; do
+    rd="${rd%/}"
+    [ -d "$rd" ] || continue
+    collect_handoffs "$rd/project-tracking/handoffs" "$(basename "$rd")/"
+  done
+fi
+
+if [ -n "$lines" ]; then
+  printf '\n## Live handoffs\n%b' "$lines"
+  printf 'A `<folder>/` prefix names the repo the handoff belongs to (workspace-root mode lists\nevery repo in the workspace). If the user'\''s request matches one of these efforts,\nREAD that handoff file fully before starting work; refresh it as the work moves, and\ndelete it via /project-log done when the effort completes.\n'
 fi
 exit 0

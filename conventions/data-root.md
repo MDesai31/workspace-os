@@ -11,7 +11,8 @@ never compute data paths themselves. Skills announce the resolved mode in their 
 |---|---|---|---|---|
 | `in-repo` | default (no marked workspace) | `<repo>/docs` | `<data_root>/project-tracking/` | `<data_root>/memory/` |
 | `sidecar` | repo sits under a marked workspace | `<workspace>/_meta/<repo-folder-name>` | same shape | same shape |
-| `workspace-meta` | CWD is inside `_meta/` itself | the `_meta` dir | — | `<data_root>/memory/` (workspace tier) |
+| `workspace-meta` | CWD is inside `_meta/` itself | the `_meta` dir | none | `<data_root>/memory/` (workspace tier) |
+| `workspace-root` | CWD is under a marked workspace but **not in any git repo** | none (no repo tier) | none | `<workspace_root>/memory/` (workspace tier) |
 
 ## The marker
 
@@ -22,7 +23,9 @@ A **workspace** is any directory that directly contains `_meta/workspace.json`:
 - **Sidecar always wins in a marked workspace.** In-repo `docs/project-tracking|memory` under a
   marked workspace are ignored even if present. There is no per-repo override — the workspace
   declares the mode.
-- The resolver walks up from the repo root's parent; the **nearest** marker wins. A bare
+- The resolver walks up from the repo root's parent; the **nearest** marker wins. With no git
+  repo at all it walks up from CWD itself and reports `workspace-root`, so hooks needing only
+  the workspace tier still fire from the workspace root; an unmarked non-git dir still errors. A bare
   `_meta/` without `workspace.json` (or with `"workspace-os"` ≠ `"sidecar"`) marks nothing.
 - Repos are keyed by **folder name**. Renaming a repo folder means renaming its `_meta/` entry.
 

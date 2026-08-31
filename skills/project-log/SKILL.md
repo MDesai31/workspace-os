@@ -145,7 +145,9 @@ line traces to a real commit or `D-` record; read `git show <sha> --stat` before
 a cryptic subject.
 
 1. Window: `since:` if given, else since the last tag (`git describe --tags --abbrev=0`),
-   else the last ~20 commits.
+   else the last ~20 commits. A `since:` that is a **date** goes into git as
+   `'<date> 00:00'` (`conventions/project-tracking.md` § "Date windows over git history"); a
+   `since:` that is a **ref** is passed through unchanged.
 2. Group commits by theme/version markers (`v\d+\.\d+`) — grouping and translation are the
    value, never one line per commit. Map `D-` records created in the window to the groups
    they explain.
