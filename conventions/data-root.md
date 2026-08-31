@@ -29,6 +29,27 @@ A **workspace** is any directory that directly contains `_meta/workspace.json`:
   `_meta/` without `workspace.json` (or with `"workspace-os"` ≠ `"sidecar"`) marks nothing.
 - Repos are keyed by **folder name**. Renaming a repo folder means renaming its `_meta/` entry.
 
+## No repo tier (`workspace-root` mode)
+
+`workspace-root` is the one mode with **no `data_root`**: CWD is under a marked workspace but
+in no git repo, so there is no repo to key data by. Skills must branch on `data_root` being
+empty rather than assuming a repo tier — otherwise they build paths from the filesystem root
+(`/project-tracking/…`) out of an unset variable. This matters more since v0.33.0, because
+`hooks/capture-cadence.sh` now fires in this mode and actively invites `/ingest`,
+`/project-log`, and `/handoff` from a context that has no repo tier to write to.
+
+- **Tracking skills stop.** There is no repo-tier `project-tracking/` here. Say that the user
+  needs to be inside one of the workspace's repos, name them if useful, and stop. Never write
+  tracking to the workspace tier as a substitute — the tiers are not interchangeable.
+- **Memory skills use the workspace tier**, `<workspace_root>/memory/`. The tier test in
+  `conventions/memory.md` already routes workspace-wide facts there; a repo-specific fact
+  authored from here belongs to a repo, so it waits until you are in one.
+- **Read-only skills** that build a path from `data_root` (`/memory-search`, `/memory-lint`)
+  point at `<workspace_root>/memory` in this mode, not `<data_root>/memory`.
+- **Workspace-tier writes here are not auto-committed.** The auto-commit rule below is scoped
+  to `sidecar` mode, so the same `_meta/` write is versioned or not depending on where you
+  stood when you made it. Recorded rather than papered over; unifying it is its own decision.
+
 ## The sidecar `_meta/` repo
 
 `_meta/` is its own git repo with **no remote** (local-only by design: full history and

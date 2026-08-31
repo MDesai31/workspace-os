@@ -20,7 +20,9 @@ instead of its single-workspace project registry.)
 
 0. **Resolve the data root.** Run `bash "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-data-root.sh"`
    and parse its `key=value` output (`conventions/data-root.md`). Tracking lives at
-   `<data_root>/project-tracking/` in BOTH modes; never hardcode `docs/…`. Announce the
+   `<data_root>/project-tracking/` in every repo-tier mode; never hardcode `docs/…`.
+   With no `data_root` (`workspace-root` mode) see `conventions/data-root.md`
+   § "No repo tier". Announce the
    resolved mode. Reads only — no sidecar commit step applies.
    If `<data_root>/project-tracking/` does not exist: say so, point at `/project-init`
    (greenfield repo) or `/tracking-adopt` (repo with existing work-state docs), and stop.

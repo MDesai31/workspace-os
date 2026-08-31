@@ -39,6 +39,15 @@ four are silent failures: none errored, none logged, each just quietly did nothi
    validated as given, resolved to absolute, and normalized last — restoring the fail-loud
    contract the script's own header already promised.
 
+5. **The fix made 11 skills reachable from a mode none of them handled.** Auditing only the 7
+   executable consumers missed the ~17 model-driven ones: every tracking skill said data lives
+   at `<data_root>/…` "in BOTH modes", which reads as `/project-tracking/…` from the filesystem
+   root once `data_root` is unset. Defect 1 turned that from unreachable into invited, since the
+   cadence block now fires there and names `/ingest`, `/project-log`, and `/handoff`. Routing is
+   now stated in `conventions/data-root.md` § "No repo tier" (tracking skills stop; memory
+   skills use the workspace tier; read-only skills repoint their `--root`), and all 11 skills
+   point at it. The stale "BOTH modes" phrasing is gone: there are four modes, not two.
+
 Verification: 15 test scripts / 382 assertions / 0 failures; validator clean at 17 skills;
 `memory_graph: clean`. (1), (2) and (4) gained regression tests — +8 assertions in
 `test-capture-cadence.sh` including a sidecar-leak guard, +3 in `test-checkout-groups.sh`, +6
