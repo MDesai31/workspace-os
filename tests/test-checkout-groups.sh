@@ -56,6 +56,21 @@ check "_meta never scanned" $(printf '%s\n' "$out" | grep -q 'folder=_meta' && e
 out2="$(bash "$SCRIPT" "$WS/_meta")"
 check "accepts the _meta dir and normalizes" $([ "$out2" = "$out" ] && echo 0 || echo 1)
 
+# Relative paths: the arg is validated as given, then resolved to absolute, and only then is a
+# trailing _meta stripped. Normalizing first made `dirname` of a bare name collapse to `.`,
+# which always exists -- defeating the -d guard and scanning whatever tree the caller stood in.
+out3="$(cd "$WS/_meta" && bash "$SCRIPT" .)"
+check "relative '.' from inside _meta finds the siblings" $([ "$out3" = "$out" ] && echo 0 || echo 1)
+
+out4="$(cd "$WS" && bash "$SCRIPT" _meta)"
+check "relative '_meta' from the workspace root still works" $([ "$out4" = "$out" ] && echo 0 || echo 1)
+
+mkdir -p "$TMP/no-meta-here/somerepo" && G -C "$TMP/no-meta-here/somerepo" init -q
+G -C "$TMP/no-meta-here/somerepo" remote add origin "https://host.example/org/stray.git"
+out5="$(cd "$TMP/no-meta-here" && bash "$SCRIPT" _meta 2>/dev/null)"; ec=$?
+check "relative '_meta' with no such dir -> exit 1" $([ "$ec" = 1 ] && echo 0 || echo 1)
+check "relative '_meta' with no such dir scans nothing" $([ -z "$out5" ] && echo 0 || echo 1)
+
 bash "$SCRIPT" "$TMP/definitely-missing" 2>/dev/null; ec=$?
 check "missing dir -> exit 1" $([ "$ec" = 1 ] && echo 0 || echo 1)
 bash "$SCRIPT" 2>/dev/null; ec=$?

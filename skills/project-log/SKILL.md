@@ -23,8 +23,10 @@ ask.
 
 0. **Resolve the data root.** Run `bash "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-data-root.sh"`
    and parse its `key=value` output (`conventions/data-root.md`). Tracking lives at
-   `<data_root>/project-tracking/`, memory at `<data_root>/memory/` — in BOTH modes; never
-   hardcode `docs/…`. Announce the resolved mode. In **sidecar** mode: never create, modify,
+   `<data_root>/project-tracking/`, memory at `<data_root>/memory/` — in every repo-tier
+   mode; never hardcode `docs/…`.
+   With no `data_root` (`workspace-root` mode) see `conventions/data-root.md`
+   § "No repo tier". Announce the resolved mode. In **sidecar** mode: never create, modify,
    or stage any file inside the repo's working tree, and after each write commit the change in
    the sidecar repo (`git -C <workspace_root> add -A && git -C <workspace_root> commit`).
 
@@ -145,7 +147,9 @@ line traces to a real commit or `D-` record; read `git show <sha> --stat` before
 a cryptic subject.
 
 1. Window: `since:` if given, else since the last tag (`git describe --tags --abbrev=0`),
-   else the last ~20 commits.
+   else the last ~20 commits. A `since:` that is a **date** goes into git as
+   `'<date> 00:00'` (`conventions/project-tracking.md` § "Date windows over git history"); a
+   `since:` that is a **ref** is passed through unchanged.
 2. Group commits by theme/version markers (`v\d+\.\d+`) — grouping and translation are the
    value, never one line per commit. Map `D-` records created in the window to the groups
    they explain.

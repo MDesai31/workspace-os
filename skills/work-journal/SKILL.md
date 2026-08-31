@@ -25,7 +25,9 @@ modes. Announce the resolved mode. Summary mode is read-only; log mode writes, a
 
 Default window: the last 7 days. Read-only; lenient parsing per the house rule.
 
-1. `git log --oneline --since=<date>` in the repo.
+1. `git log --oneline --since='<date> 00:00'` in the repo. The `00:00` is required, not
+   cosmetic — `conventions/project-tracking.md` § "Date windows over git history" (a bare
+   date silently truncates the window at the current time of day).
 2. Cross-reference the window: `resolved.md` records whose `Completed:` falls in it;
    `decisions-log.md` records whose `Created:` falls in it; open records in
    `action-items.md`.
@@ -54,7 +56,9 @@ Default window: the last 7 days. Read-only; lenient parsing per the house rule.
 ## Log mode: `/work-journal log`
 
 1. Gather: commits since the last entry's date in `work-log.md` (on first use: the last ~2
-   hours), the uncommitted diff stat, and the A-/D- ids this session touched.
+   hours), the uncommitted diff stat, and the A-/D- ids this session touched. That parsed
+   date goes into git as `'<date> 00:00'` per the date-window rule — a same-day log entry is
+   exactly the case a bare date drops.
 2. Propose a dated entry in the conventions' entry shape (focus phrase, 2-5 bullets,
    `Commits:`, `Records:`) and append it to `<data_root>/project-tracking/work-log.md` only
    on confirmation - create the file with a `# Work log` header line on first use. Sidecar
@@ -68,7 +72,8 @@ did the meeting's asks land."
 1. Anchor date: the newest file in `<data_root>/project-tracking/meetings/` (by filename
    date). No meetings dir or files -> fall back to the last `work-log.md` entry's date, else
    the last 7 days; say which anchor was used.
-2. Run the summary-mode machinery since the anchor.
+2. Run the summary-mode machinery since the anchor, passing the anchor as `'<date> 00:00'`
+   (the date-window rule applies to a filename-derived date too).
 3. If the anchor is a meeting file, status each record it extracted: done (with the
    `Completed:` date from `resolved.md`) or still open.
 4. Render:

@@ -18,7 +18,9 @@ directory).
 
 0. **Resolve the data root.** Run `bash "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-data-root.sh"`
    and parse its `key=value` output (`conventions/data-root.md`). Handoffs live at
-   `<data_root>/project-tracking/handoffs/` in BOTH modes. Announce the resolved mode. In
+   `<data_root>/project-tracking/handoffs/` in every repo-tier mode.
+   With no `data_root` (`workspace-root` mode) see `conventions/data-root.md`
+   § "No repo tier". Announce the resolved mode. In
    **sidecar** mode: never touch the repo's working tree, and after the write commit the
    sidecar repo (`git -C <workspace_root> add -A && git -C <workspace_root> commit`).
    If `<data_root>/project-tracking/` is missing entirely, stop and point at

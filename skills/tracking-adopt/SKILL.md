@@ -28,8 +28,10 @@ into `resolved.md` — see "Git mode" below.
 
 0. **Resolve the data root.** Run `bash "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-data-root.sh"`
    and parse its `key=value` output (`conventions/data-root.md`). Tracking lives at
-   `<data_root>/project-tracking/`, memory at `<data_root>/memory/` — in BOTH modes; never
-   hardcode `docs/…`. Announce the resolved mode. In **sidecar** mode: never create, modify,
+   `<data_root>/project-tracking/`, memory at `<data_root>/memory/` — in every repo-tier
+   mode; never hardcode `docs/…`.
+   With no `data_root` (`workspace-root` mode) see `conventions/data-root.md`
+   § "No repo tier". Announce the resolved mode. In **sidecar** mode: never create, modify,
    or stage any file inside the repo's working tree, and after each write commit the change in
    the sidecar repo (`git -C <workspace_root> add -A && git -C <workspace_root> commit`).
 1. **Bootstrap if needed.** If `<data_root>/project-tracking/` does not exist, scaffold it like

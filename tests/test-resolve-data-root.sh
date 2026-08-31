@@ -30,6 +30,8 @@ printf '{ "workspace-os": "off" }\n' > "$TMP/ws3/_meta/workspace.json"
 mk_repo "$TMP/ws3/repo-d"
 # not a git repo at all
 mkdir -p "$TMP/norepo"
+# non-git dirs INSIDE a marked workspace (the workspace root, and a plain subdir)
+mkdir -p "$WS/notarepo"
 
 # run <dir> -> sets globals ec, out
 run() { out="$(cd "$1" && bash "$RESOLVER" 2>&1)"; ec=$?; }
@@ -74,6 +76,23 @@ check "marker without sidecar value = in-repo" "$ec" "0" "$out" "mode=in-repo"
 
 run "$TMP/norepo"
 check "not a git repo errors" "$ec" "1" "$out" "not inside a git repository"
+
+# Non-git dirs under a marked workspace still resolve the workspace tier, so hooks that
+# only need workspace_root (playbook surfacing, capture cadence) work from the workspace
+# root itself - a common cwd when several repos are open side by side.
+run "$WS/notarepo"
+check "non-git dir in marked ws: workspace-root mode" "$ec" "0" "$out" "mode=workspace-root"
+check "non-git dir in marked ws: workspace_root" "$ec" "0" "$out" "workspace_root=$WS/_meta"
+check "non-git dir in marked ws: workspace name" "$ec" "0" "$out" "workspace=test-ws"
+case "$out" in *data_root=*) echo "FAIL: workspace-root must not emit data_root (no repo tier)"; fail=$((fail+1));; *) echo "PASS: workspace-root emits no data_root"; pass=$((pass+1));; esac
+
+run "$WS"
+check "workspace root itself resolves" "$ec" "0" "$out" "mode=workspace-root"
+check "workspace root itself: workspace_root" "$ec" "0" "$out" "workspace_root=$WS/_meta"
+
+# An unmarked non-git dir must still error - the fallback only triggers on a real marker.
+run "$TMP/ws2"
+check "non-git dir, _meta without marker: still errors" "$ec" "1" "$out" "not inside a git repository"
 
 echo "----"
 echo "$pass passed, $fail failed"

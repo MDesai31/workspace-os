@@ -17,8 +17,10 @@ boundary test, the index format, and the retrieval model all live in this plugin
 `bash "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-data-root.sh"` and parse `mode`/`data_root`
 (+ `workspace_root` in sidecar mode) — see `conventions/data-root.md`. Memory lives at
 `<data_root>/memory/`; if that directory is missing, stop and say so (run `/project-init`
-first). Announce the resolved mode in your report. In sidecar mode never write inside the
-repo's working tree.
+first). With no `data_root` (`workspace-root` mode) the fact belongs to the workspace tier,
+`<workspace_root>/memory/` — a repo-specific fact waits until you are in that repo
+(`conventions/data-root.md` § "No repo tier"). Announce the resolved mode in your report. In
+sidecar mode never write inside the repo's working tree.
 
 **Pre-confirmed batch writes.** If this ingest was already approved by the user as part of a batch
 capture proposal (the workspace-os capture cadence), the confirmations below are a final

@@ -12,7 +12,9 @@ schema and rules live in this plugin's `conventions/memory.md`.
 
 **Prerequisite — resolve the data root first:** run
 `bash "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-data-root.sh"` (see `conventions/data-root.md`).
-Memory lives at `<data_root>/memory/`; if missing, say so and stop. Announce the resolved mode.
+Memory lives at `<data_root>/memory/`; if missing, say so and stop. With no `data_root`
+(`workspace-root` mode) lint `<workspace_root>/memory/` instead — `conventions/data-root.md`
+§ "No repo tier". Announce the resolved mode.
 
 ## Step 1 — run the deterministic pass (the graph script)
 
