@@ -1,0 +1,49 @@
+{
+  "_comment": "workspace-os guardrail rules for THIS repo. Copy to .claude/guardrails.json and edit. The engine reads only `bash` and `write`; `ip_class` and any `_`-prefixed key are informational. deny -> blocks the tool call; warn -> advisory message. Built-in warn-only defaults (secrets, force-push, rm -rf) always run regardless of this file. A rule may add a `predicate` (shell): it fires only when its regex matches AND the predicate exits 0, run in the call's cwd under a 5s timeout - so this file executes shell on matching tool calls and is part of the repo's trusted configuration, like repo-level hooks. `dispatch` rules gate subagent dispatches probe-first: the first matching dispatch per session per rule runs `probe` and is denied once with its output; the retry passes.",
+  "ip_class": "personal",
+  "bash": [
+    {
+      "name": "tracking-audit-before-commit",
+      "match": "git[[:space:]]+commit",
+      "predicate": "! python3 \"${WORKSPACE_OS_PLUGIN_ROOT:-$(git rev-parse --show-toplevel)}/scripts/memory_graph.py\" --audit-tracking --tracking-root docs/project-tracking >/dev/null 2>&1",
+      "action": "deny",
+      "reason": "tracking audit failed - run: python3 scripts/memory_graph.py --audit-tracking --tracking-root docs/project-tracking, fix, then retry."
+    }
+  ],
+  "write": [],
+  "dispatch": [],
+  "_examples": {
+    "bash": [
+      {
+        "name": "no-raw-duckdb",
+        "match": "duckdb\\.connect\\(",
+        "action": "deny",
+        "reason": "Use mcp__duckdb__query, not a raw DuckDB connection."
+      },
+      {
+        "name": "no-writes-on-main",
+        "match": ".*",
+        "predicate": "[ \"$(git branch --show-current)\" = main ]",
+        "action": "warn",
+        "reason": "checkout is on main; switch to a feature branch first."
+      }
+    ],
+    "write": [
+      {
+        "name": "employer-tripwire",
+        "match": "AcmeCorpInternal|acme\\.internal",
+        "field": "content",
+        "action": "warn",
+        "reason": "clean-room repo: this write matches an employer tripwire string."
+      }
+    ],
+    "dispatch": [
+      {
+        "name": "pipeline-output-exists",
+        "match": "(derive|compute|generate|rebuild).*(csv|features)",
+        "probe": "ls -la data/out/ && head -3 data/out/features.csv",
+        "reason": "the pipeline may already have written this; check before re-deriving."
+      }
+    ]
+  }
+}

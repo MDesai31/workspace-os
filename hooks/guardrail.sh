@@ -46,6 +46,8 @@ run_probe() {
 
 # Sidecar resolution (conventions/data-root.md). Fail open: resolver errors = in-repo behavior.
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Predicates and probes can locate plugin scripts through this (a plugin-location fact, not call context).
+export WORKSPACE_OS_PLUGIN_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
 sc_out="$(bash "$HOOK_DIR/../scripts/resolve-data-root.sh" 2>/dev/null || true)"
 sc_mode="$(printf '%s\n' "$sc_out" | sed -n 's/^mode=//p')"
 sc_root="$(printf '%s\n' "$sc_out" | sed -n 's/^data_root=//p')"

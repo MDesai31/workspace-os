@@ -137,6 +137,72 @@ case "$out" in *A-20260102-huge*) echo "FAIL: oversized record flagged despite r
 out="$(python3 "$SCRIPT" --check-tracking --tracking-root "$CLEAN/docs/project-tracking" 2>&1)"; ec=$?
 check "clean tracking = exit 0" "$ec" "0" "$out" ""
 
+# --- tracking integrity audit (spec: docs/specs/2026-09-04-integrity-auditor-design.md) ---
+# run on a non-git copy so the baseline NOTE case is stable once the fixture is committed
+TA="$(mktemp -d)"; cp -r "$HERE/fixtures/tracking-audit/." "$TA/"
+out="$(python3 "$SCRIPT" --audit-tracking --tracking-root "$TA/docs/project-tracking" 2>&1)"; ec=$?
+check "audit: fixture fails" "$ec" "1" "$out" "FAIL"
+check "audit: duplicate ID named" "$ec" "1" "$out" "duplicate record ID A-20260105-dup"
+check "audit: invalid date named" "$ec" "1" "$out" "invalid ID date A-20260230-baddate"
+check "audit: dangling reference named" "$ec" "1" "$out" "dangling reference A-20260106-ghost"
+check "audit: placeholder beside records named" "$ec" "1" "$out" "placeholder beside records: action-items.md"
+check "audit: duplicate line warned" "$ec" "1" "$out" "WARN duplicate line resolved.md"
+check "audit: non-git root notes baseline skipped" "$ec" "1" "$out" "NOTE"
+case "$out" in *"dangling reference D-20260107-ok"*|*"dangling reference A-20260105-dup"*) echo "FAIL: audit: resolvable references flagged"; fail=$((fail+1));; *) echo "PASS: audit: resolvable references not flagged"; pass=$((pass+1));; esac
+out="$(python3 "$SCRIPT" --audit-tracking --tracking-root "$CLEAN/docs/project-tracking" 2>&1)"; ec=$?
+check "audit: clean tracking = exit 0" "$ec" "0" "$out" "audit: clean"
+
+# git baseline: append-only shrink vs HEAD
+GT="$(mktemp -d)"; trap 'rm -rf "$GT" "$TA"' EXIT
+mkdir -p "$GT/docs/project-tracking"; git -C "$GT" init -q -b main
+cat > "$GT/docs/project-tracking/action-items.md" <<'EOF'
+# Action Items (open)
+
+### A-20260201-move-me — will move to resolved
+- Workstream: workflow
+- Status: open
+- Created: 2026-02-01
+EOF
+cat > "$GT/docs/project-tracking/resolved.md" <<'EOF'
+# Resolved
+
+### A-20260101-one — done
+- Workstream: workflow
+- Status: done
+- Created: 2026-01-01
+- Completed: 2026-01-02
+
+### A-20260102-two — done
+- Workstream: workflow
+- Status: done
+- Created: 2026-01-02
+- Completed: 2026-01-03
+EOF
+printf '# Decisions Log\n\n### D-20260101-d1 — one\n- Workstream: workflow\n- Created: 2026-01-01\n- Status: accepted\n- Rationale: r\n- Spawns: A-20260101-one\n' > "$GT/docs/project-tracking/decisions-log.md"
+git -C "$GT" add -A && git -C "$GT" -c user.email=t@t -c user.name=t commit -q -m base
+out="$(python3 "$SCRIPT" --audit-tracking --tracking-root "$GT/docs/project-tracking" 2>&1)"; ec=$?
+check "audit: clean tree vs HEAD passes" "$ec" "0" "$out" "audit: clean"
+# legitimate move: action -> resolved keeps the total constant
+python3 - "$GT/docs/project-tracking" <<'PY2'
+import sys,pathlib
+d=pathlib.Path(sys.argv[1]); a=d/'action-items.md'; r=d/'resolved.md'
+at=a.read_text(); i=at.index('\n### A-20260201'); rec=at[i:]
+a.write_text(at[:i]+'\n_No open items yet._\n'); rt=r.read_text(); r.write_text(rt.rstrip('\n')+'\n'+rec+'- Completed: 2026-02-02\n')
+PY2
+out="$(python3 "$SCRIPT" --audit-tracking --tracking-root "$GT/docs/project-tracking" 2>&1)"; ec=$?
+check "audit: action->resolved move passes vs HEAD" "$ec" "0" "$out" "audit: clean"
+git -C "$GT" add -A && git -C "$GT" -c user.email=t@t -c user.name=t commit -q -m move
+# the incident: resolved.md truncated to one record
+printf '# Resolved\n\n### A-20260301-only — the only survivor\n- Workstream: workflow\n- Status: done\n- Created: 2026-03-01\n- Completed: 2026-03-02\n' > "$GT/docs/project-tracking/resolved.md"
+out="$(python3 "$SCRIPT" --audit-tracking --tracking-root "$GT/docs/project-tracking" 2>&1)"; ec=$?
+check "audit: truncated resolved.md fails vs HEAD" "$ec" "1" "$out" "append-only shrink resolved.md: 3 -> 1"
+check "audit: total drop reported" "$ec" "1" "$out" "total records"
+# --baseline names an older ref
+out="$(python3 "$SCRIPT" --audit-tracking --tracking-root "$GT/docs/project-tracking" --baseline HEAD~1 2>&1)"; ec=$?
+check "audit: --baseline HEAD~1 compares against that ref" "$ec" "1" "$out" "resolved.md: 2 -> 1"
+# dangling reference caused by the truncation (decision spawns a record that vanished)
+check "audit: truncation also surfaces the dangling Spawns" "$ec" "1" "$out" "dangling reference A-20260101-one"
+
 # --- applies-to: parsed and surfaced, never a gate ---
 SCOPED="$HERE/fixtures/memory-scoped"
 out="$(python3 "$SCRIPT" --root "$SCOPED/docs/memory" --tracking-root "$SCOPED/none" 2>&1)"; ec=$?

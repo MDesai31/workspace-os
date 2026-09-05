@@ -237,6 +237,12 @@ All adoption is opt-in and propose→confirm→apply; nothing is reshaped silent
 
 ## Maintenance, linting, and updating
 
+Tracking files get their own deterministic audit: `/memory-lint` runs
+`memory_graph.py --audit-tracking`, which fails on duplicate or malformed record IDs, dangling
+record references, a placeholder left beside real records, and any append-only file that holds
+fewer records than at `HEAD` (the truncated-by-a-script case). Warnings cover repeated lines
+from union merges. Details: `conventions/project-tracking.md` § "Integrity audit".
+
 - **Memory integrity:** `/memory-lint` runs the deterministic graph pass (broken wikilinks,
   index parity, orphans, citation freshness against the code, tracking-boundary checks) plus
   model-judgment checks. For CI or pre-commit in a data repo:

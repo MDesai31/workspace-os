@@ -63,6 +63,7 @@ import argparse
 import json
 import re
 import subprocess
+from datetime import datetime
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -85,6 +86,12 @@ ANCHOR = re.compile(r"`([\w./-]+)::([A-Za-z_][A-Za-z0-9_]*)`")
 BACKTICK_SYMBOL = re.compile(r"`([A-Za-z_][A-Za-z0-9_]*)`")
 # Tracking-boundary lint: the bolded MEASURED evidence marker.
 MEASURED = re.compile(r"\*\*MEASURED\*\*")
+RECORD_TOKEN = re.compile(r"(?<![A-Za-z0-9-])([ADF]-\d{8}-[A-Za-z0-9-]+)")
+PLACEHOLDER = re.compile(r"^_No .*yet\._\s*$", re.MULTILINE)
+BOILERPLATE_FIELD = re.compile(r"^\s*-\s*(Workstream|Status|Created|Priority|Completed|Commit|Spawns|Intended start|"
+                               r"Awaiting|Closes-on|Rationale|Consequences|Supersedes|Superseded-by|Verdict|Evidence|Handoff):")
+APPEND_ONLY = ("resolved.md", "decisions-log.md")
+QUEUE_TOTAL = ("action-items.md", "resolved.md", "findings.md")
 
 INDEX_NAME = "MEMORY.md"
 
@@ -657,6 +664,90 @@ def print_tracking(violations, tracking_root, max_lines):
         print("tracking: clean (records within the memory/tracking boundary)")
 
 
+def _baseline_text(path, ref):
+    """Contents of `path` at git `ref`, or None when not in a git repo / absent at that ref."""
+    try:
+        top = subprocess.run(["git", "-C", str(path.parent), "rev-parse", "--show-toplevel"],
+                             capture_output=True, text=True, check=True).stdout.strip()
+        rel = path.resolve().relative_to(Path(top).resolve()).as_posix()
+        r = subprocess.run(["git", "-C", top, "show", f"{ref}:{rel}"], capture_output=True, text=True)
+        return r.stdout if r.returncode == 0 else None
+    except (subprocess.CalledProcessError, ValueError, OSError):
+        return None
+
+
+def audit_tracking(tracking_root, baseline):
+    """Tier-0 integrity audit of a tracking tree (conventions/project-tracking.md § Integrity
+    audit). Returns (fails, warns, notes). FAIL: duplicate record IDs, invalid ID dates, dangling
+    record references, an empty-state placeholder beside real records, and append-only shrink
+    versus `baseline` (git ref). WARN: duplicate non-trivial lines. NOTE: baseline unavailable."""
+    fails, warns, notes = [], [], []
+    root = Path(tracking_root)
+    if not root.is_dir():
+        notes.append(f"{root.as_posix()}: not a directory (skipped)")
+        return fails, warns, notes
+    headings, tokens, counts, git_seen = {}, set(), {}, False
+    for f in sorted(root.rglob("*.md")):
+        rel = f.relative_to(root).as_posix()
+        text = f.read_text(encoding="utf-8", errors="ignore")
+        ids = RECORD_HEADING.findall(text)
+        counts[rel] = len(ids)
+        for i in ids:
+            headings.setdefault(i, []).append(rel)
+        tokens.update(RECORD_TOKEN.findall(strip_code(text)))
+        if ids and PLACEHOLDER.search(text):
+            fails.append(f"placeholder beside records: {rel}")
+        seen = {}
+        for line in text.splitlines():
+            t = line.strip()
+            if len(t) < 40 or t.startswith("#") or BOILERPLATE_FIELD.match(line):
+                continue
+            seen[t] = seen.get(t, 0) + 1
+        for t, c in seen.items():
+            if c > 1:
+                warns.append(f"duplicate line {rel}: {t[:60]!r} x{c}")
+        if rel in APPEND_ONLY or rel in QUEUE_TOTAL:
+            base = _baseline_text(f, baseline)
+            if base is None:
+                notes.append(f"baseline {baseline} unavailable for {rel} (not in git, or absent at that ref)")
+            else:
+                git_seen = True
+                counts[("base", rel)] = len(RECORD_HEADING.findall(base))
+    for i, files in headings.items():
+        if len(files) > 1:
+            fails.append(f"duplicate record ID {i} ({', '.join(files)})")
+        try:
+            datetime.strptime(i.split("-")[1], "%Y%m%d")
+        except ValueError:
+            fails.append(f"invalid ID date {i}")
+    for t in sorted(tokens - set(headings)):
+        fails.append(f"dangling reference {t}")
+    for name in APPEND_ONLY:
+        b, c = counts.get(("base", name)), counts.get(name)
+        if b is not None and c is not None and c < b:
+            fails.append(f"append-only shrink {name}: {b} -> {c} records vs {baseline}")
+    if git_seen:
+        b = sum(counts.get(("base", n), counts.get(n, 0)) for n in QUEUE_TOTAL)
+        c = sum(counts.get(n, 0) for n in QUEUE_TOTAL)
+        if c < b:
+            fails.append(f"total records (action-items+resolved+findings) {b} -> {c} vs {baseline}")
+    return fails, warns, notes
+
+
+def print_audit(fails, warns, notes, tracking_root, baseline):
+    print(f"TRACKING INTEGRITY AUDIT  (tracking-root={tracking_root}, baseline={baseline})")
+    for x in fails:
+        print(f"  FAIL {x}")
+    for x in warns:
+        print(f"  WARN {x}")
+    for x in notes:
+        print(f"  NOTE {x}")
+    if fails:
+        print(f"audit: {len(fails)} failure(s), {len(warns)} warning(s)")
+    else:
+        print(f"audit: clean ({len(warns)} warning(s))")
+
+
 def write_json(data, a, path):
     nodes = [
         {"id": n, "file": data["present"][n].as_posix(), "degree": a["deg"].get(n, 0)}
@@ -718,11 +809,24 @@ def main():
                          "**MEASURED** block (the memory/tracking boundary); exit 1 on findings")
     ap.add_argument("--max-record-lines", type=int, default=40, metavar="N",
                     help="record-body line ceiling for --check-tracking (default 40)")
+    ap.add_argument("--audit-tracking", action="store_true",
+                    help="tracking integrity audit: duplicate/invalid record IDs, dangling references, "
+                         "placeholder beside records, append-only shrink vs --baseline; exit 1 on FAIL")
+    ap.add_argument("--baseline", default="HEAD", metavar="REF",
+                    help="git ref the append-only shrink check compares against (default HEAD)")
     args = ap.parse_args()
     tracking_roots = args.tracking_root or ["docs/project-tracking"]
 
     # Tracking-boundary lint scans the tracking tree, not the memory root -- handle before the
     # memory-root existence gate so it works in a tracking-only tree.
+    if args.audit_tracking:
+        fails, warns, notes = [], [], []
+        for tr in tracking_roots:
+            f, w, n = audit_tracking(Path(tr), args.baseline)
+            fails += f; warns += w; notes += n
+        print_audit(fails, warns, notes, ", ".join(tracking_roots), args.baseline)
+        return 1 if fails else 0
+
     if args.check_tracking:
         violations = []
         for tr in tracking_roots:

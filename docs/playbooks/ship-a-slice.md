@@ -38,13 +38,16 @@ most forgettable steps - it is why this playbook exists.
      Shipped line naming what remains);
    - repoint `[[wikilinks]]` to the closed idea into `<name> (shipped)` prose;
    - `python3 scripts/memory_graph.py --check --root docs/memory --tracking-root docs/project-tracking`;
+   - `python3 scripts/memory_graph.py --audit-tracking --tracking-root docs/project-tracking`
+     — the GATE: exit 1 means a record vanished, duplicated, or dangles vs HEAD; fix before
+     committing (the repo's guardrail denies `git commit` while it fails);
    - commit, push.
 9. Update session memory (the workspace-os project fact + its MEMORY.md index line).
 
 ## Verify
 
 - CI green BEFORE the merge (never after); suite + validator green locally.
-- `memory_graph: clean` on the close-out commit.
+- `memory_graph: clean` AND `audit: clean` on the close-out commit.
 - `claude plugin update` reports the new version.
 - `ideas.md` h3 count dropped by the ideas closed (no fully-shipped idea left in the queue).
 
@@ -61,5 +64,8 @@ most forgettable steps - it is why this playbook exists.
   README.md or GUIDE.md, or the validator fails the PR.
 - A fully shipped idea left in `ideas.md` keeps counting toward the open backlog and
   over-reports the tier (`/project-status`) - the queue-not-archive rule.
+- A tracking-move script that opens a file for writing before reading it truncates it
+  silently (`open(p,'w').write(open(p).read())` - bit on 2026-09-04, d526ca0). Read into a
+  variable first; the audit's shrink check is what catches it if you slip.
 - Bash heredocs that themselves contain a `<<'EOF'` heredoc terminate the outer one early -
   use a distinct outer delimiter or write a script file instead.
