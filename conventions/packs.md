@@ -6,7 +6,7 @@ Spec: `docs/specs/2026-08-28-policy-packs-design.md`.
 
 ## What a pack is
 
-A versioned, machine-read bundle of guardrail rules + lint linters, shipped in this
+A versioned, machine-read bundle of guardrail rules, shipped in this
 plugin's `packs/<name>.json` (one distribution channel; the pack's version IS the plugin
 version). Importing a pack is activation: the engines read the target configs directly, so
 a landed pack enforces immediately.
@@ -20,7 +20,8 @@ a landed pack enforces immediately.
   when the regex matches AND the predicate exits 0). An optional `dispatch` array holds
   probe-first rules (`name`, `match` over a subagent dispatch's description + prompt, `probe`
   shell, `reason`; no action - always deny-once per session with the probe output).
-- `lint` (optional): `linters` array of the lint engine's shape (`name`, `match`, `command`).
+- `lint`: **retired** (v0.37.0, D-20260904-retire-advisory-lint) - a pack carrying the key
+  fails validation and import.
 - `ip_class` (optional): set on import; announced by the skill before confirmation.
 - `params` (optional): `[{name, prompt}]`. Rule strings may carry `{{name}}` placeholders;
   the `/guardrails` skill substitutes values conversationally BEFORE the import script runs

@@ -66,7 +66,6 @@ points, and nothing is ever written without your confirmation.
 | | `/continuity` | scaffold a repo-root bus-factor runbook (CONTINUITY.md) | [GUIDE](GUIDE.md#occasional-operations) |
 | **Automatic (hooks)** | `guardrail.sh` | blocks/warns on hazardous Bash + writes (secrets, force-push, your rules); probe-first gate on subagent dispatches | [GUIDE](GUIDE.md#guardrails) |
 | | `playbook-surface.sh` | surfaces a matching playbook once per session (before or after the call) | [GUIDE](GUIDE.md#playbook-surfacing) |
-| | `lint.sh` | runs your declared linters on edited files, feeds diagnostics back | [GUIDE](GUIDE.md#advisory-lint) |
 | | `dispatch-ledger.sh` | logs every subagent dispatch (sizes only) to a local-only ledger | [GUIDE](GUIDE.md#dispatch-ledger) |
 | | `capture-cadence.sh` `sidecar-memory-context.sh` | session-start context: capture nudge + sidecar memory index | [GUIDE](GUIDE.md#the-capture-cadence) |
 

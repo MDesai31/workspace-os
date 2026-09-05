@@ -9,6 +9,5 @@
       { "name": "pack-no-env-files", "match": "(^|/)\\.env(\\..+)?$", "field": "path", "action": "deny", "reason": "public-repo pack: .env files never enter a public repo. Use environment variables or a gitignored local file." },
       { "name": "pack-no-private-keys", "match": "-----BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY-----", "field": "content", "action": "deny", "reason": "public-repo pack: private key material in write content. Remove it." }
     ]
-  },
-  "lint": { "linters": [] }
+  }
 }

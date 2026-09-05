@@ -48,7 +48,6 @@ sidecar-memory-context.sh ──SessionStart──▶ injects _meta memory (work
 /playbook     ──writes──▶ docs/playbooks/<slug>.md   (adopt reshapes an existing how-to doc)
 /continuity   ──scaffolds▶ <repo>/CONTINUITY.md   (bus-factor runbook)
 guardrail.sh  ──reads──▶ <repo>/.claude/guardrails.json   (PreToolUse deny/warn on Bash|Edit|Write)
-lint.sh       ──reads──▶ <repo>/.claude/lint.json   (PostToolUse: lints edited file → additionalContext for Claude)
 playbook-surface.sh ──surfaces──▶ a matching playbook, once per session   (PreToolUse deny-once or PostToolUse context)
 dispatch-ledger.sh ──appends──▶ ~/.claude/workspace-os/dispatch-ledger.jsonl   (PostToolUse on dispatches; sizes only, local-only)
 capture-cadence.sh ──SessionStart──▶ capture nudge + live handoffs list
@@ -64,11 +63,6 @@ capture-cadence.sh ──SessionStart──▶ capture nudge + live handoffs lis
   via `/guardrails pack` (format SoT: `conventions/packs.md`; imported rules carry a `pack` stamp so
   re-import replaces only them, never hand-authored rules). The engine fails open when the config is
   absent. Same engine/data split as the rest of the plugin.
-- **The lint engine** (`hooks/lint.sh`) is the PostToolUse counterpart: after an `Edit`/`Write`/
-  `MultiEdit`, it runs each linter a repo declares in `.claude/lint.json` (`{name, match, command}`)
-  whose `match` regex matches the edited file's path, and feeds any diagnostics back to Claude as
-  `additionalContext` ("fix if quick"); a clean file is silent. It ships **no built-in linters** and
-  fails open when the config or a linter is absent — opt in by copying `templates/lint.json`.
 - **Skills** are model-interpreted instructions (`SKILL.md`). They contain no rules of their own
   beyond orchestration — the schema, ID scheme, and lifecycle live once in
   `conventions/project-tracking.md`, so there's no drift.

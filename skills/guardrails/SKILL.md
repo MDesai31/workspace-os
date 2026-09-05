@@ -148,7 +148,7 @@ configs by hand.
   1. Read `${CLAUDE_PLUGIN_ROOT}/packs/<name>.json` (missing -> run `pack list`, stop).
   2. For each entry in `params`, ask the user for a value using its `prompt` text, then
      substitute every `{{name}}` occurrence in the pack JSON. No params -> skip.
-  3. Propose: the full resulting rule set and linters, where they will land (the resolved
+  3. Propose: the full resulting rule set, where it will land (the resolved
      config paths from the prerequisite step), and - when the pack declares `ip_class` -
      the class change, called out explicitly ("this marks the repo's policy class
      '<value>'"). Wait for confirmation.
