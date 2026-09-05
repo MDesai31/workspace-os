@@ -548,3 +548,27 @@ with `data_root` unset:
 
 Closes stateful-guardrail-predicates (idea COMPLETE - shipped whole in v0.34.0, PR #45; the
 "probe has not run" hazard it named is the mechanism probe-first-dispatch-gate now builds on).
+
+### D-20260904-dispatch-gate-deny-once-not-predicate — the dispatch gate is a deny-once guardrail rule carrying probe output, not a predicate
+- Workstream: workflow
+- Created: 2026-09-04
+- Status: accepted
+- Rationale: the idea assumed "has the probe run this session" would live in a predicate
+  (v0.34.0), but a probe's value is its **output**, not its exit status — and PreToolUse cannot
+  inject context non-blockingly (verified 2026-08-24, `conventions/playbooks.md`). The one
+  channel that reaches Claude from PreToolUse is stderr on a deny, so the gate is
+  playbook-surface's **deny-once** pattern applied to the dispatch tool: marker written first,
+  probe run, output on stderr, exit 2; the retry passes. The session marker answers "has it
+  run"; no predicate is involved. Rules live in `guardrails.json` as a third array
+  (`dispatch`) rather than a separate `probes.json` + hook because the engine, upsert CLI,
+  `/guardrails` dry-run authoring, list/remove, and packs all come for free — a separate
+  registry would need every one of those rebuilt. A failing or timed-out probe still denies
+  once, with its exit status in the message: silently allowing the dispatch would hide a
+  broken probe behind exactly the cost the gate exists to prevent, and deny-once is already
+  fail-open in effect (the retry always passes).
+- Consequences: `hooks.json` gains a PreToolUse `Task|Agent` entry for the guardrail engine —
+  the first dispatch interception in the plugin. Dispatch rules carry no `action`, `field`, or
+  `predicate`; the CLI enforces that per type. Markers keyed on rule name, not matched text:
+  the first deny puts the probe output in context where a second, different question can see
+  it. The dispatch-ledger spec's "no gating" non-goal is now satisfied elsewhere, by pointer.
+- Spawns: A-20260904-probe-first-dispatch-gate
