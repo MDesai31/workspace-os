@@ -685,3 +685,16 @@ predicate-gated deny on `git commit`. Engine exports WORKSPACE_OS_PLUGIN_ROOT to
 predicates/probes. v0.36.0. Decision: D-20260904-tracking-audit-in-graph-script-gated-commit.
 - Completed: 2026-09-04
 - Commit: 8a1f213 (PR #47, merged to main, v0.36.0)
+
+### A-20260904-retire-advisory-lint — remove the advisory lint hook, config, template, tests, and pack support
+- Workstream: workflow
+- Status: open
+- Created: 2026-09-04
+
+Executes D-20260904-retire-advisory-lint. Spec `docs/specs/2026-09-04-lint-retirement-decision.md`.
+Deletes `hooks/lint.sh`, `templates/lint.json`, `tests/test-lint.sh`, the fake-linter fixture,
+the hooks.json entry, the CI step, and pack `lint` support (import script + tests + both
+packs + packs.md); the validator rejects a `lint` key as retired; docs updated (README, GUIDE,
+ARCHITECTURE, CLAUDE.md, /guardrails pack wording). v0.37.0.
+- Completed: 2026-09-04
+- Commit: 3704535 (PR #48, merged to main, v0.37.0)
