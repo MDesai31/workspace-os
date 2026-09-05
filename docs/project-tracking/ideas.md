@@ -240,3 +240,38 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Intended start: before building any further freshness machinery; this is the counter-proposal to memory-restamp-flow and fact-reverification-runner
 - Why/context: as models navigate context and code better, facts *about code* lose value while facts about decisions, domain rules, and external constraints keep it. Rather than tooling to keep code-facts fresh (restamp, re-verify), let a fact carry `expires:` (or a type-default lifetime); `/memory-lint` reports expired facts and the SessionStart index omits them until re-confirmed. Shrinks memory toward what cannot be derived. If adopted, the two gated freshness ideas likely close as superseded.
 - To start, future-us needs: the frontmatter field + type defaults in conventions/memory.md, the lint bucket, and the index-rendering change in the SessionStart hook; a decision on whether re-confirming is a `/memory-lint` offer (write path) or manual.
+
+### usage-ledger — which skills, hooks, and rules actually fire per session, as local-only data  (strategy 2026-09-05)
+- Workstream: meta
+- Priority: mid
+- Intended start: before the next retire-or-keep decision; the dispatch-ledger pattern makes it an afternoon
+- Why/context: the 2026-08 adoption audit that found the dark surfaces (guardrails 2/10, lint 1/10) was a manual one-off, and every keep/retire call since (D-20260904-retire-advisory-lint, D-20260905-engine-is-a-host) has argued from that single snapshot. Make it data: one JSONL line per skill invocation, hook fire, and rule fire, sizes and names only, under `~/.claude/workspace-os/` like the dispatch ledger (never in a repo). Then "is this feature encroached or merely unused" is a query. This is the instrument for the rapid-progress question itself.
+- To start, future-us needs: the capture points (SessionStart/Stop hooks see skills? — verify what the hook payloads expose; rule fires are the engine's own `denies`/`warns` arrays), the privacy invariant restated (no prompt text), and a `--usage` mode on `dispatch-ledger-summary.sh` or a sibling. Relates to dispatch-ledger (shipped), [[deny-outcome-ledger]].
+
+### repeat-failure-brake — deny the Nth identical failing command with a message that says so  (strategy 2026-09-05)
+- Workstream: workflow
+- Priority: mid
+- Intended start: after usage-ledger lands the per-session command log it needs (or as its first consumer)
+- Why/context: looping on a failing command is a failure mode of every agent regardless of vendor, and no host has a native guard for it. A PostToolUse ledger of Bash commands + exit codes per session (local-only) plus a `bash` rule with `match: ".*"` and a predicate that counts identical failures in this session — fires at the threshold with "you have run this N times; it fails the same way" — is data plus existing v0.34.0 machinery, no engine change (D-20260905-engine-is-a-host). Deny-once semantics so the retry after a real fix passes.
+- To start, future-us needs: the command/exit ledger (does the PostToolUse payload carry the exit code? verify), normalisation of "identical" (whitespace, cwd), the threshold as rule data, and the deny message shape. Relates to [[usage-ledger]], stateful-guardrail-predicates (shipped).
+
+### ratification-tier — agent-authored decisions and facts land as provisional until a human promotes them  (strategy 2026-09-05)
+- Workstream: schema
+- Priority: mid
+- Intended start: when a second reader (a teammate, or future-you after a long gap) first asks "did I actually decide this?"
+- Why/context: as models write more of the log, a rationale authored by a model at 2am and one written by the user carry different weight, and today the record cannot tell them apart. Add provenance (`Authored-by: human | agent <model> (session <url>)`) and a `Status: proposed` tier for agent-authored `D-`/fact records; `/project-log ratify <id>` (or a batch mode) promotes to `accepted`; `/project-status` brief lists what awaits ratification. The read rule stays append-only: promotion appends a `Ratified:` line, never edits `Status:` (the supersession precedent).
+- To start, future-us needs: the frontmatter/field names in conventions/project-tracking.md + conventions/memory.md, how the skills know they are agent-invoked (they always are — the question is whether the user explicitly dictated the content), and whether existing records are grandfathered as accepted (yes). Relates to [[decision-review-cadence]].
+
+### dated-obligations — records carry a due/renewal date and surface at session start when near  (strategy 2026-09-05)
+- Workstream: schema
+- Priority: mid
+- Intended start: small; the first real entry is the Options Analyzer guardian setup-token renewal (~July 2027), which today lives only in one machine's session memory
+- Why/context: credentials, certificates, contract and review dates, and renewal windows are facts no model can infer from a repo, and they are exactly what gets forgotten across a model switch or a long gap. A `Due:` (or `Renew:`) line on an `A-` record — or a small `obligations.md` queue — plus a SessionStart nudge (the capture-cadence hook already runs there) when a date is within N days. Pure human-side value; nothing about it is touched by model progress.
+- To start, future-us needs: field vs file decision, the window (30 days?), the nudge wording in capture-cadence.sh, and a `/project-status` section. First entry to migrate: the guardian token renewal from session memory.
+
+### decision-review-cadence — a decision asks for its outcome after an interval: held, revised, or regretted  (strategy 2026-09-05)
+- Workstream: schema
+- Priority: mid
+- Intended start: once the log has decisions old enough to review (it does: June–July records); pair with dated-obligations, which supplies the surfacing mechanism
+- Why/context: a decision log that never records outcomes teaches nothing, and the more decisions an agent makes on the user's behalf the more that matters. Each `D-` record gets an optional `Review-by:` date (default: created + 90 days); when due, `/project-status` lists it and `/project-log outcome <id> held|revised|regretted <line>` appends an `Outcome:` line (append-only, like `Superseded-by:`). Revised/regretted outcomes are the raw material for the next decision and for `/work-journal`.
+- To start, future-us needs: the field + default in conventions, the `outcome` mode in /project-log, and the status section. Relates to [[dated-obligations]], [[ratification-tier]].
