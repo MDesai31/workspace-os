@@ -545,3 +545,6 @@ with `data_root` unset:
   per-rule timeout, and the `Task` hook surface are deferred to probe-first-dispatch-gate,
   which this unblocks.
 - Spawns: A-20260904-stateful-guardrail-predicates
+
+Closes stateful-guardrail-predicates (idea COMPLETE - shipped whole in v0.34.0, PR #45; the
+"probe has not run" hazard it named is the mechanism probe-first-dispatch-gate now builds on).

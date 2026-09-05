@@ -126,28 +126,12 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
   whether `/memory-lint` (read-only today for the citation pass) should gain a write path at all.
   Relates to memory-provenance-fields (shipped).
 
-### stateful-guardrail-predicates — guardrail rules that test state, not just match text  (EC2 audit 2026-08-24)
-- Workstream: workflow
-- Priority: mid
-- Intended start: AFTER guardrail-conversational-authoring (shipped), not before — that gate is now cleared
-- Why/context: the engine matches regex over command/content/path text only (`hooks/guardrail.sh`),
-  so a rule cannot depend on machine or repo state. Add `"predicate": "<shell command>"` alongside
-  `match`, deciding on exit status. That expresses hazards this work has hit and handled with
-  one-off rules or prose: free disk below a threshold before running a generating script (`/home`
-  at 95%+), writes while the checkout sits on the wrong branch (folder names deliberately do not
-  match branch names), and "the cheap probe has not run yet" (the mechanism
-  [[probe-first-dispatch-gate]] needs). Deliberately ranked BELOW the authoring path: the audit that
-  proposed this also proved the rule file has zero adoption, and a richer language for a file nobody
-  writes changes nothing.
-- To start, future-us needs: predicate execution semantics (timeout, non-zero = trigger?, fail-open
-  on error to match the engine's existing contract), and a decision on whether predicates run on
-  every matching tool call or are cached per session.
-
 ### probe-first-dispatch-gate — block an expensive dispatch until its cheap probe has run  (EC2 audit 2026-08-24)
 - Workstream: workflow
 - Priority: mid
-- Intended start: after dispatch-ledger (shipped) and [[stateful-guardrail-predicates]] both exist
-- **Note (2026-08-24):** the dispatch-ledger (shipped) prerequisite now exists (v0.23.0); still gated on [[stateful-guardrail-predicates]].
+- Intended start: both prerequisites now exist - dispatch-ledger (shipped, v0.23.0) and stateful-guardrail-predicates (shipped, v0.34.0); the remaining gap is the `Task` PreToolUse surface
+- **Note (2026-08-24):** the dispatch-ledger (shipped) prerequisite now exists (v0.23.0); still gated on stateful-guardrail-predicates (shipped).
+- **Note (2026-09-04):** predicates shipped (v0.34.0) - ungated.
 - Why/context: the payoff half of the ~484k-token lesson above. A registry of (question class to
   deterministic probe) pairs, plus a PreToolUse hook on `Task` that blocks a matching dispatch when
   its probe has not run this session and injects the probe's output instead. Note `hooks.json`
