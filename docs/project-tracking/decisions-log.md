@@ -598,3 +598,27 @@ strand of the EC2-audit dispatch thread after dispatch-ledger v0.23.0 and predic
   this repo's tracking. `git commit` in workspace-os is denied while the tracking tree fails
   the audit (retry after fixing). The idea stays open for its cloud-tier remainder.
 - Spawns: A-20260904-integrity-auditor
+
+### D-20260904-retire-advisory-lint — the advisory lint hook is retired; natives cover it and its cure was unproven
+- Workstream: workflow
+- Created: 2026-09-04
+- Status: accepted
+- Rationale: the lint-conversational-authoring idea posed author / fold / retire for
+  `lint.json`, gated on evidence that conversational authoring lights up a dark surface. Read
+  honestly today, the guardrail engine has one real rule in one repo (written hours earlier),
+  so the cure is unproven and copying it to lint would build on it anyway. Meanwhile editor
+  integrations, CI, and Claude Code's own per-repo PostToolUse hooks already run linters; the
+  plugin's version added a second engine and config format with no differentiator — no shared
+  deny semantics, no sidecar-only value, no ip_class tie-in — which is precisely what
+  D-20260828-build-only-what-native-wont says not to keep. Fold (linters as guardrail write
+  rules) keeps a zero-adoption capability alive inside the engine; author (`/lint`) is a
+  build-alike of the host's hook config. Retire.
+- Consequences: v0.37.0 removes the hook, template, tests, CI step, and pack `lint` support;
+  `validate-plugin.py` rejects a `lint` key in a pack (fail loud). No known repo carries a
+  `.claude/lint.json`; a five-line native PostToolUse hook replaces one if it ever existed.
+- Spawns: A-20260904-retire-advisory-lint
+
+Design: docs/specs/2026-09-04-lint-retirement-decision.md.
+
+Closes lint-conversational-authoring (idea COMPLETE - it was captured as a question; the
+answer is "retire", executed in v0.37.0).
