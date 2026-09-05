@@ -100,11 +100,8 @@ for pack_path in sorted((REPO / "packs").glob("*.json")):
                 if not rule.get(field):
                     errors.append(f"{rel}: {rtype} rule missing '{field}'")
             strings.extend(str(v) for v in rule.values())
-    for linter in (pack.get("lint") or {}).get("linters", []):
-        for field in ("name", "match", "command"):
-            if not linter.get(field):
-                errors.append(f"{rel}: linter missing '{field}'")
-        strings.extend(str(v) for v in linter.values())
+    if "lint" in pack:
+        errors.append(f"{rel}: 'lint' key is retired (advisory lint engine removed in v0.37.0)")
     declared = set()
     for param in pack.get("params", []):
         if not param.get("name") or not param.get("prompt"):

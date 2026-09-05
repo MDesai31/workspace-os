@@ -38,8 +38,6 @@ A "personal repo" is any repo where committing docs in-tree is fine (your own pr
 3. Optional, per repo:
    - Guardrail rules: run `/guardrails` and describe a hazard (see
      [Guardrails](#guardrails)).
-   - Advisory linters: copy `templates/lint.json` to `.claude/lint.json` (see
-     [Advisory lint](#advisory-lint)).
 
 ## Setting up an enterprise workspace (sidecar mode)
 
@@ -179,12 +177,17 @@ traps — at most **once per session per playbook**:
 Author with `/playbook`, adopt existing how-to docs with `/playbook adopt <path>`, inspect
 with `/playbook list`.
 
-### Advisory lint
+### Advisory lint (retired)
 
-`hooks/lint.sh` (PostToolUse on edits) runs *your* linters on each edited file and feeds any
-diagnostics back to Claude to fix. No built-ins: copy `templates/lint.json` to
-`.claude/lint.json` and declare `{name, match, command}` entries (`match` is a path regex;
-the engine runs `<command> <file_path>`). A clean file is silent.
+The per-repo `lint.json` hook was retired in v0.37.0 (D-20260904-retire-advisory-lint): editor
+integrations, CI, and Claude Code's own per-repo `PostToolUse` hook in `.claude/settings.json`
+already run linters, and the plugin's copy had no differentiator. If you relied on a
+`.claude/lint.json`, a five-line native hook replaces it:
+
+```json
+{ "hooks": { "PostToolUse": [ { "matcher": "Edit|Write",
+  "hooks": [ { "type": "command", "command": "ruff check \"$(jq -r .tool_input.file_path)\"" } ] } ] } }
+```
 
 ### Dispatch ledger
 

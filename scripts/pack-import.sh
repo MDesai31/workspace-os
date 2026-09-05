@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # workspace-os pack import — the deterministic write path for /guardrails pack.
 # list | add <pack-json-path> | remove <pack-name>  (spec: docs/specs/2026-08-28-policy-packs-design.md)
-# Merges a pack's guardrail rules + lint linters into the resolved configs, each rule stamped
+# Merges a pack's guardrail rules into the resolved config, each rule stamped
 # "pack": "<name>", with a _packs ledger {version, imported} in guardrails.json. Idempotent:
 # add replaces only that pack's stamped rules; hand-authored rules are never touched; remove
 # never changes ip_class (prints a note). FAILS LOUD: any error -> stderr, nonzero, configs
@@ -10,7 +10,6 @@
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GTEMPLATE="$HERE/../templates/guardrails.json"
-LTEMPLATE="$HERE/../templates/lint.json"
 PACKS_DIR="$HERE/../packs"
 
 die() { echo "pack-import: $*" >&2; exit 1; }
@@ -26,7 +25,7 @@ EOF
   exit 1
 }
 
-# Resolve both configs. Mirrors guardrails-upsert.sh / hooks/lint.sh:
+# Resolve the guardrails config. Mirrors guardrails-upsert.sh:
 # env seam -> sidecar data root -> <git root>/.claude/.
 resolve_configs() {
   local out sc_mode sc_root root
@@ -39,13 +38,6 @@ resolve_configs() {
     root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
     [ -z "$root" ] && root="${CLAUDE_PROJECT_DIR:-$PWD}"
     gconfig="$root/.claude/guardrails.json"
-  fi
-  if [ -n "${LINT_CONFIG:-}" ]; then lconfig="$LINT_CONFIG"
-  elif [ "$sc_mode" = "sidecar" ]; then lconfig="$sc_root/lint.json"
-  else
-    root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
-    [ -z "$root" ] && root="${CLAUDE_PROJECT_DIR:-$PWD}"
-    lconfig="$root/.claude/lint.json"
   fi
 }
 
@@ -75,7 +67,8 @@ cmd_add() {
   [ -n "$name" ] || die "pack has no name"
   # Validate every regex in the engine's jq test() dialect before touching anything.
   local bad
-  bad="$(jq -r '[(.guardrails.bash // [])[].match, (.guardrails.write // [])[].match, (.guardrails.dispatch // [])[].match, (.lint.linters // [])[].match] | .[]' "$pack_file" \
+  jq -e 'has("lint")' "$pack_file" >/dev/null 2>&1 && die "pack carries a 'lint' key: the advisory lint engine was retired in v0.37.0"
+  bad="$(jq -r '[(.guardrails.bash // [])[].match, (.guardrails.write // [])[].match, (.guardrails.dispatch // [])[].match] | .[]' "$pack_file" \
     | while IFS= read -r m; do
         jq -ne --arg m "$m" '"x" | test($m) | true' >/dev/null 2>&1 || printf '%s\n' "$m"
       done)"
@@ -91,13 +84,6 @@ cmd_add() {
     | (if ($pack.ip_class // "") != "" then .ip_class = $pack.ip_class else . end)
     | ._packs = ((._packs // {}) + {($n): {version: $v, imported: $d}})'
 
-  if [ "$(jq '(.lint.linters // []) | length' "$pack_file")" -gt 0 ]; then
-    seed "$lconfig" "$LTEMPLATE"
-    jq -e . "$lconfig" >/dev/null 2>&1 || die "existing config does not parse, refusing to touch it: $lconfig"
-    atomic_edit "$lconfig" --slurpfile p "$pack_file" '
-      $p[0] as $pack | $pack.name as $n
-      | .linters = ((.linters // []) | map(select(.pack != $n))) + [($pack.lint.linters // [])[] | . + {pack: $n}]'
-  fi
   echo "imported pack '$name' (v$(plugin_version)) -> $gconfig"
 }
 
@@ -112,9 +98,6 @@ cmd_remove() {
     | .write = ((.write // []) | map(select(.pack != $n)))
     | .dispatch = ((.dispatch // []) | map(select(.pack != $n)))
     | ._packs = ((._packs // {}) | del(.[$n]))'
-  if [ -f "$lconfig" ] && jq -e . "$lconfig" >/dev/null 2>&1; then
-    atomic_edit "$lconfig" --arg n "$name" '.linters = ((.linters // []) | map(select(.pack != $n)))'
-  fi
   # ip_class is never downgraded by removal; note it when this pack is the likely setter.
   local pf="$PACKS_DIR/$name.json" pip cur
   cur="$(jq -r '.ip_class // ""' "$gconfig")"

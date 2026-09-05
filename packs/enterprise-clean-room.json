@@ -16,6 +16,5 @@
     "write": [
       { "name": "pack-no-tripwire-content", "match": "{{tripwire_regex}}", "field": "content", "action": "deny", "reason": "enterprise-clean-room pack: employer tripwire string crossing into written content." }
     ]
-  },
-  "lint": { "linters": [] }
+  }
 }

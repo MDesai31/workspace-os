@@ -10,21 +10,20 @@ bad() { echo "FAIL: $1"; fail=$((fail+1)); }
 check() { if [ "$2" = 0 ]; then ok "$1"; else bad "$1"; fi; }
 
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
-GCFG="$TMP/.claude/guardrails.json"; LCFG="$TMP/.claude/lint.json"
-export GUARDRAIL_CONFIG="$GCFG" LINT_CONFIG="$LCFG"
+GCFG="$TMP/.claude/guardrails.json"
+export GUARDRAIL_CONFIG="$GCFG"
 PACKS="$TMP/packs"; mkdir -p "$PACKS"
 
-# Fixture pack: bash + write rules, a linter, ip_class — already substituted (no {{}}).
+# Fixture pack: bash + write rules, ip_class — already substituted (no {{}}).
 cat > "$PACKS/testpack.json" <<'EOF'
 { "name": "testpack", "description": "fixture",
   "ip_class": "enterprise",
   "guardrails": {
     "bash":  [ { "name": "tp-bash", "match": "forbidden\\.example", "action": "deny", "reason": "tp bash" } ],
-    "write": [ { "name": "tp-write", "match": "TRIPWIRE", "field": "content", "action": "deny", "reason": "tp write" } ] },
-  "lint": { "linters": [ { "name": "tp-lint", "match": "\\.py$", "command": "true" } ] } }
+    "write": [ { "name": "tp-write", "match": "TRIPWIRE", "field": "content", "action": "deny", "reason": "tp write" } ] } }
 EOF
 
-# 1) add: rules stamped, ledger written, ip_class set, linter landed
+# 1) add: rules stamped, ledger written, ip_class set
 out="$(bash "$SCRIPT" --packs-dir "$PACKS" add "$PACKS/testpack.json" 2>&1)"; ec=$?
 check "add exits 0" $([ "$ec" = 0 ] && echo 0 || echo 1)
 check "bash rule stamped"   $([ "$(jq -r '.bash[]  | select(.name=="tp-bash").pack'  "$GCFG")" = "testpack" ] && echo 0 || echo 1)
@@ -32,12 +31,10 @@ check "write rule stamped"  $([ "$(jq -r '.write[] | select(.name=="tp-write").p
 check "ledger has version"  $(jq -e '._packs.testpack.version' "$GCFG" >/dev/null && echo 0 || echo 1)
 check "ledger has date"     $(jq -e '._packs.testpack.imported' "$GCFG" >/dev/null && echo 0 || echo 1)
 check "ip_class set"        $([ "$(jq -r '.ip_class' "$GCFG")" = "enterprise" ] && echo 0 || echo 1)
-check "linter stamped"      $([ "$(jq -r '.linters[] | select(.name=="tp-lint").pack' "$LCFG")" = "testpack" ] && echo 0 || echo 1)
 
 # 2) idempotent re-add: counts stable
 bash "$SCRIPT" --packs-dir "$PACKS" add "$PACKS/testpack.json" >/dev/null 2>&1
 check "re-add no dup bash"  $([ "$(jq '.bash | length' "$GCFG")" = 1 ] && echo 0 || echo 1)
-check "re-add no dup lint"  $([ "$(jq '.linters | length' "$LCFG")" = 1 ] && echo 0 || echo 1)
 
 # 3) hand-authored rule survives add and remove
 jq '.bash += [{"name":"hand-rule","match":"handmade","action":"warn","reason":"mine"}]' "$GCFG" > "$GCFG.t" && mv "$GCFG.t" "$GCFG"
@@ -53,7 +50,6 @@ check "engine denies on stamped rule (exit 2)" $([ "$ec" = 2 ] && echo 0 || echo
 out="$(bash "$SCRIPT" --packs-dir "$PACKS" remove testpack 2>&1)"; ec=$?
 check "remove exits 0"          $([ "$ec" = 0 ] && echo 0 || echo 1)
 check "pack bash rule gone"     $(jq -e '.bash[] | select(.name=="tp-bash")' "$GCFG" >/dev/null 2>&1 && echo 1 || echo 0)
-check "pack linter gone"        $(jq -e '.linters[] | select(.name=="tp-lint")' "$LCFG" >/dev/null 2>&1 && echo 1 || echo 0)
 check "ledger entry gone"       $(jq -e '._packs.testpack' "$GCFG" >/dev/null 2>&1 && echo 1 || echo 0)
 check "hand rule survives remove" $(jq -e '.bash[] | select(.name=="hand-rule")' "$GCFG" >/dev/null && echo 0 || echo 1)
 case "$out" in *ip_class*) ok "ip_class note printed";; *) bad "ip_class note printed (out=[$out])";; esac
@@ -77,6 +73,15 @@ EOF
 bash "$SCRIPT" --packs-dir "$PACKS" add "$PACKS/badre.json" >/dev/null 2>&1; ec=$?
 check "invalid regex dies" $([ "$ec" != 0 ] && echo 0 || echo 1)
 check "config untouched after regex die" $([ "$(cat "$GCFG")" = "$before" ] && echo 0 || echo 1)
+
+# 7b) a pack carrying the retired lint key -> die, config untouched
+cat > "$PACKS/lintpack.json" <<'EOF'
+{ "name": "lintpack", "description": "x", "guardrails": { "bash": [] }, "lint": { "linters": [] } }
+EOF
+before="$(cat "$GCFG")"
+bash "$SCRIPT" --packs-dir "$PACKS" add "$PACKS/lintpack.json" >/dev/null 2>&1; ec=$?
+check "retired lint key dies" $([ "$ec" != 0 ] && echo 0 || echo 1)
+check "config untouched after lint die" $([ "$(cat "$GCFG")" = "$before" ] && echo 0 || echo 1)
 
 # 8) remove of a pack never imported -> die
 bash "$SCRIPT" --packs-dir "$PACKS" remove neverimported >/dev/null 2>&1; ec=$?

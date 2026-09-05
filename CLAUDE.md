@@ -19,7 +19,7 @@ follow these and never restate them).
 
 ## Gotchas
 
-- Hooks (`guardrail.sh`, `lint.sh`) fail open by design — a missing config is silence, not an error.
+- Hooks (`guardrail.sh`, `playbook-surface.sh`, …) fail open by design — a missing config is silence, not an error.
 - Data paths are resolved, never assumed: everything routes through `scripts/resolve-data-root.sh`.
 
 @docs/memory/MEMORY.md
