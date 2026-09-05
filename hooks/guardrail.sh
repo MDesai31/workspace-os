@@ -2,13 +2,29 @@
 # workspace-os guardrail engine — PreToolUse hook (Bash|Edit|Write).
 # Reads tool-call JSON on stdin. Deny -> exit 2 + reason on stderr; warn -> reason on stderr, exit 0.
 # Fail open: any error / no jq / no match -> exit 0 (never block a tool call).
+# Config rules may carry a `predicate` (shell): the rule fires only when its regex matches AND the
+# predicate exits 0, run in the call's cwd under a 5s timeout; any other outcome skips the rule
+# (spec: docs/specs/2026-09-04-stateful-guardrail-predicates-design.md).
 set -uo pipefail
 
 input="$(cat)"
 command -v jq >/dev/null 2>&1 || exit 0   # can't parse -> fail open
 
 tool="$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null || true)"
+call_cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
+[ -d "$call_cwd" ] || call_cwd="$PWD"
 denies=(); warns=()
+
+# predicate_holds <shell>: 0 iff the predicate exits 0 within 5s in the call's cwd. Output discarded;
+# timeout (124), errors, and a missing `timeout` binary all fall through as "not fired" (fail open).
+predicate_holds() {
+  [ -z "$1" ] && return 0
+  if command -v timeout >/dev/null 2>&1; then
+    (cd "$call_cwd" && timeout 5 bash -c "$1") >/dev/null 2>&1
+  else
+    (cd "$call_cwd" && bash -c "$1") >/dev/null 2>&1
+  fi
+}
 
 # Sidecar resolution (conventions/data-root.md). Fail open: resolver errors = in-repo behavior.
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -63,19 +79,21 @@ fi
 if [ -n "$config" ] && [ -f "$config" ] && jq -e . "$config" >/dev/null 2>&1; then
   case "$tool" in
     Bash)
-      while IFS=$'\t' read -r action reason; do
+      while IFS=$'\t' read -r action reason predicate; do
         [ -z "$action" ] && continue
+        predicate_holds "$predicate" || continue
         if [ "$action" = "deny" ]; then denies+=("$reason"); else warns+=("$reason"); fi
       done < <(jq -r --arg s "${cmd:-}" \
-        '(.bash // [])[] | .match as $m | select($m != null and ($s | test($m))) | "\(.action)\t\(.reason)"' \
+        '(.bash // [])[] | .match as $m | select($m != null and ($s | test($m))) | "\(.action)\t\(.reason)\t\(.predicate // "")"' \
         "$config" 2>/dev/null)
       ;;
     Edit|Write)
-      while IFS=$'\t' read -r action reason; do
+      while IFS=$'\t' read -r action reason predicate; do
         [ -z "$action" ] && continue
+        predicate_holds "$predicate" || continue
         if [ "$action" = "deny" ]; then denies+=("$reason"); else warns+=("$reason"); fi
       done < <(jq -r --arg path "${path_fwd:-}" --arg content "${content:-}" \
-        '(.write // [])[] | .match as $m | select($m != null and ((if (.field // "content") == "path" then $path else $content end) | test($m))) | "\(.action)\t\(.reason)"' \
+        '(.write // [])[] | .match as $m | select($m != null and ((if (.field // "content") == "path" then $path else $content end) | test($m))) | "\(.action)\t\(.reason)\t\(.predicate // "")"' \
         "$config" 2>/dev/null)
       ;;
   esac

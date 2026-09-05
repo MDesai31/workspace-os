@@ -43,19 +43,25 @@ sidecar: `<data_root>/guardrails.json` - the repo tree is never touched).
   this-machine-only. Say why in one line and suggest `/hookify` (if hookify is not installed,
   print the rule you would have written as a hookify `.local.md` body instead). Do not
   reimplement hookify.
-- **State-dependent** ("wrong branch", "disk nearly full"): the engine cannot express it -
-  say so and point at the `stateful-guardrail-predicates` idea. Never silently drop it.
+- **State-dependent** ("wrong branch", "disk nearly full"): engine-fit **with a
+  `predicate`** - a shell test the engine runs alongside the regex. The rule fires only when
+  the regex matches AND the predicate exits 0. Phrase the predicate as the hazard condition
+  (`[ "$(git branch --show-current)" = main ]` fires *on* main), the same way `match` is
+  phrased. A state check that should guard every call of a tool uses `--match '.*'`.
 
 **2. Draft the rule:** kebab-case `name`; the narrowest regex that still catches the hazard
 (jq `test()` dialect - Oniguruma, not grep -E); a `reason` that tells a blocked session what
-to do instead. For write rules pick `--field content` (default) or `--field path`.
+to do instead. For write rules pick `--field content` (default) or `--field path`. A
+predicate runs in the tool call's cwd under a 5-second timeout with its output discarded;
+anything but exit 0 (non-zero, timeout, error) means "not fired" - the engine stays fail-open.
+Prefer a test that is cheap and side-effect free; it runs on every call the regex matches.
 
 **3. Dry-run through the real engine** - both directions, before proposing:
 
     cfg="$(mktemp)"
     printf '{"bash":[],"write":[]}' > "$cfg"
     GUARDRAIL_CONFIG="$cfg" bash "${CLAUDE_PLUGIN_ROOT}/scripts/guardrails-upsert.sh" add \
-      --type <t> --name <name> --match <regex> --action <a> --reason <r>
+      --type <t> --name <name> --match <regex> --action <a> --reason <r> [--predicate <shell>]
     # must fire (deny -> exit 2; warn -> systemMessage on stdout):
     printf '{"tool_name":"Bash","tool_input":{"command":"<hazard example>"}}' \
       | GUARDRAIL_CONFIG="$cfg" bash "${CLAUDE_PLUGIN_ROOT}/hooks/guardrail.sh"
@@ -65,9 +71,12 @@ to do instead. For write rules pick `--field content` (default) or `--field path
     rm -f "$cfg"
 
 For write rules the synthetic call is
-`{"tool_name":"Write","tool_input":{"file_path":"<p>","content":"<c>"}}`. A rule that fails
-either direction is revised, not proposed - the dry-run gate is what makes a confirmed rule
-trustworthy.
+`{"tool_name":"Write","tool_input":{"file_path":"<p>","content":"<c>"}}`. A **predicate rule
+needs a third run**: the hazard example again with the state healthy (regex hits, predicate
+false) must NOT fire. Prove it by pointing the synthetic call's `"cwd"` at a directory where
+the state is healthy, or by re-adding the rule with a known-false predicate for that run
+only. A rule that fails any direction is revised, not proposed - the dry-run gate is what
+makes a confirmed rule trustworthy.
 
 **4. Propose the batch:** per rule - the drafted JSON, both dry-run results as evidence, and
 where it will land. Wait for confirmation; the user may accept a subset.

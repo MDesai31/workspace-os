@@ -15,7 +15,9 @@ a landed pack enforces immediately.
 
 - `name` (required, = filename stem), `description` (required).
 - `guardrails` (required): `bash` / `write` arrays of the engine's exact rule shape
-  (`name`, `match`, `action` deny|warn, `reason`, plus `field` content|path on write rules).
+  (`name`, `match`, `action` deny|warn, `reason`, plus `field` content|path on write rules,
+  plus an optional `predicate` - shell the engine runs in the call's cwd; the rule fires only
+  when the regex matches AND the predicate exits 0).
 - `lint` (optional): `linters` array of the lint engine's shape (`name`, `match`, `command`).
 - `ip_class` (optional): set on import; announced by the skill before confirmation.
 - `params` (optional): `[{name, prompt}]`. Rule strings may carry `{{name}}` placeholders;

@@ -133,6 +133,12 @@ installing or updating, restart Claude Code before expecting them.
   Claude; `warn` prints an advisory. Tag the repo `ip_class`
   (`personal`/`employer`/`clean-room`) and add tripwire `write` rules for cross-boundary IP
   leakage.
+- **State-dependent rules** add a `predicate` — a shell test the engine runs in the call's
+  cwd (5-second budget). The rule fires only when its regex matches AND the predicate exits 0:
+  "warn on any write while the checkout is on main", "deny the generator when `/home` is at
+  95%+". Anything but exit 0 (timeout, error) means the rule stays quiet. This makes
+  `guardrails.json` a file that executes shell — treat it as part of the repo's trusted
+  configuration, the same standing as repo-level hooks.
 - **Author rules by conversation** — run `/guardrails` and describe the hazard ("we never
   push to the enterprise remote"). It drafts the rule, **dry-runs it through the real engine**
   (one call that must fire, one that must not — you see both results), and applies it only on
