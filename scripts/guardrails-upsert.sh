@@ -14,7 +14,8 @@ usage() {
   cat >&2 <<'EOF'
 usage:
   guardrails-upsert.sh add --type bash|write --name NAME --match REGEX --action deny|warn --reason TEXT [--field content|path] [--predicate SHELL]
-  guardrails-upsert.sh remove --type bash|write --name NAME
+  guardrails-upsert.sh add --type dispatch --name NAME --match REGEX --probe SHELL --reason TEXT
+  guardrails-upsert.sh remove --type bash|write|dispatch --name NAME
   guardrails-upsert.sh list
 EOF
   exit 1
@@ -47,11 +48,20 @@ atomic_edit() {
 }
 
 add_rule() {
-  case "$type" in bash|write) ;; *) die "--type must be bash|write" ;; esac
-  case "$action" in deny|warn) ;; *) die "--action must be deny|warn" ;; esac
+  case "$type" in bash|write|dispatch) ;; *) die "--type must be bash|write|dispatch" ;; esac
   [ -n "$name" ]   || die "--name is required"
   [ -n "$match" ]  || die "--match is required"
   [ -n "$reason" ] || die "--reason is required"
+  if [ "$type" = "dispatch" ]; then
+    # A dispatch rule is always deny-once with the probe output; it carries no action/field/predicate.
+    [ -z "$action" ]    || die "--action is not valid with --type dispatch (dispatch rules always deny once)"
+    [ -z "$field" ]     || die "--field is not valid with --type dispatch"
+    [ "$predicate_set" = 0 ] || die "--predicate is not valid with --type dispatch"
+    [ -n "$probe" ]     || die "--probe is required with --type dispatch"
+  else
+    [ -z "$probe" ] || die "--probe is only valid with --type dispatch"
+    case "$action" in deny|warn) ;; *) die "--action must be deny|warn" ;; esac
+  fi
   if [ -n "$field" ]; then
     [ "$type" = "write" ] || die "--field is only valid with --type write"
     case "$field" in content|path) ;; *) die "--field must be content|path" ;; esac
@@ -67,6 +77,13 @@ add_rule() {
     cp "$TEMPLATE" "$config" || die "cannot seed config from template"
   fi
   jq -e . "$config" >/dev/null 2>&1 || die "existing config does not parse, refusing to touch it: $config"
+  if [ "$type" = "dispatch" ]; then
+    atomic_edit --arg n "$name" --arg m "$match" --arg pr "$probe" --arg r "$reason" '
+      .dispatch = ((.dispatch // []) | map(select(.name != $n)))
+                + [ {name:$n, match:$m, probe:$pr, reason:$r} ]'
+    echo "added dispatch rule '$name' (probe-first) -> $config [mode: $mode]"
+    return
+  fi
   atomic_edit --arg t "$type" --arg n "$name" --arg m "$match" \
               --arg a "$action" --arg r "$reason" --arg f "${field:-}" --arg p "${predicate:-}" '
     .[$t] = ((.[$t] // []) | map(select(.name != $n)))
@@ -78,7 +95,7 @@ add_rule() {
 }
 
 remove_rule() {
-  case "$type" in bash|write) ;; *) die "--type must be bash|write" ;; esac
+  case "$type" in bash|write|dispatch) ;; *) die "--type must be bash|write|dispatch" ;; esac
   [ -n "$name" ] || die "--name is required"
   [ -f "$config" ] || die "no config at $config"
   jq -e . "$config" >/dev/null 2>&1 || die "config does not parse: $config"
@@ -95,21 +112,21 @@ list_rules() {
   fi
   jq -e . "$config" >/dev/null 2>&1 || die "config does not parse: $config"
   echo "config: $config [mode: $mode]"
-  jq -r '["bash","write"][] as $t
+  jq -r '["bash","write","dispatch"][] as $t
          | (.[$t] // [])[]
-         | [$t, .name, .action, (.field // "-"), .match, (.predicate // "-"), .reason] | @tsv' "$config"
+         | [$t, .name, (.action // "probe-first"), (.field // "-"), .match, (.predicate // .probe // "-"), .reason] | @tsv' "$config"
 }
 
 cmd="${1:-}"; [ $# -gt 0 ] && shift
-type=""; name=""; match=""; action=""; reason=""; field=""; predicate=""; predicate_set=0
+type=""; name=""; match=""; action=""; reason=""; field=""; predicate=""; predicate_set=0; probe=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    --type|--name|--match|--action|--reason|--field|--predicate)
+    --type|--name|--match|--action|--reason|--field|--predicate|--probe)
       [ $# -ge 2 ] || die "missing value for $1"
       case "$1" in
         --type) type="$2" ;; --name) name="$2" ;; --match) match="$2" ;;
         --action) action="$2" ;; --reason) reason="$2" ;; --field) field="$2" ;;
-        --predicate) predicate="$2"; predicate_set=1 ;;
+        --predicate) predicate="$2"; predicate_set=1 ;; --probe) probe="$2" ;;
       esac; shift 2 ;;
     *) die "unknown argument: $1" ;;
   esac

@@ -163,4 +163,26 @@ run list
 expect "list shows - for no predicate" 0 "on-main"
 case "$out" in *$'\t-\t'*) echo "PASS: list dash placeholder for absent predicate"; pass=$((pass+1));; *) echo "FAIL: list dash placeholder (out=[$out])"; fail=$((fail+1));; esac
 
+# --- dispatch rules: --type dispatch --probe (spec: docs/specs/2026-09-04-probe-first-dispatch-gate-design.md) ---
+CFG="$TMP/d/.claude/guardrails.json"
+run add --type dispatch --name output-exists --match '(derive|rebuild).*csv' --probe 'ls -la data/out/' --reason "check the pipeline output first"
+expect "dispatch add" 0 "added dispatch rule 'output-exists'"
+jqcheck "dispatch rule persisted with probe, no action" \
+  '.dispatch | length == 1 and .[0].name == "output-exists" and .[0].probe == "ls -la data/out/" and (.[0] | has("action") | not)'
+run add --type dispatch --name no-probe --match 'x' --reason r
+expect "dispatch without --probe dies" 1 "--probe is required"
+run add --type dispatch --name with-action --match 'x' --probe 'ls' --action deny --reason r
+expect "dispatch with --action dies" 1 "--action is not valid with --type dispatch"
+run add --type dispatch --name with-pred --match 'x' --probe 'ls' --predicate 'true' --reason r
+expect "dispatch with --predicate dies" 1 "--predicate is not valid with --type dispatch"
+run add --type bash --name bash-probe --match 'x' --probe 'ls' --action warn --reason r
+expect "bash with --probe dies" 1 "--probe is only valid with --type dispatch"
+jqcheck "rejected adds left config untouched" '(.dispatch | length == 1) and ((.bash // []) | length == 0)'
+run list
+expect "list shows the dispatch rule" 0 "dispatch"
+case "$out" in *'ls -la data/out/'*) echo "PASS: list shows the probe"; pass=$((pass+1));; *) echo "FAIL: list shows the probe (out=[$out])"; fail=$((fail+1));; esac
+run remove --type dispatch --name output-exists
+expect "dispatch remove" 0 "removed dispatch rule 'output-exists'"
+jqcheck "dispatch removed" '.dispatch | length == 0'
+
 echo "----"; echo "$pass passed, $fail failed"; [ "$fail" -eq 0 ]

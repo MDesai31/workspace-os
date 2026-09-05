@@ -75,7 +75,7 @@ cmd_add() {
   [ -n "$name" ] || die "pack has no name"
   # Validate every regex in the engine's jq test() dialect before touching anything.
   local bad
-  bad="$(jq -r '[(.guardrails.bash // [])[].match, (.guardrails.write // [])[].match, (.lint.linters // [])[].match] | .[]' "$pack_file" \
+  bad="$(jq -r '[(.guardrails.bash // [])[].match, (.guardrails.write // [])[].match, (.guardrails.dispatch // [])[].match, (.lint.linters // [])[].match] | .[]' "$pack_file" \
     | while IFS= read -r m; do
         jq -ne --arg m "$m" '"x" | test($m) | true' >/dev/null 2>&1 || printf '%s\n' "$m"
       done)"
@@ -87,6 +87,7 @@ cmd_add() {
     $p[0] as $pack | $pack.name as $n
     | .bash  = ((.bash  // []) | map(select(.pack != $n))) + [($pack.guardrails.bash  // [])[] | . + {pack: $n}]
     | .write = ((.write // []) | map(select(.pack != $n))) + [($pack.guardrails.write // [])[] | . + {pack: $n}]
+    | .dispatch = ((.dispatch // []) | map(select(.pack != $n))) + [($pack.guardrails.dispatch // [])[] | . + {pack: $n}]
     | (if ($pack.ip_class // "") != "" then .ip_class = $pack.ip_class else . end)
     | ._packs = ((._packs // {}) + {($n): {version: $v, imported: $d}})'
 
@@ -109,6 +110,7 @@ cmd_remove() {
   atomic_edit "$gconfig" --arg n "$name" '
       .bash  = ((.bash  // []) | map(select(.pack != $n)))
     | .write = ((.write // []) | map(select(.pack != $n)))
+    | .dispatch = ((.dispatch // []) | map(select(.pack != $n)))
     | ._packs = ((._packs // {}) | del(.[$n]))'
   if [ -f "$lconfig" ] && jq -e . "$lconfig" >/dev/null 2>&1; then
     atomic_edit "$lconfig" --arg n "$name" '.linters = ((.linters // []) | map(select(.pack != $n)))'

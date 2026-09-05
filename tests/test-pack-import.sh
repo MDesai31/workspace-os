@@ -88,4 +88,18 @@ out="$(bash "$SCRIPT" --packs-dir "$PACKS" list 2>&1)"
 case "$out" in *testpack*) ok "list names the pack";; *) bad "list names the pack (out=[$out])";; esac
 case "$out" in *imported*) ok "list shows imported state";; *) bad "list shows imported state (out=[$out])";; esac
 
+# 10) dispatch rules travel in packs: stamped, idempotent, removed with the pack
+cat > "$PACKS/dpack.json" <<'EOF'
+{ "name": "dpack", "description": "x",
+  "guardrails": { "bash": [], "write": [],
+    "dispatch": [ { "name": "pack-probe", "match": "rebuild.*csv", "probe": "ls data/out", "reason": "check first" } ] } }
+EOF
+bash "$SCRIPT" --packs-dir "$PACKS" add "$PACKS/dpack.json" >/dev/null 2>&1; ec=$?
+check "dispatch pack imports" "$ec"
+check "dispatch rule stamped" $(jq -e '.dispatch | map(select(.name=="pack-probe" and .pack=="dpack" and .probe=="ls data/out")) | length == 1' "$GCFG" >/dev/null 2>&1 && echo 0 || echo 1)
+bash "$SCRIPT" --packs-dir "$PACKS" add "$PACKS/dpack.json" >/dev/null 2>&1
+check "dispatch re-import idempotent" $([ "$(jq '.dispatch | map(select(.pack=="dpack")) | length' "$GCFG")" = 1 ] && echo 0 || echo 1)
+bash "$SCRIPT" --packs-dir "$PACKS" remove dpack >/dev/null 2>&1
+check "dispatch rules removed with pack" $([ "$(jq '.dispatch | map(select(.pack=="dpack")) | length' "$GCFG")" = 0 ] && echo 0 || echo 1)
+
 echo "---"; echo "pass=$pass fail=$fail"; [ "$fail" = 0 ]

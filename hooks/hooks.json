@@ -12,6 +12,12 @@
         "hooks": [
           { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/playbook-surface.sh\"" }
         ]
+      },
+      {
+        "matcher": "Task|Agent",
+        "hooks": [
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/guardrail.sh\"" }
+        ]
       }
     ],
     "SessionStart": [

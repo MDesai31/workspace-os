@@ -139,6 +139,11 @@ installing or updating, restart Claude Code before expecting them.
   95%+". Anything but exit 0 (timeout, error) means the rule stays quiet. This makes
   `guardrails.json` a file that executes shell — treat it as part of the repo's trusted
   configuration, the same standing as repo-level hooks.
+- **Probe-first dispatch** — a `dispatch` rule gates subagent dispatches: the first dispatch
+  per session whose description or prompt matches the regex runs the rule's `probe` (a cheap
+  check such as `ls data/out/`, 10-second budget) and is denied once with the probe output
+  handed back, so the question can be answered from the output instead of a ~500k-token
+  re-derivation. The retry passes. Author one with `/guardrails` ("we keep re-deriving X").
 - **Author rules by conversation** — run `/guardrails` and describe the hazard ("we never
   push to the enterprise remote"). It drafts the rule, **dry-runs it through the real engine**
   (one call that must fire, one that must not — you see both results), and applies it only on

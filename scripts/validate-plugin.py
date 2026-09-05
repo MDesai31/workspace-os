@@ -93,9 +93,10 @@ for pack_path in sorted((REPO / "packs").glob("*.json")):
         if not pack.get(key):
             errors.append(f"{rel}: missing required key '{key}'")
     strings = [pack.get("ip_class") or ""]
-    for rtype in ("bash", "write"):
+    for rtype in ("bash", "write", "dispatch"):
+        required = ("name", "match", "probe", "reason") if rtype == "dispatch" else ("name", "match", "action", "reason")
         for rule in (pack.get("guardrails") or {}).get(rtype, []):
-            for field in ("name", "match", "action", "reason"):
+            for field in required:
                 if not rule.get(field):
                     errors.append(f"{rel}: {rtype} rule missing '{field}'")
             strings.extend(str(v) for v in rule.values())
