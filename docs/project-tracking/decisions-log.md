@@ -520,3 +520,28 @@ with `data_root` unset:
   workspace tier through the repo-tier path. Extending the fan-out to `workspace-meta` would
   change an existing mode's behavior and belongs to its own decision, not this batch.
 - Spawns: A-20260831-dogfood-defect-batch
+
+### D-20260904-predicate-exit0-fires-fail-open — a guardrail predicate ANDs with `match`, fires on exit 0, runs uncached and trusted
+- Workstream: workflow
+- Created: 2026-09-04
+- Status: accepted
+- Rationale: three choices, each picked against a named alternative. (1) **AND with `match`,
+  exit 0 = fire.** The predicate is phrased as the hazard condition, mirroring `match`, so an
+  erroring or timing-out predicate (non-zero) simply does not fire — the engine's existing
+  fail-open contract survives with no second signal. "Non-zero = fire" (predicate as a
+  precondition) reads well for the branch case but would fire on every error; "predicate
+  replaces match" drops the regex gate and pays a subprocess on every tool call. (2) **No
+  caching.** Branch and disk state change mid-session — the whole reason to test state — so a
+  per-session cache answers the wrong question; cost is bounded by the regex. (3) **Trusted
+  as-is, risk documented.** A predicate is shell in a version-controlled file, the same
+  standing as repo-level Claude Code hooks and the existing lint linters that already run
+  repo-configured commands. An allowlisted predicate library was rejected because every new
+  hazard class would need an engine change (the disease this slice cures); forbidding
+  predicates in packs was rejected because packs are the plugin's own rules — a boundary there
+  protects nothing the hand-authored path does not already expose.
+- Consequences: `guardrails.json` now executes shell on matching tool calls; the template
+  comment and GUIDE say so. The `/guardrails` dry-run gate gains a third required case
+  (regex hits, state healthy → must not fire). Passing call context to the predicate, a
+  per-rule timeout, and the `Task` hook surface are deferred to probe-first-dispatch-gate,
+  which this unblocks.
+- Spawns: A-20260904-stateful-guardrail-predicates
