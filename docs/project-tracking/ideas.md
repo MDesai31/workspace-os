@@ -126,23 +126,6 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
   whether `/memory-lint` (read-only today for the citation pass) should gain a write path at all.
   Relates to memory-provenance-fields (shipped).
 
-### probe-first-dispatch-gate — block an expensive dispatch until its cheap probe has run  (EC2 audit 2026-08-24)
-- Workstream: workflow
-- Priority: mid
-- Intended start: both prerequisites now exist - dispatch-ledger (shipped, v0.23.0) and stateful-guardrail-predicates (shipped, v0.34.0); the remaining gap is the `Task` PreToolUse surface
-- **Note (2026-08-24):** the dispatch-ledger (shipped) prerequisite now exists (v0.23.0); still gated on stateful-guardrail-predicates (shipped).
-- **Note (2026-09-04):** predicates shipped (v0.34.0) - ungated.
-- Why/context: the payoff half of the ~484k-token lesson above. A registry of (question class to
-  deterministic probe) pairs, plus a PreToolUse hook on `Task` that blocks a matching dispatch when
-  its probe has not run this session and injects the probe's output instead. Note `hooks.json`
-  currently registers PreToolUse on `Bash|Edit|Write` only, so **nothing intercepts a dispatch at
-  all today**; that hook surface is the first prerequisite. Ranked below its two dependencies
-  deliberately: without the ledger the probe registry is guesswork, and without predicates the
-  "has the probe run" test has nowhere to live.
-- To start, future-us needs: the `Task` PreToolUse surface, a probe-registry shape, and a
-  session-scoped record of which probes have run.
-
-
 ### deliverable-provenance — bind a published figure to the fact or run that produced it  (EC2 audit 2026-08-24)
 - Workstream: memory
 - Priority: mid

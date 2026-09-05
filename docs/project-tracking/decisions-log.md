@@ -572,3 +572,6 @@ Closes stateful-guardrail-predicates (idea COMPLETE - shipped whole in v0.34.0, 
   the first deny puts the probe output in context where a second, different question can see
   it. The dispatch-ledger spec's "no gating" non-goal is now satisfied elsewhere, by pointer.
 - Spawns: A-20260904-probe-first-dispatch-gate
+
+Closes probe-first-dispatch-gate (idea COMPLETE - shipped whole in v0.35.0, PR #46; the third
+strand of the EC2-audit dispatch thread after dispatch-ledger v0.23.0 and predicates v0.34.0).
