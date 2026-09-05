@@ -119,6 +119,59 @@ check "sidecar write into _meta passes" "$ec" "0" "$err" ""
 IFS=$'\t' read -r ec err < <(run_hook_in "$SWTMP/ws/repo-a" '{"tool_name":"Write","tool_input":{"file_path":"docs\\project-tracking\\action-items.md","content":"x"}}')
 check "sidecar backslash path warns (Windows)" "$ec" "0" "$err" "sidecar mode"
 
+# --- Task: stateful predicates (spec: docs/specs/2026-09-04-stateful-guardrail-predicates-design.md) ---
+# A rule fires when its regex matches AND its `predicate` exits 0; anything else skips it (fail open).
+# hook_all <json> <cfg> -> full combined output, newlines joined (run_hook's `read` sees line 1 only)
+hook_all() { GUARDRAIL_CONFIG="$2" bash "$HOOK" <<<"$1" 2>&1 | tr '\n' '|'; }
+PCFG="$SWTMP/predicates.json"
+cat > "$PCFG" <<'JSON'
+{ "bash": [
+    { "name": "pred-true",  "match": "gen\\.py", "predicate": "true",  "action": "deny", "reason": "pred-true fired" },
+    { "name": "pred-false", "match": "gen\\.py", "predicate": "false", "action": "deny", "reason": "pred-false fired" },
+    { "name": "pred-slow",  "match": "slow\\.py", "predicate": "sleep 10", "action": "deny", "reason": "pred-slow fired" },
+    { "name": "pred-error", "match": "err\\.py", "predicate": "this-command-does-not-exist-xyz", "action": "deny", "reason": "pred-error fired" },
+    { "name": "plain",      "match": "plain\\.py", "action": "warn", "reason": "plain rule fired" },
+    { "name": "on-main",    "match": ".*", "predicate": "[ \"$(git branch --show-current)\" = main ]", "action": "warn", "reason": "on-main fired" }
+  ],
+  "write": [
+    { "name": "w-pred-true",  "match": "\\.md$", "field": "path", "predicate": "true",  "action": "warn", "reason": "w-pred-true fired" },
+    { "name": "w-pred-false", "match": "\\.md$", "field": "path", "predicate": "false", "action": "deny", "reason": "w-pred-false fired" }
+  ] }
+JSON
+
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"python gen.py"}}' "$PCFG")
+check "predicate true fires (deny)" "$ec" "2" "$err" "pred-true fired"
+all="$(hook_all '{"tool_name":"Bash","tool_input":{"command":"python gen.py"}}' "$PCFG")"
+case "$all" in *"pred-false fired"*) echo "FAIL: predicate false must not fire (out=[$all])"; fail=$((fail+1));; *) echo "PASS: predicate false does not fire"; pass=$((pass+1));; esac
+
+start=$(date +%s)
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"python slow.py"}}' "$PCFG")
+elapsed=$(( $(date +%s) - start ))
+check "predicate timeout fails open" "$ec" "0" "$err" ""
+[ "$elapsed" -lt 9 ] && { echo "PASS: predicate timeout bounded (${elapsed}s)"; pass=$((pass+1)); } \
+  || { echo "FAIL: predicate ran past its budget (${elapsed}s)"; fail=$((fail+1)); }
+
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"python err.py"}}' "$PCFG")
+check "predicate command-not-found fails open" "$ec" "0" "$err" ""
+
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"python plain.py"}}' "$PCFG")
+check "no-predicate rule unaffected" "$ec" "0" "$err" "plain rule fired"
+
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Write","tool_input":{"file_path":"notes.md","content":"x"}}' "$PCFG")
+check "write predicate true fires (warn)" "$ec" "0" "$err" "w-pred-true fired"
+all="$(hook_all '{"tool_name":"Write","tool_input":{"file_path":"notes.md","content":"x"}}' "$PCFG")"
+case "$all" in *"w-pred-false fired"*) echo "FAIL: write predicate false must not fire (out=[$all])"; fail=$((fail+1));; *) echo "PASS: write predicate false does not fire"; pass=$((pass+1));; esac
+
+# Predicates run in the call's cwd (stdin `cwd`), not the hook's: a branch check against a temp repo.
+BR="$SWTMP/branchrepo"; mkdir -p "$BR"; git -C "$BR" init -q -b main
+git -C "$BR" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","cwd":"'"$BR"'","tool_input":{"command":"ls"}}' "$PCFG")
+check "predicate sees cwd from stdin: on main fires" "$ec" "0" "$err" "on-main fired"
+git -C "$BR" checkout -q -b feature
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","cwd":"'"$BR"'","tool_input":{"command":"ls"}}' "$PCFG")
+all="$(hook_all '{"tool_name":"Bash","cwd":"'"$BR"'","tool_input":{"command":"ls"}}' "$PCFG")"
+case "$all" in *"on-main fired"*) echo "FAIL: on feature branch must not fire (out=[$all])"; fail=$((fail+1));; *) echo "PASS: predicate sees cwd from stdin: on feature branch passes"; pass=$((pass+1));; esac
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

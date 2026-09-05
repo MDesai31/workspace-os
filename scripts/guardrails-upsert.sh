@@ -13,7 +13,7 @@ command -v jq >/dev/null 2>&1 || die "jq is required"
 usage() {
   cat >&2 <<'EOF'
 usage:
-  guardrails-upsert.sh add --type bash|write --name NAME --match REGEX --action deny|warn --reason TEXT [--field content|path]
+  guardrails-upsert.sh add --type bash|write --name NAME --match REGEX --action deny|warn --reason TEXT [--field content|path] [--predicate SHELL]
   guardrails-upsert.sh remove --type bash|write --name NAME
   guardrails-upsert.sh list
 EOF
@@ -56,6 +56,8 @@ add_rule() {
     [ "$type" = "write" ] || die "--field is only valid with --type write"
     case "$field" in content|path) ;; *) die "--field must be content|path" ;; esac
   fi
+  # A predicate is stored verbatim: its correctness is proven by the skill's dry-run, not here.
+  [ "$predicate_set" = 1 ] && [ -z "$predicate" ] && die "--predicate must not be empty"
   # The engine evaluates config rules with jq test() (Oniguruma) — validate in that dialect.
   jq -ne --arg m "$match" '"x" | test($m) | true' >/dev/null 2>&1 \
     || die "invalid regex for the engine's jq test() dialect: $match"
@@ -66,10 +68,11 @@ add_rule() {
   fi
   jq -e . "$config" >/dev/null 2>&1 || die "existing config does not parse, refusing to touch it: $config"
   atomic_edit --arg t "$type" --arg n "$name" --arg m "$match" \
-              --arg a "$action" --arg r "$reason" --arg f "${field:-}" '
+              --arg a "$action" --arg r "$reason" --arg f "${field:-}" --arg p "${predicate:-}" '
     .[$t] = ((.[$t] // []) | map(select(.name != $n)))
           + [ {name:$n, match:$m}
               + (if $f != "" then {field:$f} else {} end)
+              + (if $p != "" then {predicate:$p} else {} end)
               + {action:$a, reason:$r} ]'
   echo "added $type rule '$name' ($action) -> $config [mode: $mode]"
 }
@@ -94,18 +97,19 @@ list_rules() {
   echo "config: $config [mode: $mode]"
   jq -r '["bash","write"][] as $t
          | (.[$t] // [])[]
-         | [$t, .name, .action, (.field // "-"), .match, .reason] | @tsv' "$config"
+         | [$t, .name, .action, (.field // "-"), .match, (.predicate // "-"), .reason] | @tsv' "$config"
 }
 
 cmd="${1:-}"; [ $# -gt 0 ] && shift
-type=""; name=""; match=""; action=""; reason=""; field=""
+type=""; name=""; match=""; action=""; reason=""; field=""; predicate=""; predicate_set=0
 while [ $# -gt 0 ]; do
   case "$1" in
-    --type|--name|--match|--action|--reason|--field)
+    --type|--name|--match|--action|--reason|--field|--predicate)
       [ $# -ge 2 ] || die "missing value for $1"
       case "$1" in
         --type) type="$2" ;; --name) name="$2" ;; --match) match="$2" ;;
         --action) action="$2" ;; --reason) reason="$2" ;; --field) field="$2" ;;
+        --predicate) predicate="$2"; predicate_set=1 ;;
       esac; shift 2 ;;
     *) die "unknown argument: $1" ;;
   esac

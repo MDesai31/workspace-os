@@ -142,4 +142,25 @@ case "$hout" in *"never push enterprise"*) echo "PASS: engine surfaces our reaso
 out="$(cd "$WS/repo-a" && bash "$UPSERT" list 2>&1)"; ec=$?
 expect "sidecar list finds the config" 0 "_meta/repo-a/guardrails.json"
 
+# --- predicate: optional shell on either rule type (spec: docs/specs/2026-09-04-stateful-guardrail-predicates-design.md) ---
+CFG="$TMP/p/.claude/guardrails.json"
+run add --type bash --name on-main --match '.*' --predicate '[ "$(git branch --show-current)" = main ]' \
+    --action warn --reason "checkout is on main"
+expect "add with --predicate" 0 "added bash rule 'on-main' (warn)"
+jqcheck "predicate persisted verbatim" '.bash[0].predicate == "[ \"$(git branch --show-current)\" = main ]"'
+run list
+expect "list shows the predicate column" 0 '[ "$(git branch --show-current)" = main ]'
+run add --type write --name md-on-main --match '\.md$' --field path --predicate 'true' --action deny --reason r
+expect "write rule takes --predicate" 0 "added write rule 'md-on-main' (deny)"
+jqcheck "write predicate persisted" '.write[0].predicate == "true"'
+run add --type bash --name on-main --match '.*' --action warn --reason "re-added without predicate"
+expect "re-add without --predicate exits 0" 0 "added bash rule"
+jqcheck "re-add without --predicate drops it" '.bash | length == 1 and (.[0] | has("predicate") | not)'
+run add --type bash --name empty-pred --match 'x' --predicate '' --action warn --reason r
+expect "empty --predicate dies" 1 "--predicate must not be empty"
+jqcheck "empty --predicate left config untouched" '.bash | length == 1'
+run list
+expect "list shows - for no predicate" 0 "on-main"
+case "$out" in *$'\t-\t'*) echo "PASS: list dash placeholder for absent predicate"; pass=$((pass+1));; *) echo "FAIL: list dash placeholder (out=[$out])"; fail=$((fail+1));; esac
+
 echo "----"; echo "$pass passed, $fail failed"; [ "$fail" -eq 0 ]
