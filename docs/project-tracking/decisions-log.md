@@ -575,3 +575,26 @@ Closes stateful-guardrail-predicates (idea COMPLETE - shipped whole in v0.34.0, 
 
 Closes probe-first-dispatch-gate (idea COMPLETE - shipped whole in v0.35.0, PR #46; the third
 strand of the EC2-audit dispatch thread after dispatch-ledger v0.23.0 and predicates v0.34.0).
+
+### D-20260904-tracking-audit-in-graph-script-gated-commit — the tracking audit lives in memory_graph.py and gates `git commit` here via a predicate rule
+- Workstream: workflow
+- Created: 2026-09-04
+- Status: accepted
+- Rationale: (1) **In `memory_graph.py`, as `--audit-tracking`**, not a new script: the record
+  iterator, the ID regex, and the multi-root plumbing already live there and `/memory-lint`
+  already runs it; a separate flag rather than folding into `--check-tracking` because the
+  boundary check and the integrity audit answer different questions and their tests pin
+  exact behaviour. (2) **A git-baseline shrink check is the headline**, not duplicate lines:
+  the incident an hour earlier (d526ca0, `resolved.md` 42 → 1 records) is invisible to any
+  single-snapshot check and obvious against HEAD. Duplicate lines are a WARN because
+  legitimate repetition (field boilerplate, a repeated Intended-start phrase) is common. (3)
+  **Enforced at commit time by a predicate rule in this repo's own guardrails.json** — the
+  procedure ("check `wc -l`") was followed and still failed because the check printed instead
+  of gating; only a deny stops the commit. This is also the first guardrail rule the plugin
+  repo has ever carried, and the first real use of v0.34.0 predicates. To make it portable
+  the engine exports `WORKSPACE_OS_PLUGIN_ROOT` to predicates and probes — a plugin-location
+  fact, not call context, so the v0.34.0 "no context to predicates" deferral stands.
+- Consequences: `/memory-lint` and the ship-a-slice close-out gain the audit; CI runs it on
+  this repo's tracking. `git commit` in workspace-os is denied while the tracking tree fails
+  the audit (retry after fixing). The idea stays open for its cloud-tier remainder.
+- Spawns: A-20260904-integrity-auditor
