@@ -47,6 +47,14 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Workstream: workflow
 - Priority: mid
 - Intended start: after the core skills see real use (the cloud-cron sibling of [[engine-hooks]])
+- **Shipped (2026-09-04, the Tier 0 auditor — v0.36.0, PR #47):** `memory_graph.py --audit-tracking`
+  (duplicate/invalid record IDs, dangling references, placeholder-beside-records, append-only
+  shrink vs a git baseline; duplicate lines as WARN), wired into /memory-lint, the ship-a-slice
+  close-out, CI, and this repo's own guardrails.json as a predicate-gated deny on `git commit`.
+  See `resolved.md` A-20260904-integrity-auditor and
+  D-20260904-tracking-audit-in-graph-script-gated-commit. **Remaining:** only the dormant
+  cloud-cron LLM tiers (Tier 1 OAuth / Tier 2 API) — likely moot under
+  D-20260828-build-only-what-native-wont; decide, don't build by default.
 - **Shipped (2026-08-12, the memory/tracking boundary check):** `memory_graph.py --check-tracking` flags tracking records over ~40 lines or carrying a `**MEASURED**` block (measured evidence belongs in memory, not a record body); the boundary is documented in `conventions/project-tracking.md` and wired into `/memory-lint`. See `resolved.md` A-20260812-memory-hygiene-lints. Remaining: the ID-uniqueness/index-parity/duplicate-line auditor + the dormant cloud-cron tiers.
 - Why/context: the append-`union` tracking + memory files silently lose or duplicate entries on bad merges — `conventions/project-tracking.md` already flags "periodically scan for duplicate lines." Zach's `claude-weekly-audit.yml` productizes this as a scheduled cross-PR pass over `master` that names exactly these files (decisions-log, action-items, MEMORY.md) and files findings as a GitHub issue. **Cost framing (verified 2026-06-28):** the headline checks are deterministic — ID uniqueness/monotonicity, index↔file parity, duplicate-line detection — so the **default ships free as a local/in-session script or hook (Tier 0, no LLM)**; an LLM pass is reserved only for the fuzzy residual ("content moved but not landed", semantic regressions). Cloud tiers are opt-in/dormant: Tier 1 bills a Claude Pro/Max OAuth token (`claude_code_oauth_token`); Tier 2 bills Anthropic API credits. GitHub Copilot is **not** a cheaper substitute: as of 2026-06-01 Copilot moved to usage-based AI-Credits + Actions-minutes billing, its code review is PR-diff-scoped (covers a per-PR reviewer, not this cross-PR audit) and is excluded from the Free plan (needs ≥ Pro at $10/mo). Borrow Zach's hardening for any cloud tier: dormant-by-default (no-op until a secret exists), pinned action SHA, and a fail-loud cost/error guard (his caught ~50 PRs that merged "green but unreviewed" on a dead key).
 - To start, future-us needs: the deterministic auditor script (ID/index/dup checks) + `Stop`/pre-PR hook wiring; optionally dormant CI workflow templates for the LLM/cloud tiers. Relates to [[engine-hooks]].

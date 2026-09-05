@@ -669,3 +669,19 @@ output on stderr; the retry passes. Reuses the upsert CLI, /guardrails authoring
 packs. v0.35.0. Decision: D-20260904-dispatch-gate-deny-once-not-predicate.
 - Completed: 2026-09-04
 - Commit: fd5c45e (PR #46, merged to main, v0.35.0)
+
+### A-20260904-integrity-auditor — Tier 0 tracking integrity audit + a commit gate on this repo
+- Workstream: workflow
+- Status: open
+- Created: 2026-09-04
+
+Ships the deterministic half of the integrity-auditor idea. Spec
+`docs/specs/2026-09-04-integrity-auditor-design.md`, plan
+`docs/plans/2026-09-04-integrity-auditor.md`. `memory_graph.py --audit-tracking`: duplicate
+IDs, invalid ID dates, dangling record references, placeholder-beside-records, append-only
+shrink vs a git baseline (FAILs) and duplicate non-trivial lines (WARN). Wired into
+/memory-lint, the ship-a-slice close-out, CI, and this repo's first own guardrails.json — a
+predicate-gated deny on `git commit`. Engine exports WORKSPACE_OS_PLUGIN_ROOT to
+predicates/probes. v0.36.0. Decision: D-20260904-tracking-audit-in-graph-script-gated-commit.
+- Completed: 2026-09-04
+- Commit: 8a1f213 (PR #47, merged to main, v0.36.0)
