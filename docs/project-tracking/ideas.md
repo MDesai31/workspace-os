@@ -123,6 +123,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Workstream: memory
 - Priority: mid
 - Intended start: after UNVERIFIED-SINCE has produced findings on a real base
+- **Note (2026-09-05):** [[fact-expiry]] is the counter-proposal (shrink memory rather than maintain it); decide between them before building either.
 - Why/context: UNVERIFIED-SINCE tells you a fact's cited code moved after its `verified-against`
   sha, but the fix is manual: re-read the code, decide the claim still holds, hand-edit the sha and
   date. That last step is mechanical and easy to skip, and a skipped re-stamp leaves the fact
@@ -153,6 +154,7 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
 - Workstream: memory
 - Priority: mid
 - Intended start: after UNVERIFIED-SINCE has fired on a real base (same gate as [[memory-restamp-flow]])
+- **Note (2026-09-05):** [[fact-expiry]] is the counter-proposal (shrink memory rather than maintain it); decide between them before building either.
 - Why/context: v0.21.0 shipped the *label* half of freshness (`verified-against: <sha> <date>` and
   the advisory UNVERIFIED-SINCE bucket), which answers "has the cited code moved since anyone
   confirmed this?" It does not re-confirm anything: the fix is still a human re-read. But many facts
@@ -196,3 +198,45 @@ SP1 (tracking) to the full workspace plugin discussed in the design.
   bucket like UNVERIFIED-SINCE?). Relates to [[fact-reverification-runner]],
   [[memory-restamp-flow]].
 
+
+### guardrails-renderers — one policy source, many hosts (native permissions today, function hooks if they land, other vendors later)  (strategy 2026-09-05)
+- Workstream: workflow
+- Priority: mid
+- Intended start: next guardrail-adjacent slice; the native `permissions.deny` renderer needs no preview feature and can ship now
+- Why/context: D-20260905-engine-is-a-host. `guardrails.json` is the product; `hooks/guardrail.sh` is one host. A renderer that emits the bash `deny` rules into the repo's `.claude/settings.json` `permissions.deny` (pattern form) makes the rules bind even when the plugin is absent, and a function-hook module reading the same JSON becomes a second host once F-20260905-function-hooks-ship closes. Later: render conventions/CLAUDE.md content into AGENTS.md and other vendors' rule files from one canonical source (the concrete first step of vendor-neutral-runtime).
+- To start, future-us needs: the mapping from regex rules to the native pattern grammar (which rules are expressible; the rest stay engine-only and the renderer says so), idempotent stamped writes into settings.json (the pack-import pattern), and a decision on whether rendering is a `/guardrails render` mode or automatic on every upsert. Relates to vendor-neutral-runtime, [[hazard-corpus]].
+
+### hazard-corpus — every mined near-miss becomes a permanent, host-independent regression fixture  (strategy 2026-09-05)
+- Workstream: workflow
+- Priority: mid
+- Intended start: with the first `/guardrails mine` result worth keeping; the fixture format can land alongside guardrails-renderers
+- Why/context: rules are data, so their tests should be too. A corpus of `{tool call, expected: deny|warn|pass}` cases, grown from `/guardrails mine` and from packs, replayed against whichever host is active (bash engine today, a function-hook host tomorrow, a native-permissions render). This is model-independent regression coverage for the one layer that must hold as models change hosts and get more autonomous. Also the honest answer to "did the renderer preserve the rule's meaning".
+- To start, future-us needs: a fixture shape (`tests/fixtures/hazards/*.json`), a runner that can target a host, and a rule that `/guardrails` offers to add the dry-run pair as a fixture when a rule is applied. Relates to [[guardrails-renderers]].
+
+### task-scope-fence — a task declares the paths it may touch; writes outside are denied  (strategy 2026-09-05)
+- Workstream: workflow
+- Priority: mid
+- Intended start: when an autonomous session first edits something it was not asked to; capture the incident, then build
+- Why/context: worktrees isolate by branch and permissions isolate by tool; nothing isolates by declared intent. As sessions run longer and more autonomously, "it also edited the deploy script" becomes the common failure. Expressed as a `write` rule with `field: path` and a session-scoped allowlist (a predicate over a fence file, or a native permission render), so it is data, not an engine feature (D-20260905-engine-is-a-host).
+- To start, future-us needs: where the fence is declared (a handoff-like file per task? a `/fence` skill that writes it?), how it is lifted (explicit, confirm-gated), and whether the guardrail engine or a native permission render enforces it.
+
+### cost-ceiling-guardrail — deny a new dispatch once the session or repo passes a spend budget  (strategy 2026-09-05)
+- Workstream: workflow
+- Priority: mid
+- Intended start: nearly free once a budget number exists; pair with the first dispatch-ledger review that shows a runaway session
+- Why/context: the dispatch ledger (v0.23.0) records est_tokens per dispatch; the dispatch gate (v0.35.0) can deny a dispatch. A `dispatch` rule whose probe sums the ledger for this session/repo and reports the running total, or a predicate-gated deny above a threshold, turns telemetry into a brake with nothing but existing machinery. Data-layer only: no engine change.
+- To start, future-us needs: the budget declaration (per repo in guardrails.json? per session env?), the ledger-sum probe (`dispatch-ledger-summary.sh --session`), and whether the first breach warns via probe output or denies.
+
+### data-layer-tripwire-scan — scan tracking + memory trees for secrets, tripwires, and PII at commit time  (strategy 2026-09-05)
+- Workstream: workflow
+- Priority: mid
+- Intended start: the v0.36.0 commit-gate pattern pointed at a second hazard; small
+- Why/context: guardrail `write` rules check content only at write time; a fact pasted in by a script, a meeting note, or a union merge reaches history unchecked. A predicate-gated `git commit` deny (like tracking-audit-before-commit) running a scan over `docs/memory` + `docs/project-tracking` (and the sidecar tree) for the repo's tripwire regexes and high-confidence secret patterns closes the gap. The incident class is quiet and expensive, which is why it belongs in a gate rather than a lint.
+- To start, future-us needs: reuse of the engine's secret regexes and the pack's `{{tripwire_regex}}` as the scan set, a `memory_graph.py --scan-secrets` or a small script, and the rule in the enterprise-clean-room pack.
+
+### fact-expiry — memory facts declare a lifetime; expired facts stop surfacing until re-confirmed  (strategy 2026-09-05)
+- Workstream: memory
+- Priority: mid
+- Intended start: before building any further freshness machinery; this is the counter-proposal to memory-restamp-flow and fact-reverification-runner
+- Why/context: as models navigate context and code better, facts *about code* lose value while facts about decisions, domain rules, and external constraints keep it. Rather than tooling to keep code-facts fresh (restamp, re-verify), let a fact carry `expires:` (or a type-default lifetime); `/memory-lint` reports expired facts and the SessionStart index omits them until re-confirmed. Shrinks memory toward what cannot be derived. If adopted, the two gated freshness ideas likely close as superseded.
+- To start, future-us needs: the frontmatter field + type defaults in conventions/memory.md, the lint bucket, and the index-rendering change in the SessionStart hook; a decision on whether re-confirming is a `/memory-lint` offer (write path) or manual.

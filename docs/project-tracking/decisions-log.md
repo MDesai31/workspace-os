@@ -622,3 +622,29 @@ Design: docs/specs/2026-09-04-lint-retirement-decision.md.
 
 Closes lint-conversational-authoring (idea COMPLETE - it was captured as a question; the
 answer is "retire", executed in v0.37.0).
+
+### D-20260905-engine-is-a-host — the guardrail engine is a disposable host; the policy format, authoring, and packs are the product
+- Workstream: workflow
+- Created: 2026-09-05
+- Status: accepted
+- Rationale: Claude Code's proposed function hooks (TypeScript middleware over `tool.call`,
+  `permission`, `agent.spawn`, …; deny/modify/inject context non-blockingly; build 2.1.260
+  behind `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1`, proposal opened 2026-09-03, ships only if the
+  community response warrants) would make the *engine* layer redundant: the bash regex
+  matcher, the deny-once workaround (playbook surfacing, the dispatch gate), the `Task|Agent`
+  matcher, and most of what `predicate` smuggles into JSON. But that layer was always
+  reimplementable natively (command hooks + permission deny lists have existed all year) and
+  was never the differentiator. What no host writes for you: **rules as data**
+  (`guardrails.json` — schema-checked, pack-shippable, auditable, vendor-portable),
+  **authoring with proof** (`/guardrails` dry-run both directions, confirm, apply), **packs**
+  (policy content with params + provenance), and **sidecar placement** (rules outside an
+  employer's tree). So: freeze the engine (no further engine-level features; v0.34–v0.35 were
+  the last), and add *renderers* — the same JSON emitted into native `permissions.deny` today
+  and into a function-hook host if it lands — so every native improvement becomes a better
+  host for the same rules rather than a competitor.
+- Consequences: the hazard-corpus, scope-fence, cost-ceiling, and egress ideas are captured as
+  **rules/data**, not engine features. F-20260905-function-hooks-ship tracks the evidence.
+  guardrails-renderers is the next guardrail-adjacent slice; nothing else at the engine layer.
+- Spawns: none
+
+Sources: claudefa.st/blog/tools/hooks/function-hooks (proposal summary; GitHub issue #91870).
