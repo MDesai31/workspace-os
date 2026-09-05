@@ -57,7 +57,8 @@ sidecar: `<data_root>/guardrails.json` - the repo tree is never touched).
 **2. Draft the rule:** kebab-case `name`; the narrowest regex that still catches the hazard
 (jq `test()` dialect - Oniguruma, not grep -E); a `reason` that tells a blocked session what
 to do instead. For write rules pick `--field content` (default) or `--field path`. A
-predicate runs in the tool call's cwd under a 5-second timeout with its output discarded;
+predicate runs in the tool call's cwd under a 5-second timeout with its output discarded
+(`$WORKSPACE_OS_PLUGIN_ROOT` names the plugin dir, so a predicate can run plugin scripts);
 anything but exit 0 (non-zero, timeout, error) means "not fired" - the engine stays fail-open.
 Prefer a test that is cheap and side-effect free; it runs on every call the regex matches.
 

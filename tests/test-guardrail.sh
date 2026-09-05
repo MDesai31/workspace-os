@@ -162,6 +162,14 @@ check "write predicate true fires (warn)" "$ec" "0" "$err" "w-pred-true fired"
 all="$(hook_all '{"tool_name":"Write","tool_input":{"file_path":"notes.md","content":"x"}}' "$PCFG")"
 case "$all" in *"w-pred-false fired"*) echo "FAIL: write predicate false must not fire (out=[$all])"; fail=$((fail+1));; *) echo "PASS: write predicate false does not fire"; pass=$((pass+1));; esac
 
+# Predicates see WORKSPACE_OS_PLUGIN_ROOT (the plugin dir), so a rule can run plugin scripts.
+ECFG="$SWTMP/env.json"
+cat > "$ECFG" <<'JSON'
+{"bash":[{"name":"env-root","match":"envcheck","predicate":"[ -f \"$WORKSPACE_OS_PLUGIN_ROOT/hooks/guardrail.sh\" ]","action":"deny","reason":"env-root fired"}]}
+JSON
+IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","tool_input":{"command":"envcheck"}}' "$ECFG")
+check "predicate sees WORKSPACE_OS_PLUGIN_ROOT" "$ec" "2" "$err" "env-root fired"
+
 # Predicates run in the call's cwd (stdin `cwd`), not the hook's: a branch check against a temp repo.
 BR="$SWTMP/branchrepo"; mkdir -p "$BR"; git -C "$BR" init -q -b main
 git -C "$BR" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init

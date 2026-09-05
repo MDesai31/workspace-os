@@ -194,6 +194,25 @@ line ceiling (`--max-record-lines`, default 40) or carry a `**MEASURED**` block.
   remain. Never leave a *fully* shipped idea in place: its `Priority:` line keeps counting toward
   the open backlog, so `/project-status` over-reports that tier.
 
+## Integrity audit
+
+The tracking files are append-`merge=union` and edited by scripts; both can silently drop or
+duplicate records. `scripts/memory_graph.py --audit-tracking --tracking-root <dir>` is the
+deterministic (Tier 0, no LLM) audit; `/memory-lint` runs it, the ship-a-slice close-out gates
+on it, and this plugin's own repo denies `git commit` while it fails.
+
+- **FAIL** (exit 1): a record ID heading appearing more than once across the tree; an ID whose
+  `YYYYMMDD` is not a calendar date; a record-ID token (in `Spawns:`, `Supersedes:`,
+  `Superseded-by:`, or prose) with no heading anywhere in the tree; an italic empty-state line
+  (`_No … yet._`) left in a file that also holds a record; **append-only shrink** — `resolved.md`
+  or `decisions-log.md` with fewer records than at `--baseline` (default `HEAD`), or the
+  action-items + resolved + findings total dropping (a done-move is count-neutral).
+- **WARN** (never fatal): a non-trivial line (≥ 40 chars, not a field line) repeated within one
+  file — the union-merge artifact; a human decides.
+- **NOTE**: baseline unavailable (not a git repo, or the file is absent at that ref) — the
+  shrink check is skipped for that file, nothing fails.
+- Legacy `#`/letter IDs are never counted or flagged. The audit never edits anything.
+
 ## Session continuity: handoffs and the work log
 
 Mid-task state lives in `<data_root>/project-tracking/handoffs/` — **one live file per

@@ -89,6 +89,21 @@ Flags any `A-`/`D-` record whose body exceeds `--max-record-lines` (default 40) 
 `**MEASURED**` block; both belong in a memory fact (`conventions/project-tracking.md` § the
 memory/tracking boundary). Exit 1 on findings.
 
+**Tracking integrity** - the Tier 0 audit of the tracking files themselves
+(`conventions/project-tracking.md` § "Integrity audit"):
+
+    python3 "${CLAUDE_PLUGIN_ROOT}/scripts/memory_graph.py" --audit-tracking \
+      --tracking-root "<data_root>/project-tracking"
+
+FAILs (exit 1): a record ID heading appearing twice across the tree, an ID whose date is not a
+calendar date, a record-ID reference with no heading anywhere, an empty-state placeholder
+line left beside real records, and **append-only shrink** - `resolved.md` or
+`decisions-log.md` holding fewer records than at `--baseline` (default `HEAD`), or the
+action-items + resolved + findings total dropping (a done-move keeps it constant; a truncated
+file lowers it). WARN (never fatal): a non-trivial line repeated within one file - the
+union-merge artifact the conventions ask you to scan for; judge it, don't auto-fix. NOTE:
+baseline unavailable (not a git repo, or the file is new) - the shrink check is skipped.
+
 ## Step 1c - playbook integrity
 
 The surfacing hook (`hooks/playbook-surface.sh`) fails open, so a malformed playbook is
