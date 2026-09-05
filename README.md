@@ -64,7 +64,7 @@ points, and nothing is ever written without your confirmation.
 | | `/memory-sync` | migrate a fact from `~/.claude` auto-memory into a repo | [GUIDE](GUIDE.md#occasional-operations) |
 | | `/make-portable` | retrofit the vendor-neutral layer onto an existing memory base | [PORTABILITY_NOTES](PORTABILITY_NOTES.md) |
 | | `/continuity` | scaffold a repo-root bus-factor runbook (CONTINUITY.md) | [GUIDE](GUIDE.md#occasional-operations) |
-| **Automatic (hooks)** | `guardrail.sh` | blocks/warns on hazardous Bash + writes (secrets, force-push, your rules) | [GUIDE](GUIDE.md#guardrails) |
+| **Automatic (hooks)** | `guardrail.sh` | blocks/warns on hazardous Bash + writes (secrets, force-push, your rules); probe-first gate on subagent dispatches | [GUIDE](GUIDE.md#guardrails) |
 | | `playbook-surface.sh` | surfaces a matching playbook once per session (before or after the call) | [GUIDE](GUIDE.md#playbook-surfacing) |
 | | `lint.sh` | runs your declared linters on edited files, feeds diagnostics back | [GUIDE](GUIDE.md#advisory-lint) |
 | | `dispatch-ledger.sh` | logs every subagent dispatch (sizes only) to a local-only ledger | [GUIDE](GUIDE.md#dispatch-ledger) |

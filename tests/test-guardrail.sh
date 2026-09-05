@@ -172,6 +172,76 @@ IFS=$'\t' read -r ec err < <(run_hook '{"tool_name":"Bash","cwd":"'"$BR"'","tool
 all="$(hook_all '{"tool_name":"Bash","cwd":"'"$BR"'","tool_input":{"command":"ls"}}' "$PCFG")"
 case "$all" in *"on-main fired"*) echo "FAIL: on feature branch must not fire (out=[$all])"; fail=$((fail+1));; *) echo "PASS: predicate sees cwd from stdin: on feature branch passes"; pass=$((pass+1));; esac
 
+# --- Task: probe-first dispatch gate (spec: docs/specs/2026-09-04-probe-first-dispatch-gate-design.md) ---
+# `dispatch` rules: first matching Task|Agent call per session per rule runs the probe and denies once
+# with the output on stderr (marker written first); the retry passes. TMPDIR is the marker seam.
+DTMP="$SWTMP/dtmp"; mkdir -p "$DTMP"
+DCFG="$SWTMP/dispatch.json"
+big="$SWTMP/big.txt"; head -c 6000 /dev/zero | tr '\0' 'x' > "$big"
+cat > "$DCFG" <<JSON
+{ "bash": [ { "name": "plain-bash", "match": "gen\\\\.py", "action": "warn", "reason": "plain-bash fired" } ],
+  "dispatch": [
+    { "name": "output-exists", "match": "(derive|rebuild).*csv", "probe": "echo PROBE_OUTPUT_ALPHA; echo err-line >&2", "reason": "check the pipeline output first" },
+    { "name": "second-rule",   "match": "rebuild", "probe": "echo PROBE_OUTPUT_BETA", "reason": "second reason" },
+    { "name": "broken-probe",  "match": "broken-question", "probe": "exit 7", "reason": "broken reason" },
+    { "name": "slow-probe",    "match": "slow-question", "probe": "sleep 30", "reason": "slow reason" },
+    { "name": "big-probe",     "match": "big-question", "probe": "cat $big", "reason": "big reason" }
+  ] }
+JSON
+# run_task <session> <description> <prompt> -> $tout (combined), $tec
+run_task() {
+  local json; json="$(jq -cn --arg s "$1" --arg d "$2" --arg p "$3" \
+    '{hook_event_name:"PreToolUse", session_id:$s, tool_name:"Task", tool_input:{description:$d, prompt:$p, subagent_type:"Explore"}}')"
+  tout="$(TMPDIR="$DTMP" GUARDRAIL_CONFIG="$DCFG" bash "$HOOK" <<<"$json" 2>&1)"; tec=$?
+}
+tcheck() {  # tcheck <name> <want_ec> <want_substr>
+  local ok=1; [ "$tec" = "$2" ] || ok=0
+  if [ -n "$3" ]; then case "$tout" in *"$3"*) ;; *) ok=0;; esac; fi
+  if [ "$ok" = 1 ]; then echo "PASS: $1"; pass=$((pass+1)); else echo "FAIL: $1 (exit=$tec want=$2 out=[$tout])"; fail=$((fail+1)); fi
+}
+tabsent() {  # tabsent <name> <must-not-substr>
+  case "$tout" in *"$2"*) echo "FAIL: $1 (out=[$tout])"; fail=$((fail+1));; *) echo "PASS: $1"; pass=$((pass+1));; esac
+}
+
+run_task s1 "derive the features csv" "please derive features.csv from raw"
+tcheck "dispatch: matching call denies" 2 "probe-first: 'output-exists'"
+tcheck "dispatch: reason surfaced" 2 "check the pipeline output first"
+tcheck "dispatch: probe stdout surfaced" 2 "PROBE_OUTPUT_ALPHA"
+tcheck "dispatch: probe stderr surfaced" 2 "err-line"
+tcheck "dispatch: closing instruction" 2 "Re-dispatch only if"
+tabsent "dispatch: non-matching rule silent" "PROBE_OUTPUT_BETA"
+run_task s1 "derive the features csv" "please derive features.csv from raw"
+tcheck "dispatch: same session retry passes silently" 0 ""
+[ -z "$tout" ] && { echo "PASS: dispatch: retry prints nothing"; pass=$((pass+1)); } || { echo "FAIL: dispatch: retry printed [$tout]"; fail=$((fail+1)); }
+run_task s2 "derive the features csv" "please derive features.csv from raw"
+tcheck "dispatch: new session denies again" 2 "PROBE_OUTPUT_ALPHA"
+run_task s3 "summarize the README" "read README.md and summarize"
+tcheck "dispatch: non-matching dispatch passes" 0 ""
+run_task s4 "rebuild" "rebuild the csv"
+tcheck "dispatch: two matching rules, first surfaced" 2 "PROBE_OUTPUT_ALPHA"
+tcheck "dispatch: two matching rules, second surfaced" 2 "PROBE_OUTPUT_BETA"
+run_task s5 "broken-question" "x"
+tcheck "dispatch: failing probe still denies once" 2 "probe exited 7"
+run_task s5 "broken-question" "x"
+tcheck "dispatch: failing probe retry passes" 0 ""
+start=$(date +%s); run_task s6 "slow-question" "x"; elapsed=$(( $(date +%s) - start ))
+tcheck "dispatch: slow probe denies with timeout noted" 2 "probe exited 124"
+[ "$elapsed" -lt 20 ] && { echo "PASS: dispatch: probe cut off inside budget (${elapsed}s)"; pass=$((pass+1)); } \
+  || { echo "FAIL: dispatch: probe ran ${elapsed}s"; fail=$((fail+1)); }
+run_task s7 "big-question" "x"
+tcheck "dispatch: oversized output truncated" 2 "[probe output truncated"
+[ "${#tout}" -lt 5000 ] && { echo "PASS: dispatch: output capped (${#tout} chars)"; pass=$((pass+1)); } \
+  || { echo "FAIL: dispatch: output not capped (${#tout} chars)"; fail=$((fail+1)); }
+# prompt-only match (description does not match) + Agent tool name
+json='{"hook_event_name":"PreToolUse","session_id":"s8","tool_name":"Agent","tool_input":{"description":"help","prompt":"rebuild the csv please"}}'
+tout="$(TMPDIR="$DTMP" GUARDRAIL_CONFIG="$DCFG" bash "$HOOK" <<<"$json" 2>&1)"; tec=$?
+tcheck "dispatch: Agent tool + prompt-only match denies" 2 "PROBE_OUTPUT_ALPHA"
+# a Bash call ignores dispatch rules and still gets its own rules
+json='{"hook_event_name":"PreToolUse","session_id":"s9","tool_name":"Bash","tool_input":{"command":"python gen.py rebuild csv"}}'
+tout="$(TMPDIR="$DTMP" GUARDRAIL_CONFIG="$DCFG" bash "$HOOK" <<<"$json" 2>&1)"; tec=$?
+tcheck "dispatch: Bash call untouched by dispatch rules" 0 "plain-bash fired"
+tabsent "dispatch: Bash call does not run probes" "PROBE_OUTPUT"
+
 echo "----"
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

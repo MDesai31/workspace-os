@@ -39,6 +39,11 @@ sidecar: `<data_root>/guardrails.json` - the repo tree is never touched).
 - **Engine-fit** (proceed): a text match over a Bash command, or over a write's content or
   path, worth sharing with the repo. `deny` for hard boundaries (IP leakage, never-push
   remotes, secrets); `warn` for advisories.
+- **Dispatch-fit** (proceed): "we keep re-deriving X", "check Y before spending an agent on
+  Z" - a **`dispatch` rule** whose `probe` is the cheap check. The first matching subagent
+  dispatch per session per rule runs the probe (call cwd, 10s budget, output capped at 4000
+  chars) and is denied once with the output on stderr; the retry passes. The regex runs over
+  the dispatch's description + prompt. Dispatch rules carry no action/field/predicate.
 - **Hookify-fit** (hand off): needs `stop`/`prompt` events, or the user says it is personal /
   this-machine-only. Say why in one line and suggest `/hookify` (if hookify is not installed,
   print the rule you would have written as a hookify `.local.md` body instead). Do not
@@ -62,6 +67,7 @@ Prefer a test that is cheap and side-effect free; it runs on every call the rege
     printf '{"bash":[],"write":[]}' > "$cfg"
     GUARDRAIL_CONFIG="$cfg" bash "${CLAUDE_PLUGIN_ROOT}/scripts/guardrails-upsert.sh" add \
       --type <t> --name <name> --match <regex> --action <a> --reason <r> [--predicate <shell>]
+    # dispatch rules: --type dispatch --name <name> --match <regex> --probe <shell> --reason <r>
     # must fire (deny -> exit 2; warn -> systemMessage on stdout):
     printf '{"tool_name":"Bash","tool_input":{"command":"<hazard example>"}}' \
       | GUARDRAIL_CONFIG="$cfg" bash "${CLAUDE_PLUGIN_ROOT}/hooks/guardrail.sh"
@@ -75,8 +81,13 @@ For write rules the synthetic call is
 needs a third run**: the hazard example again with the state healthy (regex hits, predicate
 false) must NOT fire. Prove it by pointing the synthetic call's `"cwd"` at a directory where
 the state is healthy, or by re-adding the rule with a known-false predicate for that run
-only. A rule that fails any direction is revised, not proposed - the dry-run gate is what
-makes a confirmed rule trustworthy.
+only. A **dispatch rule's dry-run is three synthetic `Task` calls** with a throwaway
+`"session_id"` (markers are per session; use `TMPDIR=$(mktemp -d)` so they never touch a
+real session): a matching dispatch must deny (exit 2) with the probe output visible; the same
+call again must pass silently; a non-matching dispatch must pass. The synthetic call is
+`{"tool_name":"Task","session_id":"dryrun","tool_input":{"description":"<d>","prompt":"<p>"}}`.
+A rule that fails any direction is revised, not proposed - the dry-run gate is what makes a
+confirmed rule trustworthy.
 
 **4. Propose the batch:** per rule - the drafted JSON, both dry-run results as evidence, and
 where it will land. Wait for confirmation; the user may accept a subset.

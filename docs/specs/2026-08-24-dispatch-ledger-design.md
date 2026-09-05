@@ -25,7 +25,9 @@ are expensive) and `agent-self-improvement` (assumes a per-agent observation log
 
 ## Non-goals
 
-- No gating or blocking of dispatches (`probe-first-dispatch-gate`, later, separately).
+- No gating or blocking of dispatches (`probe-first-dispatch-gate`, later, separately —
+  shipped v0.35.0 as `dispatch` rules in the guardrail engine, see
+  `2026-09-04-probe-first-dispatch-gate-design.md`).
 - No prompt/response TEXT in the ledger - sizes and a short description label only.
 - No `/dispatch-report` skill yet; the summary script is the read surface for now.
 - No cross-machine aggregation; telemetry is machine-local like the audit numbers were.

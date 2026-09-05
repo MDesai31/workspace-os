@@ -17,7 +17,9 @@ a landed pack enforces immediately.
 - `guardrails` (required): `bash` / `write` arrays of the engine's exact rule shape
   (`name`, `match`, `action` deny|warn, `reason`, plus `field` content|path on write rules,
   plus an optional `predicate` - shell the engine runs in the call's cwd; the rule fires only
-  when the regex matches AND the predicate exits 0).
+  when the regex matches AND the predicate exits 0). An optional `dispatch` array holds
+  probe-first rules (`name`, `match` over a subagent dispatch's description + prompt, `probe`
+  shell, `reason`; no action - always deny-once per session with the probe output).
 - `lint` (optional): `linters` array of the lint engine's shape (`name`, `match`, `command`).
 - `ip_class` (optional): set on import; announced by the skill before confirmation.
 - `params` (optional): `[{name, prompt}]`. Rule strings may carry `{{name}}` placeholders;

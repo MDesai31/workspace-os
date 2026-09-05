@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# workspace-os guardrail engine — PreToolUse hook (Bash|Edit|Write).
+# workspace-os guardrail engine — PreToolUse hook (Bash|Edit|Write + Task|Agent dispatches).
 # Reads tool-call JSON on stdin. Deny -> exit 2 + reason on stderr; warn -> reason on stderr, exit 0.
 # Fail open: any error / no jq / no match -> exit 0 (never block a tool call).
 # Config rules may carry a `predicate` (shell): the rule fires only when its regex matches AND the
 # predicate exits 0, run in the call's cwd under a 5s timeout; any other outcome skips the rule
 # (spec: docs/specs/2026-09-04-stateful-guardrail-predicates-design.md).
+# `dispatch` rules gate Task|Agent calls probe-first: the first matching dispatch per session per
+# rule runs the probe (call cwd, 10s, 4000-char cap) and is denied once with the output on stderr;
+# the marker is written before the probe so the retry passes
+# (spec: docs/specs/2026-09-04-probe-first-dispatch-gate-design.md).
 set -uo pipefail
 
 input="$(cat)"
@@ -24,6 +28,20 @@ predicate_holds() {
   else
     (cd "$call_cwd" && bash -c "$1") >/dev/null 2>&1
   fi
+}
+
+# run_probe <shell>: prints the probe's combined stdout+stderr (10s budget, call cwd), capped at
+# 4000 chars; returns the probe's exit status (124 on timeout). Never blocks beyond the budget.
+run_probe() {
+  local out ec
+  if command -v timeout >/dev/null 2>&1; then
+    out="$( (cd "$call_cwd" && timeout 10 bash -c "$1") 2>&1 )"; ec=$?
+  else
+    out="$( (cd "$call_cwd" && bash -c "$1") 2>&1 )"; ec=$?
+  fi
+  if [ "${#out}" -gt 4000 ]; then out="${out:0:4000}"$'\n'"[probe output truncated at 4000 chars]"; fi
+  printf '%s' "$out"
+  return "$ec"
 }
 
 # Sidecar resolution (conventions/data-root.md). Fail open: resolver errors = in-repo behavior.
@@ -95,6 +113,27 @@ if [ -n "$config" ] && [ -f "$config" ] && jq -e . "$config" >/dev/null 2>&1; th
       done < <(jq -r --arg path "${path_fwd:-}" --arg content "${content:-}" \
         '(.write // [])[] | .match as $m | select($m != null and ((if (.field // "content") == "path" then $path else $content end) | test($m))) | "\(.action)\t\(.reason)\t\(.predicate // "")"' \
         "$config" 2>/dev/null)
+      ;;
+    Task|Agent)
+      sid="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || true)"
+      subject="$(printf '%s' "$input" | jq -r '((.tool_input.description // "") + "\n" + (.tool_input.prompt // ""))' 2>/dev/null || true)"
+      markdir="${TMPDIR:-/tmp}/workspace-os-probed-$sid"
+      fired=0
+      while IFS=$'\t' read -r name reason probe; do
+        [ -z "$name" ] || [ -z "$probe" ] && continue
+        mark="$markdir/$(printf '%s' "$name" | tr '/' '_')"
+        [ -f "$mark" ] && continue
+        # Marker FIRST: if it cannot be written, skip rather than deny forever (fail open).
+        { mkdir -p "$markdir" && : > "$mark"; } 2>/dev/null || continue
+        pout="$(run_probe "$probe")"; probe_ec=$?
+        block="probe-first: '$name' - $reason"
+        [ -n "$pout" ] && block="$block"$'\n'"$pout"
+        [ "$probe_ec" -ne 0 ] && block="$block"$'\n'"(probe exited $probe_ec)"
+        denies+=("$block"); fired=1
+      done < <(jq -r --arg s "$subject" \
+        '(.dispatch // [])[] | .match as $m | select($m != null and .probe != null and ($s | test($m))) | "\(.name)\t\(.reason)\t\(.probe)"' \
+        "$config" 2>/dev/null)
+      [ "$fired" = 1 ] && denies+=("Re-dispatch only if the output above does not answer the question.")
       ;;
   esac
 fi
